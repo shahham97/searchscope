@@ -251,6 +251,29 @@ export interface AuditConfig {
   enableHeadlessRendering?: boolean;
 }
 
+export type ClaimCategory =
+  | 'origin_making'
+  | 'ingredient_sourcing'
+  | 'performance_health'
+  | 'superlative_comparative'
+  | 'review_integrity'
+  | 'trademark_adjacent';
+
+export type ClaimRiskLevel = 'high' | 'medium' | 'advisory';
+
+export interface ClaimItem {
+  id: string;
+  category: ClaimCategory;
+  riskLevel: ClaimRiskLevel;
+  claimText: string;
+  url: string;
+  location: string;
+  whyRisky: string;
+  ownerAction: string;
+  verified: boolean;
+  evidenceProvided?: string;
+}
+
 export interface AuditReport {
   id: string;
   auditDate: string;
@@ -277,6 +300,7 @@ export interface AuditReport {
   competitors: CompetitorComparison[];
 
   roadMap: RoadmapItem[];
+  complianceClaims?: ClaimItem[];
   methodology: string;
   disclaimers: string[];
 }

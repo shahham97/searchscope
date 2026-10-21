@@ -12,10 +12,11 @@ import { analyzeContentSimilarity } from './analyzer/similarity';
 import { analyzeWeakAndAmbiguousLinks } from './analyzer/weak-links';
 import { analyzeSchemaDomParity } from './analyzer/schema-parity';
 import { analyzeSocialMetadata } from './analyzer/social-metadata';
+import { analyzeContentClaimsAndRisks } from './analyzer/claim-risk-detector';
 import { extractCandidateKeywords, buildSearchObservations } from './analyzer/search-intelligence';
 import { calculateAuditScores } from './analyzer/scoring';
 import { buildPrioritizedRoadmap } from './analyzer/roadmap';
-import { AuditConfig, AuditReport, Finding } from '../types/audit';
+import { AuditConfig, AuditReport, Finding, ClaimItem } from '../types/audit';
 import { validateTargetUrl } from './security/ssrf';
 
 export async function runCompleteAudit(
@@ -75,6 +76,7 @@ export async function runCompleteAudit(
 
   // 3. Run Analysis Engines only if crawl succeeded or yielded real pages
   const allFindings: Finding[] = [];
+  let complianceClaims: ClaimItem[] = [];
 
   if (!isCrawlFailed) {
     // Technical SEO
@@ -120,6 +122,10 @@ export async function runCompleteAudit(
 
       const similarityFindings = analyzeContentSimilarity(pages);
       allFindings.push(...similarityFindings);
+
+      const claimResult = analyzeContentClaimsAndRisks(pages);
+      allFindings.push(...claimResult.findings);
+      complianceClaims = claimResult.claims;
     }
 
     // AEO & GEO
@@ -200,6 +206,7 @@ export async function runCompleteAudit(
     searchObservations: observations,
     competitors,
     roadMap,
+    complianceClaims,
     methodology:
       'Deterministic rule-based audit engine evaluating crawlability, indexability, metadata completeness, semantic heading architecture, Structured Data (Schema.org JSON-LD), content depth, readability ease (Flesch-Kincaid), Answer Engine Optimization (AEO) direct-answer structure, and Generative Engine Optimization (GEO) machine-readability cues.',
     disclaimers: [
