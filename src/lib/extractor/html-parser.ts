@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { normalizeUrl, isInternalUrl } from '../crawler/url-utils';
 import { ExtractedPageData, StructuredDataItem } from '../../types/audit';
+import { classifyPageType } from '../analyzer/page-classifier';
 
 export function calculateFleschKincaid(text: string): number {
   const words = text.match(/\b[A-Za-z]+\b/g) || [];
@@ -361,6 +362,8 @@ export function parseHtmlContent(
     contentType: headers['content-type'] || 'text/html',
     contentLengthBytes: Buffer.byteLength(html, 'utf-8'),
     isHtml: true,
+
+    pageType: classifyPageType({ url, structuredData, internalLinks, wordCount } as any),
 
     title,
     titleLength: title ? title.length : 0,

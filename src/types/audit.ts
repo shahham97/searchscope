@@ -12,6 +12,16 @@ export type Category =
 
 export type EffortLevel = 'quick_win' | 'moderate' | 'complex';
 
+export type PageType =
+  | 'home'
+  | 'collection'
+  | 'product'
+  | 'article'
+  | 'about'
+  | 'contact'
+  | 'policy'
+  | 'utility';
+
 export type FailureCode =
   | 'DNS_FAILURE'
   | 'TLS_ERROR'
@@ -76,6 +86,9 @@ export interface ExtractedPageData {
   // Failure taxonomy
   failureCode?: FailureCode;
   failureHint?: string;
+
+  // Page Classification
+  pageType?: PageType;
 
   // SEO Metadata
   title?: string;
@@ -209,6 +222,7 @@ export interface CategoryScore {
   label: string;
   score: number; // 0 to 100
   weight: number;
+  status?: 'complete' | 'incomplete' | 'na';
   findingsCount: {
     critical: number;
     high: number;
@@ -286,6 +300,13 @@ export interface AuditReport {
   crawlerUserAgent: string;
   
   overallScore: number;
+  scoreConfidence?: 'high' | 'medium' | 'low';
+  crawlCoverage?: {
+    crawled: number;
+    discovered: number;
+    percentage: number;
+    summary: string;
+  };
   isCrawlFailed: boolean;
   crawlFailureReason?: string;
   diagnostics: CrawlDiagnostic[];

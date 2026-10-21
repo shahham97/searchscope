@@ -158,10 +158,21 @@ export async function runCompleteAudit(
   );
 
   // Scoring
-  const { overallScore, categoryScores } = calculateAuditScores(
+  const { overallScore, categoryScores, confidence } = calculateAuditScores(
     uniqueFindings,
-    crawlStats.successfulPagesCount
+    crawlStats.successfulPagesCount,
+    isCrawlFailed
   );
+
+  const crawledCount = crawlStats.totalPagesCrawled;
+  const discoveredCount = Math.max(crawledCount, crawlStats.totalPagesDiscovered);
+  const coveragePercentage = discoveredCount > 0 ? Math.round((crawledCount / discoveredCount) * 100) : 100;
+  const crawlCoverage = {
+    crawled: crawledCount,
+    discovered: discoveredCount,
+    percentage: coveragePercentage,
+    summary: `${crawledCount} of ${discoveredCount} pages crawled (${coveragePercentage}% sample). Scores reflect sampled pages.`,
+  };
 
   // Roadmap
   const roadMap = !isCrawlFailed ? buildPrioritizedRoadmap(uniqueFindings) : [];
@@ -195,6 +206,8 @@ export async function runCompleteAudit(
     config: effectiveConfig,
     crawlerUserAgent: 'SearchScope-Auditor/1.0 (+https://searchscope.app/bot)',
     overallScore,
+    scoreConfidence: confidence,
+    crawlCoverage,
     isCrawlFailed,
     crawlFailureReason,
     diagnostics,

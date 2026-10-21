@@ -11,12 +11,12 @@ describe('Deterministic Scoring Engine', () => {
     });
   });
 
-  it('correctly applies severity penalties', () => {
+  it('correctly applies severity penalties with rule grouping', () => {
     const findings: Finding[] = [
       {
-        id: 'F-1',
+        id: 'TECH-SSL-1',
         category: 'technical',
-        severity: 'critical', // -15
+        severity: 'critical', // base: 35, cap: 40
         title: 'Critical issue',
         evidence: 'test',
         affectedUrl: 'https://example.com',
@@ -27,9 +27,9 @@ describe('Deterministic Scoring Engine', () => {
         validationInstructions: 'test',
       },
       {
-        id: 'F-2',
+        id: 'TECH-ROBOTS-1',
         category: 'technical',
-        severity: 'high', // -8
+        severity: 'high', // base: 25, cap: 25
         title: 'High issue',
         evidence: 'test',
         affectedUrl: 'https://example.com',
@@ -41,17 +41,17 @@ describe('Deterministic Scoring Engine', () => {
       },
     ];
 
-    const { categoryScores } = calculateAuditScores(findings);
+    const { categoryScores } = calculateAuditScores(findings, 1);
     const techScore = categoryScores.find((c) => c.category === 'technical');
-    // 100 - (15 + 8) = 77
-    expect(techScore?.score).toBe(77);
+    // 100 - (35 + 25) = 40
+    expect(techScore?.score).toBe(40);
   });
 
   it('does not allow category score to drop below 0', () => {
     const manyCriticalFindings: Finding[] = Array.from({ length: 10 }).map((_, i) => ({
-      id: `F-${i}`,
+      id: `RULE-${i}-https://example.com/page/${i}`,
       category: 'technical',
-      severity: 'critical', // 10 * 15 = 150 penalty
+      severity: 'critical',
       title: 'Critical issue',
       evidence: 'test',
       affectedUrl: 'https://example.com',
@@ -62,7 +62,7 @@ describe('Deterministic Scoring Engine', () => {
       validationInstructions: 'test',
     }));
 
-    const { categoryScores } = calculateAuditScores(manyCriticalFindings);
+    const { categoryScores } = calculateAuditScores(manyCriticalFindings, 10);
     const techScore = categoryScores.find((c) => c.category === 'technical');
     expect(techScore?.score).toBe(0);
   });
