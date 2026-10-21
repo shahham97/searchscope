@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { AuditReport, Finding } from '../../types/audit';
+import { seedBrandFactsFromAudit, generateFactsNeededMarkdown } from '../agent/brand-facts';
 
 /**
  * Generates an AI-agent-ready fix plan (IMPROVEMENTS.md)
@@ -322,6 +323,11 @@ export async function generateFullZip(report: AuditReport): Promise<Blob> {
 
   // 2. ROADMAP.md
   zip.file('ROADMAP.md', generateRoadmapMd(report));
+
+  // 2b. BRAND FACTS & QUESTIONNAIRE
+  const brandFacts = seedBrandFactsFromAudit(report);
+  zip.file('brand-facts.json', JSON.stringify(brandFacts, null, 2));
+  zip.file('FACTS_NEEDED.md', generateFactsNeededMarkdown(report, brandFacts));
 
   // 3. audit-full.json
   zip.file('audit-full.json', JSON.stringify(report, null, 2));

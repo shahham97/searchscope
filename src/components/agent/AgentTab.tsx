@@ -10,6 +10,8 @@ import { LLMMessage, LLMResponse } from '@/lib/agent/providers/llm-provider';
 import { AgentConfigPanel } from './AgentConfigPanel';
 import { AgentConsentModal } from './AgentConsentModal';
 import { UpdatePlanReview } from './UpdatePlanReview';
+import { BrandFactsModal } from './BrandFactsModal';
+import { seedBrandFactsFromAudit, BrandFacts } from '../../lib/agent/brand-facts';
 
 interface AgentTabProps {
   report: AuditReport;
@@ -18,6 +20,8 @@ interface AgentTabProps {
 export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
   const [hasConsented, setHasConsented] = useState<boolean>(false);
   const [showConsentModal, setShowConsentModal] = useState<boolean>(false);
+  const [showBrandFactsModal, setShowBrandFactsModal] = useState<boolean>(false);
+  const [brandFacts, setBrandFacts] = useState<BrandFacts>(() => seedBrandFactsFromAudit(report));
   const [isLaunching, setIsLaunching] = useState<boolean>(false);
   const [stageLogs, setStageLogs] = useState<AgentStageLog[]>([]);
   const [activeStage, setActiveStage] = useState<string | null>(null);
@@ -163,6 +167,26 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                 <span className="text-[10px] text-neutral-400 block">{report.findings.length} Findings</span>
               </div>
             </div>
+
+            <div className="mt-4 pt-3 border-t border-purple-900/40 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs text-neutral-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>
+                  Brand Facts: <strong>{brandFacts.tradingName}</strong> (
+                  {brandFacts.countryOfOrigin.isOriginVerified ? 'Origin Verified ✓' : 'Origin Awaiting Verification ⚠️'}
+                  )
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBrandFactsModal(true)}
+                className="text-xs border-purple-700/60 text-purple-200 hover:bg-purple-950/40"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-purple-300" />
+                Configure Brand Facts & Legal Guardrails
+              </Button>
+            </div>
           </Card>
 
           {/* Config Panel */}
@@ -265,6 +289,14 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
         isOpen={showConsentModal}
         onClose={() => setShowConsentModal(false)}
         onConfirm={handleConfirmConsent}
+      />
+
+      {/* Brand Facts & Compliance Modal */}
+      <BrandFactsModal
+        isOpen={showBrandFactsModal}
+        onClose={() => setShowBrandFactsModal(false)}
+        brandFacts={brandFacts}
+        onSave={setBrandFacts}
       />
     </div>
   );
