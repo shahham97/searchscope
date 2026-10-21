@@ -148,8 +148,8 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                   <th className="px-4 py-3">Keyword Candidate</th>
                   <th className="px-4 py-3 text-center">Classified Intent</th>
                   <th className="px-4 py-3 text-center">Occurrences</th>
-                  <th className="px-4 py-3 text-center">In &lt;title&gt;</th>
-                  <th className="px-4 py-3 text-center">In Headings</th>
+                  <th className="px-4 py-3 text-center">In &lt;title&gt; Pages</th>
+                  <th className="px-4 py-3 text-center">In &lt;h1&gt; Pages</th>
                   <th className="px-4 py-3 text-center">Gap Status</th>
                   <th className="px-4 py-3 text-right">Spread Across</th>
                 </tr>
@@ -167,6 +167,10 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                             ? 'success'
                             : cand.intent === 'commercial'
                             ? 'high'
+                            : cand.intent === 'navigational'
+                            ? 'neutral'
+                            : cand.intent === 'local'
+                            ? 'informational'
                             : 'informational'
                         }
                       >
@@ -177,21 +181,23 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                       {cand.occurrenceCount}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {cand.inTitleCount > 0 ? (
+                      {(cand.inTitlePagesCount || cand.inTitleCount) > 0 ? (
                         <span className="text-emerald-600 font-bold">
-                          Yes ({cand.inTitleCount})
+                          {cand.inTitlePagesCount || cand.inTitleCount}
+                          {cand.totalPagesCount ? ` of ${cand.totalPagesCount}` : ''}
                         </span>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-slate-400">0</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {cand.inHeadingCount > 0 ? (
-                        <span className="text-emerald-600 font-bold">
-                          Yes ({cand.inHeadingCount})
+                      {(cand.inH1PagesCount || cand.inHeadingCount) > 0 ? (
+                        <span className="text-indigo-600 font-semibold">
+                          {cand.inH1PagesCount || cand.inHeadingCount}
+                          {cand.totalPagesCount ? ` of ${cand.totalPagesCount}` : ''}
                         </span>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-slate-400">0</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -200,7 +206,7 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                           <AlertCircle className="h-3 w-3 mr-1 text-amber-600" /> Gap
                         </span>
                       ) : (
-                        <span className="text-slate-400 text-[10px]">Optimized</span>
+                        <span className="text-emerald-700 font-medium text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded">Optimized</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-500">

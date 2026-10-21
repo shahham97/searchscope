@@ -193,6 +193,11 @@ export interface KeywordCandidate {
   inTitleCount: number;
   inHeadingCount: number;
   inMetaCount?: number;
+  inH1PagesCount?: number;
+  inTitlePagesCount?: number;
+  inBodyPagesCount?: number;
+  totalPagesCount?: number;
+  pageFrequencyRatio?: string;
   inBodyOnly?: boolean; // Flagged keyword gap
   tfIdfScore?: number;
 }
