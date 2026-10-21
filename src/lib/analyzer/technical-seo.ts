@@ -1,4 +1,5 @@
 import { ExtractedPageData, Finding } from '../../types/audit';
+import { analyzeCanonicalsAndHosts } from './canonical';
 
 export function analyzeTechnicalSeo(
   pages: ExtractedPageData[],
@@ -6,6 +7,10 @@ export function analyzeTechnicalSeo(
   robotsTxtPresent: boolean
 ): Finding[] {
   const findings: Finding[] = [];
+
+  // Run comprehensive Canonical & Host consistency analysis
+  const canonicalFindings = analyzeCanonicalsAndHosts(pages, { sitemapsFound });
+  findings.push(...canonicalFindings);
 
   // 1. Robots.txt check
   if (!robotsTxtPresent) {
@@ -127,42 +132,7 @@ export function analyzeTechnicalSeo(
       });
     }
 
-    // 6. Canonical URL Issues
-    if (!page.canonicalUrl && page.isHtml && page.statusCode === 200) {
-      findings.push({
-        id: `TECH-CANONICAL-MISSING-${page.normalizedUrl}`,
-        category: 'technical',
-        severity: 'medium',
-        title: 'Missing canonical URL tag',
-        evidence: 'HTML does not declare a <link rel="canonical"> element.',
-        affectedUrl: page.url,
-        whyItMatters:
-          'Without a canonical declaration, search engines must guess which URL version (with or without query parameters, trailing slashes, or www) is authoritative.',
-        confidence: 'high',
-        recommendedFix: `Add a self-referencing canonical tag pointing to the authoritative URL: <link rel="canonical" href="${page.normalizedUrl}" />`,
-        implementationExample: `<link rel="canonical" href="${page.normalizedUrl}" />`,
-        effort: 'quick_win',
-        validationInstructions:
-          'Inspect the HTML <head> and confirm the canonical tag is present and points to the intended URL.',
-      });
-    } else if (page.canonicalUrl && !page.canonicalUrl.startsWith('http')) {
-      findings.push({
-        id: `TECH-CANONICAL-RELATIVE-${page.normalizedUrl}`,
-        category: 'technical',
-        severity: 'medium',
-        title: 'Relative canonical URL used',
-        evidence: `Canonical tag specifies a relative path (${page.canonicalUrl}) rather than an absolute URL.`,
-        affectedUrl: page.url,
-        whyItMatters:
-          'Relative canonical URLs can be misinterpreted if pages are mirrored or rendered under different subdomains or protocols.',
-        confidence: 'high',
-        recommendedFix: `Change the canonical URL to an absolute URL with scheme and host: <link rel="canonical" href="${page.normalizedUrl}" />`,
-        effort: 'quick_win',
-        validationInstructions: 'Confirm the canonical href begins with https://.',
-      });
-    }
-
-    // 7. Noindex directive
+    // 6. Noindex directive
     if (page.robotsDirectives.includes('noindex')) {
       findings.push({
         id: `TECH-NOINDEX-${page.normalizedUrl}`,

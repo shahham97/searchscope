@@ -93,6 +93,15 @@ export interface ExtractedPageData {
   ogDescription?: string;
   ogImage?: string;
   ogType?: string;
+  ogUrl?: string;
+  twitterImage?: string;
+
+  // Canonical & Hreflang Diagnostics
+  hasCanonicalInBody?: boolean;
+  multipleCanonicalsCount?: number;
+  hreflangTargets?: { lang: string; href: string }[];
+  redirectChain?: string[];
+  redirectStatusCodes?: number[];
 
   // Headings
   h1s: string[];

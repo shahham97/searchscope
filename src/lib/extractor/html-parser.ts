@@ -67,8 +67,20 @@ export function parseHtmlContent(
     $('meta[property="og:description" i]').attr('content')?.trim() ||
     undefined;
 
-  const canonicalRaw = $('link[rel="canonical" i]').attr('href')?.trim();
+  const canonicalElements = $('link[rel="canonical" i]');
+  const canonicalRaw = canonicalElements.first().attr('href')?.trim();
   const canonicalUrl = canonicalRaw ? normalizeUrl(canonicalRaw, baseOrigin) || canonicalRaw : undefined;
+  const multipleCanonicalsCount = canonicalElements.length;
+  const hasCanonicalInBody = $('body link[rel="canonical" i]').length > 0;
+
+  const hreflangTargets: { lang: string; href: string }[] = [];
+  $('link[rel="alternate" i][hreflang]').each((_, el) => {
+    const l = $(el).attr('hreflang')?.trim();
+    const h = $(el).attr('href')?.trim();
+    if (l && h) {
+      hreflangTargets.push({ lang: l, href: h });
+    }
+  });
 
   const robotsMeta = $('meta[name="robots" i]').attr('content') || '';
   const googlebotMeta = $('meta[name="googlebot" i]').attr('content') || '';
@@ -98,6 +110,9 @@ export function parseHtmlContent(
   const ogDescription = $('meta[property="og:description" i]').attr('content')?.trim();
   const ogImage = $('meta[property="og:image" i]').attr('content')?.trim();
   const ogType = $('meta[property="og:type" i]').attr('content')?.trim();
+  const ogUrl = $('meta[property="og:url" i]').attr('content')?.trim();
+  const twitterImage =
+    $('meta[name="twitter:image" i], meta[property="twitter:image" i]').attr('content')?.trim();
 
   // Headings — extracted from the FULL DOM before any text stripping
   const h1s: string[] = [];
@@ -358,6 +373,12 @@ export function parseHtmlContent(
     ogDescription,
     ogImage,
     ogType,
+    ogUrl,
+    twitterImage,
+
+    hasCanonicalInBody,
+    multipleCanonicalsCount,
+    hreflangTargets,
 
     h1s,
     h2s,

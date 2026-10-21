@@ -198,6 +198,7 @@ export async function executeBoundedCrawl(
         pageData.llmsTxtDetected = llmsTxtPresent;
         pageData.isJsRendered = isJsRendered;
         pageData.rawVsRenderedDiff = rawVsRenderedDiff;
+        pageData.redirectChain = res.redirectChain;
         if (rawH1s) pageData.rawH1s = rawH1s;
         if (renderedH1s) pageData.renderedH1s = renderedH1s;
         if (isH1OnlyInJs !== undefined) pageData.isH1OnlyInJs = isH1OnlyInJs;
