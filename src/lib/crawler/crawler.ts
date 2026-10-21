@@ -78,7 +78,8 @@ export async function executeBoundedCrawl(
   const visitedNormalizedPages = new Set<string>();
   const pages: ExtractedPageData[] = [];
 
-  let skippedCount = 0;
+  let skippedRobotsCount = 0;
+  let skippedNonHtmlCount = 0;
   let failedCount = 0;
   let successfulPagesCount = 0;
 
@@ -120,7 +121,7 @@ export async function executeBoundedCrawl(
       try {
         const parsedPath = new URL(currentUrl).pathname;
         if (!isPathAllowed(parsedPath, robotsData, 'SearchScope-Auditor')) {
-          skippedCount++;
+          skippedRobotsCount++;
           diagnostics.push({
             url: currentUrl,
             code: 'ROBOTS_BLOCKED',
@@ -132,7 +133,7 @@ export async function executeBoundedCrawl(
           continue;
         }
       } catch {
-        skippedCount++;
+        skippedRobotsCount++;
         continue;
       }
     }
@@ -244,7 +245,7 @@ export async function executeBoundedCrawl(
         }
       } else {
         // Non-HTML resource visited
-        skippedCount++;
+        skippedNonHtmlCount++;
         diagnostics.push({
           url: currentUrl,
           code: 'CONTENT_TYPE_UNSUPPORTED',
@@ -320,12 +321,26 @@ export async function executeBoundedCrawl(
     ? `All ${pages.length} attempted page fetches failed. See Crawl Diagnostics for details (${diagnostics[0]?.hint || 'Target server unreachable'}).`
     : undefined;
 
+  // Account for discovered URLs that were not reached due to maxPages limit or execution budget
+  const uncrawledUrls: string[] = [];
+  for (const url of discoveredSet) {
+    if (!visitedSet.has(url)) {
+      uncrawledUrls.push(url);
+    }
+  }
+  const notCrawledLimitCount = uncrawledUrls.length;
+  const totalPagesSkipped = skippedRobotsCount + skippedNonHtmlCount;
+
   const crawlStats: CrawlStatistics = {
     totalPagesDiscovered: discoveredSet.size,
     totalPagesCrawled: pages.length,
-    totalPagesSkipped: skippedCount,
+    totalPagesSkipped,
     totalPagesFailed: failedCount,
     successfulPagesCount,
+    skippedRobotsCount,
+    skippedNonHtmlCount,
+    notCrawledLimitCount,
+    uncrawledUrls,
     crawlDurationMs,
     robotsTxtPresent: robotsData.present,
     sitemapDetected: sitemapResult.sitemapsFound.length > 0,

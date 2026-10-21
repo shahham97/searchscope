@@ -333,7 +333,9 @@ export default function SearchScopePage() {
               />
             )}
 
-            {activeTab === 'urls' && <UrlExplorer pages={report.pages} />}
+            {activeTab === 'urls' && (
+              <UrlExplorer pages={report.pages} crawlStats={report.crawlStats} />
+            )}
 
             {activeTab === 'aeo_geo' && <AeoGeoPanel report={report} />}
 

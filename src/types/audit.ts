@@ -238,6 +238,10 @@ export interface CrawlStatistics {
   totalPagesSkipped: number;
   totalPagesFailed: number;
   successfulPagesCount: number;
+  skippedRobotsCount: number;
+  skippedNonHtmlCount: number;
+  notCrawledLimitCount: number;
+  uncrawledUrls?: string[];
   crawlDurationMs: number;
   robotsTxtPresent: boolean;
   sitemapDetected: boolean;

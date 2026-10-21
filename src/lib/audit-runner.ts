@@ -18,6 +18,7 @@ import { calculateAuditScores } from './analyzer/scoring';
 import { buildPrioritizedRoadmap } from './analyzer/roadmap';
 import { AuditConfig, AuditReport, Finding, ClaimItem } from '../types/audit';
 import { validateTargetUrl } from './security/ssrf';
+import { BOT_USER_AGENT, BROWSER_USER_AGENT } from './security/safe-fetch';
 
 export async function runCompleteAudit(
   rawUrl: string,
@@ -204,7 +205,7 @@ export async function runCompleteAudit(
     organizationName,
     faviconUrl: `${new URL(targetNormalizedUrl).origin}/favicon.ico`,
     config: effectiveConfig,
-    crawlerUserAgent: 'SearchScope-Auditor/1.0 (+https://searchscope.app/bot)',
+    crawlerUserAgent: effectiveConfig.userAgentType === 'bot' ? BOT_USER_AGENT : BROWSER_USER_AGENT,
     overallScore,
     scoreConfidence: confidence,
     crawlCoverage,

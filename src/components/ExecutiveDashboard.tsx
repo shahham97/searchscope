@@ -125,6 +125,49 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         </div>
       </div>
 
+      {/* Crawl Accounting & Transparency Breakdown */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-100 gap-2">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-indigo-600" />
+            <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Crawl Accounting & Discovery Balance
+            </h2>
+          </div>
+          <span className="text-xs font-mono text-slate-500">
+            {report.crawlCoverage?.summary ||
+              `${report.crawlStats.totalPagesCrawled} of ${report.crawlStats.totalPagesDiscovered} discovered pages processed`}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
+          <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
+            <span className="text-[10px] font-semibold text-emerald-800 uppercase block mb-0.5">Crawled OK</span>
+            <span className="text-xl font-black text-emerald-600">{report.crawlStats.successfulPagesCount}</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-100">
+            <span className="text-[10px] font-semibold text-amber-800 uppercase block mb-0.5">Hit Crawl Limit</span>
+            <span className="text-xl font-black text-amber-600">{report.crawlStats.notCrawledLimitCount || 0}</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <span className="text-[10px] font-semibold text-slate-700 uppercase block mb-0.5">Skipped (Robots)</span>
+            <span className="text-xl font-black text-slate-600">{report.crawlStats.skippedRobotsCount || 0}</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <span className="text-[10px] font-semibold text-slate-700 uppercase block mb-0.5">Skipped (Non-HTML)</span>
+            <span className="text-xl font-black text-slate-600">{report.crawlStats.skippedNonHtmlCount || 0}</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100">
+            <span className="text-[10px] font-semibold text-rose-800 uppercase block mb-0.5">Failed Fetches</span>
+            <span className="text-xl font-black text-rose-600">{report.crawlStats.totalPagesFailed}</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-100">
+            <span className="text-[10px] font-semibold text-indigo-800 uppercase block mb-0.5">Total Discovered</span>
+            <span className="text-xl font-black text-indigo-600">{report.crawlStats.totalPagesDiscovered}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Critical Findings Alert Banner if any */}
       {criticalFindings.length > 0 && (
         <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start space-x-3 text-rose-900">
