@@ -11,6 +11,8 @@ import {
   FileDown,
   AlertCircle,
   RotateCcw,
+  Archive,
+  Server,
 } from 'lucide-react';
 import { AuditHeader } from '@/components/AuditHeader';
 import { AuditConfigForm } from '@/components/AuditConfigForm';
@@ -21,6 +23,8 @@ import { UrlExplorer } from '@/components/UrlExplorer';
 import { AeoGeoPanel } from '@/components/AeoGeoPanel';
 import { SearchIntelPanel } from '@/components/SearchIntelPanel';
 import { RoadmapView } from '@/components/RoadmapView';
+import { ExportCenter } from '@/components/ExportCenter';
+import { CrawlDiagnostics } from '@/components/CrawlDiagnostics';
 import { PrivacyModal } from '@/components/PrivacyModal';
 import { Button } from '@/components/ui/Button';
 import { AuditConfig, AuditReport } from '@/types/audit';
@@ -30,12 +34,14 @@ export default function SearchScopePage() {
   const [report, setReport] = useState<AuditReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'findings' | 'urls' | 'aeo_geo' | 'search' | 'roadmap'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'findings' | 'urls' | 'aeo_geo' | 'search' | 'roadmap' | 'export' | 'diagnostics'
+  >('overview');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  // Crawl progress simulation/state
+  // Crawl progress state
   const [crawlProgress, setCrawlProgress] = useState({
     status: 'Connecting to host and validating safety rules...',
     crawledCount: 0,
@@ -93,7 +99,12 @@ export default function SearchScopePage() {
 
       const auditData: AuditReport = await response.json();
       setReport(auditData);
-      setActiveTab('overview');
+
+      if (auditData.isCrawlFailed) {
+        setActiveTab('diagnostics');
+      } else {
+        setActiveTab('overview');
+      }
     } catch (err: unknown) {
       clearInterval(progressInterval);
       if (err instanceof Error && err.name === 'AbortError') {
@@ -262,6 +273,30 @@ export default function SearchScopePage() {
                   <CheckSquare className="h-4 w-4 mr-2" />
                   Roadmap ({report.roadMap.length})
                 </button>
+
+                <button
+                  onClick={() => setActiveTab('diagnostics')}
+                  className={`pb-3 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center whitespace-nowrap transition-colors ${
+                    activeTab === 'diagnostics'
+                      ? 'border-indigo-600 text-indigo-600 font-bold'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                  }`}
+                >
+                  <Server className="h-4 w-4 mr-2" />
+                  Diagnostics ({report.diagnostics?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('export')}
+                  className={`pb-3 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center whitespace-nowrap transition-colors ${
+                    activeTab === 'export'
+                      ? 'border-indigo-600 text-indigo-600 font-bold'
+                      : 'border-transparent text-indigo-600 hover:text-indigo-800 hover:border-indigo-300'
+                  }`}
+                >
+                  <Archive className="h-4 w-4 mr-2 text-indigo-600" />
+                  Export Center
+                </button>
               </nav>
             </div>
 
@@ -270,6 +305,8 @@ export default function SearchScopePage() {
               <ExecutiveDashboard
                 report={report}
                 onDownloadPdf={handleDownloadPdf}
+                onOpenExportCenter={() => setActiveTab('export')}
+                onOpenDiagnostics={() => setActiveTab('diagnostics')}
                 isGeneratingPdf={isGeneratingPdf}
                 onSelectCategory={handleSelectCategoryFromDashboard}
               />
@@ -282,13 +319,9 @@ export default function SearchScopePage() {
               />
             )}
 
-            {activeTab === 'urls' && (
-              <UrlExplorer pages={report.pages} />
-            )}
+            {activeTab === 'urls' && <UrlExplorer pages={report.pages} />}
 
-            {activeTab === 'aeo_geo' && (
-              <AeoGeoPanel report={report} />
-            )}
+            {activeTab === 'aeo_geo' && <AeoGeoPanel report={report} />}
 
             {activeTab === 'search' && (
               <SearchIntelPanel
@@ -297,9 +330,19 @@ export default function SearchScopePage() {
               />
             )}
 
-            {activeTab === 'roadmap' && (
-              <RoadmapView roadmap={report.roadMap} />
+            {activeTab === 'roadmap' && <RoadmapView roadmap={report.roadMap} />}
+
+            {activeTab === 'diagnostics' && (
+              <CrawlDiagnostics
+                diagnostics={report.diagnostics || []}
+                isCrawlFailed={report.isCrawlFailed}
+                crawlFailureReason={report.crawlFailureReason}
+                successfulCount={report.crawlStats.successfulPagesCount}
+                totalAttempted={report.crawlStats.totalPagesCrawled}
+              />
             )}
+
+            {activeTab === 'export' && <ExportCenter report={report} />}
           </div>
         )}
       </main>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Bot, CheckCircle2, HelpCircle, FileText, Check, AlertTriangle } from 'lucide-react';
+import { Sparkles, Bot, CheckCircle2, HelpCircle, FileText, Check, AlertTriangle, ShieldCheck, XCircle } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { AuditReport } from '../types/audit';
@@ -104,7 +104,42 @@ export const AeoGeoPanel: React.FC<AeoGeoPanelProps> = ({ report }) => {
         </Card>
       </div>
 
-      {/* Methodology and Honest Standards Callout */}
+      {/* AI Bots Audit from robots.txt */}
+      {report.crawlStats.aiBotsAudit && report.crawlStats.aiBotsAudit.length > 0 && (
+        <Card className="p-6 bg-white border-slate-200">
+          <div className="flex items-center space-x-2 mb-4">
+            <Bot className="h-4 w-4 text-indigo-600" />
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              AI & Answer Engine Crawler Access Matrix (robots.txt Audit)
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {report.crawlStats.aiBotsAudit.map((b) => (
+              <div
+                key={b.bot}
+                className="p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-bold text-xs text-slate-900">{b.bot}</div>
+                  <div className="text-[10px] text-slate-400 font-mono">{b.ruleSnippet}</div>
+                </div>
+                {b.allowed ? (
+                  <span className="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    <Check className="h-3 w-3 mr-1 text-emerald-600" /> Allowed
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center text-xs font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                    <XCircle className="h-3 w-3 mr-1 text-rose-600" /> Blocked
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Methodology Callout */}
       <Card className="p-5 bg-slate-50 border-slate-200 text-xs text-slate-600 leading-relaxed">
         <h4 className="font-bold text-slate-900 mb-1 flex items-center">
           <Sparkles className="h-3.5 w-3.5 mr-1.5 text-indigo-600" />
@@ -114,8 +149,7 @@ export const AeoGeoPanel: React.FC<AeoGeoPanelProps> = ({ report }) => {
           SearchScope assesses observable structural and semantic signals that facilitate machine reading, such as
           clear question-answer hierarchies, Schema.org entities, HTML tables, and concise definitions.
           We explicitly do not manufacture fake &quot;AI Visibility Percentages&quot; or claim guaranteed inclusion in ChatGPT,
-          Google AI Overviews, Perplexity, or Copilot. Inclusion in generative answers depends on proprietary model
-          training cuts, real-time retrieval parameters, and query relevance.
+          Google AI Overviews, Perplexity, or Copilot.
         </p>
       </Card>
     </div>

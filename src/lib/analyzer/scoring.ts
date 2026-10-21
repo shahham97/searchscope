@@ -24,10 +24,35 @@ const SEVERITY_PENALTIES: Record<Severity, number> = {
   informational: 0,
 };
 
-export function calculateAuditScores(findings: Finding[]): {
+export function calculateAuditScores(
+  findings: Finding[],
+  successfulPagesCount: number = 1
+): {
   overallScore: number;
   categoryScores: CategoryScore[];
+  confidence: 'high' | 'medium' | 'low';
 } {
+  // If no pages were successfully fetched, do not manufacture fake scores
+  if (successfulPagesCount === 0) {
+    return {
+      overallScore: 0,
+      confidence: 'low',
+      categoryScores: CATEGORY_DEFINITIONS.map((def) => ({
+        category: def.category,
+        label: def.label,
+        score: 0,
+        weight: def.weight,
+        findingsCount: {
+          critical: 0,
+          high: 0,
+          medium: 0,
+          low: 0,
+          informational: 0,
+        },
+      })),
+    };
+  }
+
   const categoryScores: CategoryScore[] = [];
   let weightedScoreSum = 0;
   let totalWeight = 0;
@@ -65,9 +90,11 @@ export function calculateAuditScores(findings: Finding[]): {
   }
 
   const overallScore = Math.round(weightedScoreSum / (totalWeight || 1));
+  const confidence = successfulPagesCount >= 10 ? 'high' : successfulPagesCount >= 3 ? 'medium' : 'low';
 
   return {
     overallScore,
     categoryScores,
+    confidence,
   };
 }

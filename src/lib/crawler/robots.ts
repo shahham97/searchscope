@@ -7,12 +7,32 @@ export interface RobotsTxtRule {
   crawlDelay?: number;
 }
 
+export interface AiBotStatus {
+  bot: string;
+  allowed: boolean;
+  ruleSnippet?: string;
+}
+
 export interface RobotsTxtData {
   present: boolean;
   content: string;
   sitemaps: string[];
   rules: RobotsTxtRule[];
+  aiBotsAudit: AiBotStatus[];
 }
+
+export const MONITORED_AI_BOTS = [
+  'GPTBot',
+  'ChatGPT-User',
+  'OAI-SearchBot',
+  'ClaudeBot',
+  'anthropic-ai',
+  'PerplexityBot',
+  'Google-Extended',
+  'Applebot-Extended',
+  'CCBot',
+  'Bytespider',
+];
 
 export function parseRobotsTxt(content: string): RobotsTxtData {
   const lines = content.split(/\r?\n/);
@@ -37,7 +57,6 @@ export function parseRobotsTxt(content: string): RobotsTxtData {
       }
     } else if (field === 'user-agent') {
       const ua = value.toLowerCase();
-      // If previous rule has same UA, continue it, else create new
       currentRule = {
         userAgent: ua,
         disallows: [],
@@ -56,31 +75,54 @@ export function parseRobotsTxt(content: string): RobotsTxtData {
     }
   }
 
+  // Audit AI Crawler permissions on root '/'
+  const aiBotsAudit: AiBotStatus[] = MONITORED_AI_BOTS.map((bot) => {
+    const isAllowed = isPathAllowed('/', { present: true, rules }, bot);
+    const matchingRule = rules.find((r) => r.userAgent === bot.toLowerCase());
+    return {
+      bot,
+      allowed: isAllowed,
+      ruleSnippet: matchingRule ? `User-agent: ${matchingRule.userAgent}` : 'Default (* rule)',
+    };
+  });
+
   return {
     present: true,
     content,
     sitemaps,
     rules,
+    aiBotsAudit,
   };
 }
 
-export function isPathAllowed(path: string, robotsData: RobotsTxtData, customAgent = 'searchscope-auditor'): boolean {
+export function isPathAllowed(
+  path: string,
+  robotsData: { present: boolean; rules: RobotsTxtRule[] },
+  customAgent: string = 'searchscope-auditor'
+): boolean {
   if (!robotsData.present || robotsData.rules.length === 0) {
     return true;
   }
 
-  // Find most specific rule for our agent or fallback to '*'
+  const agent = customAgent.toLowerCase();
+  // Find exact agent rule, prefix match, or fallback to '*'
   const agentRule =
-    robotsData.rules.find((r) => r.userAgent === customAgent.toLowerCase()) ||
+    robotsData.rules.find((r) => r.userAgent === agent) ||
+    robotsData.rules.find((r) => r.userAgent !== '*' && agent.startsWith(r.userAgent)) ||
     robotsData.rules.find((r) => r.userAgent === '*');
 
   if (!agentRule) {
     return true;
   }
 
-  // Check allows first (allows take precedence if equal or longer match)
-  const matchingAllow = agentRule.allows.find((prefix) => path.startsWith(prefix));
-  const matchingDisallow = agentRule.disallows.find((prefix) => path.startsWith(prefix));
+  // Check allows first (longest match wins in RFC 9309)
+  const matchingAllow = agentRule.allows
+    .filter((prefix) => path.startsWith(prefix))
+    .sort((a, b) => b.length - a.length)[0];
+
+  const matchingDisallow = agentRule.disallows
+    .filter((prefix) => path.startsWith(prefix))
+    .sort((a, b) => b.length - a.length)[0];
 
   if (!matchingDisallow) {
     return true;
@@ -101,7 +143,7 @@ export async function fetchRobotsTxt(origin: string): Promise<RobotsTxtData> {
       return parseRobotsTxt(res.body);
     }
   } catch {
-    // Non-fatal if robots.txt does not exist or fails to fetch
+    // Non-fatal if robots.txt does not exist or fails
   }
 
   return {
@@ -109,5 +151,10 @@ export async function fetchRobotsTxt(origin: string): Promise<RobotsTxtData> {
     content: '',
     sitemaps: [],
     rules: [],
+    aiBotsAudit: MONITORED_AI_BOTS.map((bot) => ({
+      bot,
+      allowed: true,
+      ruleSnippet: 'No robots.txt present (Allowed by default)',
+    })),
   };
 }

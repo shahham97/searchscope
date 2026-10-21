@@ -54,7 +54,7 @@ describe('SSRF & IP Safety Protection', () => {
     expect(res1.isValid).toBe(false);
     expect(res1.error).toContain('Only HTTP and HTTPS');
 
-    const res2 = await validateTargetUrl('http://example.com:8080');
+    const res2 = await validateTargetUrl('http://example.com:9000');
     expect(res2.isValid).toBe(false);
     expect(res2.error).toContain('Only standard web ports');
 

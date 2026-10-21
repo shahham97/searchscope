@@ -19,10 +19,12 @@ export function analyzeTechnicalSeo(
       whyItMatters:
         'A robots.txt file informs search engine crawlers and answer engine bots about which areas of your site should and should not be crawled.',
       confidence: 'high',
-      recommendedFix: 'Create a robots.txt file at the root directory of your web server with standard directives and your sitemap location.',
+      recommendedFix:
+        'Create a robots.txt file at the root directory of your web server with standard directives and your sitemap location.',
       implementationExample: `User-agent: *\nAllow: /\n\nSitemap: ${pages[0] ? new URL(pages[0].url).origin : 'https://example.com'}/sitemap.xml`,
       effort: 'quick_win',
-      validationInstructions: 'Verify that fetching https://yourdomain.com/robots.txt returns HTTP 200 with appropriate directives.',
+      validationInstructions:
+        'Verify that fetching https://yourdomain.com/robots.txt returns HTTP 200 with appropriate directives.',
     });
   }
 
@@ -33,15 +35,18 @@ export function analyzeTechnicalSeo(
       category: 'technical',
       severity: 'high',
       title: 'No XML Sitemap detected',
-      evidence: 'Neither robots.txt nor default paths (/sitemap.xml, /sitemap_index.xml) provided an accessible XML sitemap.',
+      evidence:
+        'Neither robots.txt nor default paths (/sitemap.xml, /sitemap_index.xml) provided an accessible XML sitemap.',
       affectedUrl: pages[0]?.url || 'Root',
       whyItMatters:
         'XML sitemaps provide search engines with an authoritative inventory of discoverable canonical URLs, update frequencies, and priority.',
       confidence: 'high',
-      recommendedFix: 'Generate a dynamic or static XML sitemap containing all indexable canonical URLs and declare it in robots.txt.',
+      recommendedFix:
+        'Generate a dynamic or static XML sitemap containing all indexable canonical URLs and declare it in robots.txt.',
       implementationExample: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${pages[0]?.url || 'https://example.com/'}</loc>\n    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n    <changefreq>weekly</changefreq>\n  </url>\n</urlset>`,
       effort: 'moderate',
-      validationInstructions: 'Test the XML sitemap URL in a browser and submit it to Google Search Console.',
+      validationInstructions:
+        'Test the XML sitemap URL in a browser and submit it to Google Search Console.',
     });
   }
 
@@ -93,9 +98,11 @@ export function analyzeTechnicalSeo(
         whyItMatters:
           'Broken internal links waste search bot crawl budget, disrupt user navigation journeys, and leak link equity.',
         confidence: 'high',
-        recommendedFix: 'Update the anchor tags pointing to these URLs to their correct updated destinations or remove obsolete links.',
+        recommendedFix:
+          'Update the anchor tags pointing to these URLs to their correct updated destinations or remove obsolete links.',
         effort: 'quick_win',
-        validationInstructions: 'Re-crawl the affected page and verify zero internal links return 4xx or 5xx codes.',
+        validationInstructions:
+          'Re-crawl the affected page and verify zero internal links return 4xx or 5xx codes.',
       });
     }
 
@@ -111,8 +118,10 @@ export function analyzeTechnicalSeo(
         whyItMatters:
           'HTTPS is an established ranking signal and security baseline. Browsers flag insecure HTTP pages with security warnings.',
         confidence: 'high',
-        recommendedFix: 'Configure your web server or CDN to enforce TLS 1.3/1.2 and automatically redirect all HTTP traffic to HTTPS via 301 Permanent Redirect.',
-        implementationExample: '# Nginx redirect block\nserver {\n  listen 80;\n  server_name example.com;\n  return 301 https://$host$request_uri;\n}',
+        recommendedFix:
+          'Configure your web server or CDN to enforce TLS 1.3/1.2 and automatically redirect all HTTP traffic to HTTPS via 301 Permanent Redirect.',
+        implementationExample:
+          '# Nginx redirect block\nserver {\n  listen 80;\n  server_name example.com;\n  return 301 https://$host$request_uri;\n}',
         effort: 'moderate',
         validationInstructions: 'Request the HTTP version with curl -I and verify HTTP 301 redirect to https://.',
       });
@@ -133,7 +142,8 @@ export function analyzeTechnicalSeo(
         recommendedFix: `Add a self-referencing canonical tag pointing to the authoritative URL: <link rel="canonical" href="${page.normalizedUrl}" />`,
         implementationExample: `<link rel="canonical" href="${page.normalizedUrl}" />`,
         effort: 'quick_win',
-        validationInstructions: 'Inspect the HTML <head> and confirm the canonical tag is present and points to the intended URL.',
+        validationInstructions:
+          'Inspect the HTML <head> and confirm the canonical tag is present and points to the intended URL.',
       });
     } else if (page.canonicalUrl && !page.canonicalUrl.startsWith('http')) {
       findings.push({
@@ -164,9 +174,11 @@ export function analyzeTechnicalSeo(
         whyItMatters:
           'A noindex directive intentionally prevents search engines from displaying this page in search results. Ensure this is intentional.',
         confidence: 'high',
-        recommendedFix: 'If this page is intended for public search visibility, remove the "noindex" directive from the meta tag or X-Robots-Tag header.',
+        recommendedFix:
+          'If this page is intended for public search visibility, remove the "noindex" directive from the meta tag or X-Robots-Tag header.',
         effort: 'quick_win',
-        validationInstructions: 'Check the <meta name="robots"> tag and response headers to confirm noindex is removed.',
+        validationInstructions:
+          'Check the <meta name="robots"> tag and response headers to confirm noindex is removed.',
       });
     }
 
@@ -194,8 +206,14 @@ export function analyzeTechnicalSeo(
       const lowerText = page.textSnippet.toLowerCase();
       const lowerTitle = (page.title || '').toLowerCase();
       const isSoft404 =
-        (lowerTitle.includes('404') || lowerTitle.includes('page not found') || lowerTitle.includes('not found')) &&
-        (lowerText.includes('page could not be found') || lowerText.includes('404') || lowerText.includes('does not exist'));
+        (lowerTitle.includes('404') ||
+          lowerTitle.includes('page not found') ||
+          lowerTitle.includes('not found') ||
+          lowerTitle.includes('item not found')) &&
+        (lowerText.includes('page could not be found') ||
+          lowerText.includes('404') ||
+          lowerText.includes('does not exist') ||
+          lowerText.includes('no products found'));
 
       if (isSoft404) {
         findings.push({
@@ -203,12 +221,13 @@ export function analyzeTechnicalSeo(
           category: 'technical',
           severity: 'high',
           title: 'Soft 404 detected (HTTP 200 on missing content page)',
-          evidence: `Page returned HTTP 200 OK status code but page title and content indicate "Page Not Found".`,
+          evidence: `Page returned HTTP 200 OK status code but page title and content indicate missing or non-existent content.`,
           affectedUrl: page.url,
           whyItMatters:
             'Search engines identify soft-404s and may refuse to index them while wasting crawl resources. Proper 404 status codes prevent indexing errors.',
           confidence: 'high',
-          recommendedFix: 'Configure your web server/router to return a true HTTP 404 (Not Found) or 410 (Gone) status code for non-existent pages.',
+          recommendedFix:
+            'Configure your web server/router to return a true HTTP 404 (Not Found) or 410 (Gone) status code for non-existent pages.',
           effort: 'moderate',
           validationInstructions: 'Request the URL and check headers to confirm HTTP 404 status code.',
         });

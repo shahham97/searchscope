@@ -12,6 +12,30 @@ export type Category =
 
 export type EffortLevel = 'quick_win' | 'moderate' | 'complex';
 
+export type FailureCode =
+  | 'DNS_FAILURE'
+  | 'TLS_ERROR'
+  | 'CONNECTION_REFUSED'
+  | 'TIMEOUT'
+  | 'SSRF_BLOCKED'
+  | 'ROBOTS_BLOCKED'
+  | 'WAF_CHALLENGE'
+  | 'HTTP_4XX'
+  | 'HTTP_5XX'
+  | 'REDIRECT_LOOP'
+  | 'CONTENT_TYPE_UNSUPPORTED'
+  | 'BODY_TOO_LARGE';
+
+export interface CrawlDiagnostic {
+  url: string;
+  code: FailureCode;
+  statusCode?: number;
+  message: string;
+  hint: string;
+  stage: 'dns' | 'tls' | 'connect' | 'response' | 'redirect' | 'policy';
+  timestamp: string;
+}
+
 export interface Finding {
   id: string;
   category: Category;
@@ -47,6 +71,10 @@ export interface ExtractedPageData {
   contentLengthBytes: number;
   isHtml: boolean;
   
+  // Failure taxonomy
+  failureCode?: FailureCode;
+  failureHint?: string;
+
   // SEO Metadata
   title?: string;
   titleLength: number;
@@ -107,6 +135,18 @@ export interface ExtractedPageData {
   renderBlockingResourceCount: number;
   domElementCount: number;
 
+  // Tier 2 Headless Rendering Comparison
+  isJsRendered?: boolean;
+  rawVsRenderedDiff?: {
+    rawWordCount: number;
+    renderedWordCount: number;
+    wordCountDiff: number;
+    headingsDiff: number;
+    linksDiff: number;
+    schemaDiff: number;
+    dependsOnJs: boolean;
+  };
+
   // Error details
   error?: string;
 }
@@ -118,6 +158,9 @@ export interface KeywordCandidate {
   occurrenceCount: number;
   inTitleCount: number;
   inHeadingCount: number;
+  inMetaCount?: number;
+  inBodyOnly?: boolean; // Flagged keyword gap
+  tfIdfScore?: number;
 }
 
 export interface PublicSearchObservation {
@@ -144,7 +187,7 @@ export interface CategoryScore {
   category: Category;
   label: string;
   score: number; // 0 to 100
-  weight: number; // e.g. 0.20
+  weight: number;
   findingsCount: {
     critical: number;
     high: number;
@@ -159,12 +202,18 @@ export interface CrawlStatistics {
   totalPagesCrawled: number;
   totalPagesSkipped: number;
   totalPagesFailed: number;
+  successfulPagesCount: number;
   crawlDurationMs: number;
   robotsTxtPresent: boolean;
   sitemapDetected: boolean;
   sitemapsFound: string[];
   llmsTxtPresent: boolean;
   crawlBudgetExhausted: boolean;
+  aiBotsAudit?: {
+    bot: string;
+    allowed: boolean;
+    ruleSnippet?: string;
+  }[];
 }
 
 export interface AuditConfig {
@@ -176,6 +225,9 @@ export interface AuditConfig {
   includeStructuredData: boolean;
   checkBrokenLinks: boolean;
   searchDiscoveryEnabled: boolean;
+  userAgentType?: 'browser' | 'bot';
+  respectRobotsTxt?: boolean;
+  enableHeadlessRendering?: boolean;
 }
 
 export interface AuditReport {
@@ -190,6 +242,10 @@ export interface AuditReport {
   crawlerUserAgent: string;
   
   overallScore: number;
+  isCrawlFailed: boolean;
+  crawlFailureReason?: string;
+  diagnostics: CrawlDiagnostic[];
+
   categoryScores: CategoryScore[];
   crawlStats: CrawlStatistics;
 

@@ -7,6 +7,8 @@ export interface IpValidationResult {
   reason?: string;
 }
 
+const ALLOWED_PORTS = new Set(['80', '443', '8080', '8443']);
+
 /**
  * Checks whether an IP address belongs to private, loopback, link-local,
  * multicast, carrier-grade NAT, or cloud metadata ranges.
@@ -17,8 +19,6 @@ export function isPrivateOrReservedIp(ipString: string): boolean {
     const range = addr.range();
 
     // Standard ranges considered private/reserved in ipaddr.js:
-    // 'loopback', 'private', 'linkLocal', 'carrierGradeNat', 'uniqueLocal',
-    // 'broadcast', 'multicast', 'reserved', 'unspecified'
     const blockedRanges = [
       'loopback',
       'private',
@@ -35,29 +35,30 @@ export function isPrivateOrReservedIp(ipString: string): boolean {
       return true;
     }
 
-    // Explicit check for AWS/GCP/Azure link-local metadata (169.254.169.254 and 169.254.0.0/16)
+    // Explicit checks for IPv4 ranges
     if (addr.kind() === 'ipv4') {
       const octets = (addr as ipaddr.IPv4).octets;
+      // 169.254.0.0/16 Link-local / Cloud metadata
       if (octets[0] === 169 && octets[1] === 254) {
         return true;
       }
-      // 0.0.0.0/8 current network
+      // 0.0.0.0/8 Current network
       if (octets[0] === 0) {
         return true;
       }
-      // 127.0.0.0/8 loopback
+      // 127.0.0.0/8 Loopback
       if (octets[0] === 127) {
         return true;
       }
-      // 10.0.0.0/8 private
+      // 10.0.0.0/8 Private
       if (octets[0] === 10) {
         return true;
       }
-      // 172.16.0.0/12 private
+      // 172.16.0.0/12 Private
       if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) {
         return true;
       }
-      // 192.168.0.0/16 private
+      // 192.168.0.0/16 Private
       if (octets[0] === 192 && octets[1] === 168) {
         return true;
       }
@@ -66,13 +67,12 @@ export function isPrivateOrReservedIp(ipString: string): boolean {
         return true;
       }
     } else if (addr.kind() === 'ipv6') {
-      // Check IPv6 mapped IPv4 addresses (::ffff:127.0.0.1, etc.)
       const ipv6 = addr as ipaddr.IPv6;
       if (ipv6.isIPv4MappedAddress()) {
         const mappedV4 = ipv6.toIPv4Address();
         return isPrivateOrReservedIp(mappedV4.toString());
       }
-      // ::1 loopback
+      // ::1 loopback and :: unspecified
       if (ipv6.toString() === '::1' || ipv6.toString() === '::') {
         return true;
       }
@@ -80,7 +80,6 @@ export function isPrivateOrReservedIp(ipString: string): boolean {
 
     return false;
   } catch {
-    // If not a parseable IP address, treat as invalid/blocked for safety
     return true;
   }
 }
@@ -90,8 +89,9 @@ export function isPrivateOrReservedIp(ipString: string): boolean {
  * are safe and non-private.
  */
 export async function validateHostSafety(hostname: string): Promise<IpValidationResult> {
-  // Disallow explicit localhost or metadata names immediately
   const lowerHost = hostname.toLowerCase().trim();
+
+  // Disallow explicit localhost or metadata names immediately
   if (
     lowerHost === 'localhost' ||
     lowerHost.endsWith('.localhost') ||
@@ -167,10 +167,34 @@ export async function validateHostSafety(hostname: string): Promise<IpValidation
 }
 
 /**
+ * Checks whether targetHostname belongs to the same site as baseHostname,
+ * explicitly supporting apex <-> www equivalence and optional subdomains.
+ */
+export function isSameDomainOrSubdomain(
+  targetHostname: string,
+  baseHostname: string,
+  allowSubdomains: boolean = false
+): boolean {
+  const target = targetHostname.toLowerCase().trim();
+  const base = baseHostname.toLowerCase().trim();
+
+  if (target === base) return true;
+
+  // Apex <-> WWW equivalence
+  if (base.startsWith('www.') && target === base.substring(4)) return true;
+  if (target.startsWith('www.') && target.substring(4) === base) return true;
+
+  // Subdomain matching
+  if (allowSubdomains && target.endsWith(`.${base}`)) return true;
+
+  return false;
+}
+
+/**
  * Validates a target URL for crawling:
  * - Scheme must be http or https
- * - Port must be default (80, 443) or omitted
- * - Host must be valid and resolve to public IPs only
+ * - Port must be standard (80, 443, 8080, 8443) or omitted
+ * - Host must resolve to public IPs only
  */
 export async function validateTargetUrl(rawUrl: string): Promise<{
   isValid: boolean;
@@ -195,8 +219,11 @@ export async function validateTargetUrl(rawUrl: string): Promise<{
   }
 
   // Restrict to standard web ports
-  if (parsed.port && parsed.port !== '80' && parsed.port !== '443') {
-    return { isValid: false, error: `Port '${parsed.port}' is not permitted. Only standard web ports (80/443) are supported.` };
+  if (parsed.port && !ALLOWED_PORTS.has(parsed.port)) {
+    return {
+      isValid: false,
+      error: `Port '${parsed.port}' is not permitted. Only standard web ports (80, 443, 8080, 8443) are supported.`,
+    };
   }
 
   // Validate Host

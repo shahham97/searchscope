@@ -16,19 +16,36 @@ export function calculateFleschKincaid(text: string): number {
       syllableCount += 1;
       continue;
     }
-    const syllables = w.replace(/(?:[^laeiouy]|ed|es|e)$/, '')
+    const syllables = w
+      .replace(/(?:[^laeiouy]|ed|es|e)$/, '')
       .replace(/^y/, '')
       .match(/[aeiouy]{1,2}/g);
     syllableCount += syllables ? syllables.length : 1;
   }
 
-  // Flesch Reading Ease: 206.835 - 1.015 * (total_words / total_sentences) - 84.6 * (total_syllables / total_words)
   const score =
     206.835 -
     1.015 * (words.length / sentenceCount) -
     84.6 * (syllableCount / words.length);
 
   return Math.min(100, Math.max(0, Math.round(score)));
+}
+
+/**
+ * Estimates the pixel width of a string rendered in typical Google SERP font (Arial 20px / 16px).
+ * Truncation threshold is ~600px.
+ */
+export function estimateTitlePixelWidth(title: string): number {
+  let width = 0;
+  for (const ch of title) {
+    if ('ijl|.,:;!'.includes(ch)) width += 4.5;
+    else if ('fkrst-'.includes(ch)) width += 6.5;
+    else if ('mwMW@%#&'.includes(ch)) width += 14;
+    else if (ch >= 'A' && ch <= 'Z') width += 11;
+    else if (ch === ' ') width += 4;
+    else width += 8.5;
+  }
+  return Math.round(width);
 }
 
 export function parseHtmlContent(
@@ -71,7 +88,10 @@ export function parseHtmlContent(
 
   const lang = $('html').attr('lang')?.trim() || undefined;
   const viewport = $('meta[name="viewport" i]').attr('content')?.trim() || undefined;
-  const charset = $('meta[charset]').attr('charset') || headers['content-type']?.split('charset=')[1]?.trim() || undefined;
+  const charset =
+    $('meta[charset]').attr('charset') ||
+    headers['content-type']?.split('charset=')[1]?.trim() ||
+    undefined;
 
   // Open Graph & Twitter
   const ogTitle = $('meta[property="og:title" i]').attr('content')?.trim();
@@ -102,10 +122,11 @@ export function parseHtmlContent(
   if (h1s.length === 0) {
     headingIssues.push('Missing H1 heading tag.');
   } else if (h1s.length > 1) {
-    headingIssues.push(`Multiple H1 headings detected (${h1s.length} H1s). Standard SEO hierarchy recommends a single primary H1.`);
+    headingIssues.push(
+      `Multiple H1 headings detected (${h1s.length} H1s). Standard SEO hierarchy recommends a single primary H1.`
+    );
   }
 
-  // Heading hierarchy check: Did document have H3s with zero H2s?
   if (h3s.length > 0 && h2s.length === 0) {
     headingIssues.push('Heading level skipped: Document contains H3 elements without any preceding H2.');
   }
@@ -179,6 +200,14 @@ export function parseHtmlContent(
           }
           if (!item['@type']) {
             errors.push("Missing '@type' declaration in JSON-LD");
+          }
+
+          // Specific validation for Product schema (e-commerce)
+          const typeStr = Array.isArray(item['@type']) ? item['@type'].join(' ') : String(item['@type'] || '');
+          if (typeStr.toLowerCase().includes('product')) {
+            if (!item.name) errors.push("Product schema missing required 'name' property");
+            if (!item.offers) warnings.push("Product schema recommended 'offers' (pricing and availability) missing");
+            if (!item.image) warnings.push("Product schema recommended 'image' missing");
           }
         }
       }

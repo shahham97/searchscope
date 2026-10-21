@@ -1,3 +1,5 @@
+import { isSameDomainOrSubdomain } from '../security/ssrf';
+
 export interface UrlNormalizationOptions {
   stripQueryParameters?: boolean;
   stripTrackingParams?: boolean;
@@ -72,7 +74,7 @@ export function normalizeUrl(rawUrl: string, baseOrigin?: string): string | null
 }
 
 /**
- * Checks if a given URL is internal to the base domain.
+ * Checks if a given URL is internal to the base domain, supporting apex <-> www equivalence.
  */
 export function isInternalUrl(
   urlToCheck: string,
@@ -81,17 +83,7 @@ export function isInternalUrl(
 ): boolean {
   try {
     const parsed = new URL(urlToCheck);
-    const host = parsed.hostname.toLowerCase();
-    const base = baseDomain.toLowerCase();
-
-    if (host === base) return true;
-    if (allowSubdomains && host.endsWith(`.${base}`)) return true;
-
-    // Check www vs non-www
-    if (base.startsWith('www.') && host === base.substring(4)) return true;
-    if (host.startsWith('www.') && host.substring(4) === base) return true;
-
-    return false;
+    return isSameDomainOrSubdomain(parsed.hostname, baseDomain, allowSubdomains);
   } catch {
     return false;
   }

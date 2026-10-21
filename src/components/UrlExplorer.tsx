@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
-import { Search, ExternalLink, FileCode, CheckCircle, XCircle, Info, ChevronRight, Layers } from 'lucide-react';
+import {
+  Search,
+  ExternalLink,
+  FileCode,
+  CheckCircle,
+  XCircle,
+  Info,
+  ChevronRight,
+  Layers,
+  AlertTriangle,
+  Code2,
+} from 'lucide-react';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import { Modal } from './ui/Modal';
-import { ExtractedPageData } from '../types/audit';
+import { ExtractedPageData, FailureCode } from '../types/audit';
 
 interface UrlExplorerProps {
   pages: ExtractedPageData[];
@@ -19,15 +30,25 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages }) => {
     const q = search.toLowerCase();
     return (
       p.url.toLowerCase().includes(q) ||
-      (p.title && p.title.toLowerCase().includes(q))
+      (p.title && p.title.toLowerCase().includes(q)) ||
+      (p.failureCode && p.failureCode.toLowerCase().includes(q))
     );
   });
 
-  const getStatusBadge = (statusCode: number) => {
-    if (statusCode >= 200 && statusCode < 300) return <Badge variant="success">HTTP {statusCode}</Badge>;
-    if (statusCode >= 300 && statusCode < 400) return <Badge variant="informational">HTTP {statusCode}</Badge>;
-    if (statusCode >= 400 && statusCode < 500) return <Badge variant="high">HTTP {statusCode}</Badge>;
-    return <Badge variant="critical">HTTP {statusCode || 'Error'}</Badge>;
+  const getStatusBadge = (page: ExtractedPageData) => {
+    if (page.statusCode >= 200 && page.statusCode < 300) {
+      return <Badge variant="success">HTTP {page.statusCode}</Badge>;
+    }
+    if (page.statusCode >= 300 && page.statusCode < 400) {
+      return <Badge variant="informational">HTTP {page.statusCode}</Badge>;
+    }
+    if (page.statusCode >= 400 && page.statusCode < 500) {
+      return <Badge variant="high">HTTP {page.statusCode}</Badge>;
+    }
+    if (page.failureCode) {
+      return <Badge variant="critical">{page.failureCode}</Badge>;
+    }
+    return <Badge variant="critical">HTTP {page.statusCode || 'Error'}</Badge>;
   };
 
   return (
@@ -41,7 +62,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages }) => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search crawled URLs or page titles..."
+              placeholder="Search crawled URLs, page titles, or errors..."
               className="text-xs border border-slate-300 rounded-lg pl-9 pr-3 py-2 w-full placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
@@ -68,12 +89,10 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages }) => {
             <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
               {filteredPages.map((page, idx) => (
                 <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {getStatusBadge(page.statusCode)}
-                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">{getStatusBadge(page)}</td>
                   <td className="px-4 py-3 max-w-md">
                     <div className="font-semibold text-slate-900 truncate">
-                      {page.title || '(No Title Declared)'}
+                      {page.title || (page.failureHint ? `Failure: ${page.failureHint}` : '(No Title Declared)')}
                     </div>
                     <div className="text-[11px] font-mono text-slate-500 truncate mt-0.5">
                       {page.url}
@@ -120,19 +139,34 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages }) => {
           maxWidth="2xl"
         >
           <div className="space-y-5 text-xs text-slate-700">
+            {/* Failure callout if present */}
+            {selectedPage.failureCode && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900">
+                <div className="font-bold flex items-center mb-1">
+                  <AlertTriangle className="h-4 w-4 mr-1 text-rose-600" />
+                  Diagnostic Code: {selectedPage.failureCode}
+                </div>
+                <p className="text-xs">{selectedPage.failureHint || selectedPage.error}</p>
+              </div>
+            )}
+
             {/* Metadata Summary */}
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-900">HTTP Status:</span>
-                <span>{getStatusBadge(selectedPage.statusCode)}</span>
+                <span>{getStatusBadge(selectedPage)}</span>
               </div>
               <div>
                 <span className="font-bold text-slate-900">Page Title:</span>{' '}
-                <span>{selectedPage.title || 'None'} ({selectedPage.titleLength} chars)</span>
+                <span>
+                  {selectedPage.title || 'None'} ({selectedPage.titleLength} chars)
+                </span>
               </div>
               <div>
                 <span className="font-bold text-slate-900">Meta Description:</span>{' '}
-                <span>{selectedPage.metaDescription || 'None'} ({selectedPage.metaDescriptionLength} chars)</span>
+                <span>
+                  {selectedPage.metaDescription || 'None'} ({selectedPage.metaDescriptionLength} chars)
+                </span>
               </div>
               <div>
                 <span className="font-bold text-slate-900">Canonical Tag:</span>{' '}
@@ -140,9 +174,50 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages }) => {
               </div>
               <div>
                 <span className="font-bold text-slate-900">Robots Directives:</span>{' '}
-                <span>{selectedPage.robotsDirectives.length > 0 ? selectedPage.robotsDirectives.join(', ') : 'Default (index, follow)'}</span>
+                <span>
+                  {selectedPage.robotsDirectives.length > 0
+                    ? selectedPage.robotsDirectives.join(', ')
+                    : 'Default (index, follow)'}
+                </span>
               </div>
             </div>
+
+            {/* Rendered vs Raw HTML Comparison if available */}
+            {selectedPage.rawVsRenderedDiff && (
+              <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-200">
+                <h4 className="font-bold text-indigo-950 uppercase tracking-wider text-[11px] mb-2 flex items-center">
+                  <Code2 className="h-3.5 w-3.5 mr-1 text-indigo-600" />
+                  Headless Rendering Comparison (Raw vs Rendered DOM)
+                </h4>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="p-2 bg-white rounded border border-indigo-100">
+                    <span className="text-[10px] text-slate-400 block uppercase">Raw Words</span>
+                    <strong className="text-sm">{selectedPage.rawVsRenderedDiff.rawWordCount}</strong>
+                  </div>
+                  <div className="p-2 bg-white rounded border border-indigo-100">
+                    <span className="text-[10px] text-slate-400 block uppercase">Rendered Words</span>
+                    <strong className="text-sm text-indigo-600">
+                      {selectedPage.rawVsRenderedDiff.renderedWordCount}
+                    </strong>
+                  </div>
+                  <div className="p-2 bg-white rounded border border-indigo-100">
+                    <span className="text-[10px] text-slate-400 block uppercase">Difference</span>
+                    <strong
+                      className={`text-sm ${
+                        selectedPage.rawVsRenderedDiff.wordCountDiff > 0 ? 'text-emerald-600' : 'text-slate-600'
+                      }`}
+                    >
+                      +{selectedPage.rawVsRenderedDiff.wordCountDiff}
+                    </strong>
+                  </div>
+                </div>
+                {selectedPage.rawVsRenderedDiff.dependsOnJs && (
+                  <p className="mt-2 text-[11px] text-amber-800 font-medium">
+                    ⚠️ Content heavily depends on client-side JavaScript execution. Search bots without JS execution may index thin copy.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Headings Structure */}
             <div>
@@ -152,16 +227,21 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages }) => {
               <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2 max-h-40 overflow-y-auto">
                 <div>
                   <strong className="text-indigo-600">H1:</strong>{' '}
-                  {selectedPage.h1s.length > 0 ? selectedPage.h1s.join(' • ') : <span className="text-rose-600">Missing H1</span>}
+                  {selectedPage.h1s.length > 0 ? (
+                    selectedPage.h1s.join(' • ')
+                  ) : (
+                    <span className="text-rose-600">Missing H1</span>
+                  )}
                 </div>
                 <div>
                   <strong className="text-slate-600">H2 ({selectedPage.h2s.length}):</strong>{' '}
-                  {selectedPage.h2s.slice(0, 5).join(' • ')}{selectedPage.h2s.length > 5 ? '...' : ''}
+                  {selectedPage.h2s.slice(0, 5).join(' • ')}
+                  {selectedPage.h2s.length > 5 ? '...' : ''}
                 </div>
               </div>
             </div>
 
-            {/* Structured Data Scripts */}
+            {/* Structured Data Schemas */}
             <div>
               <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-2 flex items-center">
                 <FileCode className="h-3.5 w-3.5 mr-1 text-indigo-600" />
@@ -196,7 +276,8 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages }) => {
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <strong className="text-slate-900">Images:</strong> {selectedPage.images.length}
                 <br />
-                <strong className="text-slate-900">Missing Alt:</strong> {selectedPage.images.filter((i) => !i.hasAlt).length}
+                <strong className="text-slate-900">Missing Alt:</strong>{' '}
+                {selectedPage.images.filter((i) => !i.hasAlt).length}
               </div>
             </div>
           </div>

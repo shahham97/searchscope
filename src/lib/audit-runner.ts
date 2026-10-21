@@ -30,17 +30,34 @@ export async function runCompleteAudit(
   const effectiveConfig: AuditConfig = {
     targetUrl: validation.normalizedUrl,
     auditDepth: config.auditDepth || 'quick',
-    maxPages: config.maxPages || (config.auditDepth === 'quick' ? 25 : config.auditDepth === 'deep' ? 200 : 100),
+    maxPages:
+      config.maxPages ||
+      (config.auditDepth === 'quick' ? 25 : config.auditDepth === 'deep' ? 250 : 100),
     includeContentAnalysis: config.includeContentAnalysis ?? true,
     includeAeoGeo: config.includeAeoGeo ?? true,
     includeStructuredData: config.includeStructuredData ?? true,
     checkBrokenLinks: config.checkBrokenLinks ?? true,
     searchDiscoveryEnabled: config.searchDiscoveryEnabled ?? false,
+    userAgentType: config.userAgentType || 'browser',
+    respectRobotsTxt: config.respectRobotsTxt ?? true,
+    enableHeadlessRendering: config.enableHeadlessRendering ?? false,
   };
 
   // 2. Execute Crawler
-  const crawlResult = await executeBoundedCrawl(validation.normalizedUrl, effectiveConfig, onProgress);
-  const { pages, crawlStats, targetNormalizedUrl, targetDomain } = crawlResult;
+  const crawlResult = await executeBoundedCrawl(
+    validation.normalizedUrl,
+    effectiveConfig,
+    onProgress
+  );
+  const {
+    pages,
+    crawlStats,
+    diagnostics,
+    isCrawlFailed,
+    crawlFailureReason,
+    targetNormalizedUrl,
+    targetDomain,
+  } = crawlResult;
 
   onProgress?.({
     status: 'Analyzing crawl evidence across technical, on-page, AEO, and GEO dimensions...',
@@ -49,40 +66,46 @@ export async function runCompleteAudit(
     currentUrl: targetNormalizedUrl,
   });
 
-  // 3. Run Analysis Engines
+  // 3. Run Analysis Engines only if crawl succeeded or yielded real pages
   const allFindings: Finding[] = [];
 
-  // Technical SEO
-  const techFindings = analyzeTechnicalSeo(pages, crawlStats.sitemapsFound, crawlStats.robotsTxtPresent);
-  allFindings.push(...techFindings);
+  if (!isCrawlFailed) {
+    // Technical SEO
+    const techFindings = analyzeTechnicalSeo(
+      pages,
+      crawlStats.sitemapsFound,
+      crawlStats.robotsTxtPresent
+    );
+    allFindings.push(...techFindings);
 
-  // On-page SEO
-  const onpageFindings = analyzeOnPageSeo(pages);
-  allFindings.push(...onpageFindings);
+    // On-page SEO
+    const onpageFindings = analyzeOnPageSeo(pages);
+    allFindings.push(...onpageFindings);
 
-  // Structured Data
-  if (effectiveConfig.includeStructuredData) {
-    const schemaFindings = analyzeStructuredData(pages);
-    allFindings.push(...schemaFindings);
-  }
+    // Structured Data
+    if (effectiveConfig.includeStructuredData) {
+      const schemaFindings = analyzeStructuredData(pages);
+      allFindings.push(...schemaFindings);
+    }
 
-  // Content Quality
-  if (effectiveConfig.includeContentAnalysis) {
-    const contentFindings = analyzeContentQuality(pages);
-    allFindings.push(...contentFindings);
-  }
+    // Content Quality
+    if (effectiveConfig.includeContentAnalysis) {
+      const contentFindings = analyzeContentQuality(pages);
+      allFindings.push(...contentFindings);
+    }
 
-  // AEO & GEO
-  if (effectiveConfig.includeAeoGeo) {
-    const aeoFindings = analyzeAeo(pages);
-    allFindings.push(...aeoFindings);
+    // AEO & GEO
+    if (effectiveConfig.includeAeoGeo) {
+      const aeoFindings = analyzeAeo(pages);
+      allFindings.push(...aeoFindings);
 
-    const geoFindings = analyzeGeo(pages, crawlStats.llmsTxtPresent);
-    allFindings.push(...geoFindings);
+      const geoFindings = analyzeGeo(pages, crawlStats.llmsTxtPresent);
+      allFindings.push(...geoFindings);
+    }
   }
 
   // Candidate Keywords
-  const candidateKeywords = extractCandidateKeywords(pages);
+  const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];
 
   // Search Observations
   const { observations, competitors } = buildSearchObservations(
@@ -92,17 +115,22 @@ export async function runCompleteAudit(
   );
 
   // Scoring
-  const { overallScore, categoryScores } = calculateAuditScores(allFindings);
+  const { overallScore, categoryScores } = calculateAuditScores(
+    allFindings,
+    crawlStats.successfulPagesCount
+  );
 
   // Roadmap
-  const roadMap = buildPrioritizedRoadmap(allFindings);
+  const roadMap = !isCrawlFailed ? buildPrioritizedRoadmap(allFindings) : [];
 
   // Site title and branding heuristics
-  const homePage = pages[0];
+  const homePage = pages.find((p) => p.statusCode === 200 && p.isHtml) || pages[0];
   const siteTitle = homePage?.title || targetDomain;
   let organizationName = targetDomain;
   if (homePage) {
-    const orgSchema = homePage.structuredData.find((sd) => sd.type.toLowerCase().includes('organization'));
+    const orgSchema = homePage.structuredData?.find((sd) =>
+      sd.type.toLowerCase().includes('organization')
+    );
     if (orgSchema) {
       try {
         const parsed = JSON.parse(orgSchema.rawJson);
@@ -124,6 +152,9 @@ export async function runCompleteAudit(
     config: effectiveConfig,
     crawlerUserAgent: 'SearchScope-Auditor/1.0 (+https://searchscope.app/bot)',
     overallScore,
+    isCrawlFailed,
+    crawlFailureReason,
+    diagnostics,
     categoryScores,
     crawlStats,
     pages,
