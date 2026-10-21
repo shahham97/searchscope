@@ -1,0 +1,146 @@
+import { executeBoundedCrawl } from './crawler/crawler';
+import { analyzeTechnicalSeo } from './analyzer/technical-seo';
+import { analyzeOnPageSeo } from './analyzer/onpage-seo';
+import { analyzeStructuredData } from './analyzer/structured-data';
+import { analyzeContentQuality } from './analyzer/content-quality';
+import { analyzeAeo } from './analyzer/aeo';
+import { analyzeGeo } from './analyzer/geo';
+import { extractCandidateKeywords, buildSearchObservations } from './analyzer/search-intelligence';
+import { calculateAuditScores } from './analyzer/scoring';
+import { buildPrioritizedRoadmap } from './analyzer/roadmap';
+import { AuditConfig, AuditReport, Finding } from '../types/audit';
+import { validateTargetUrl } from './security/ssrf';
+
+export async function runCompleteAudit(
+  rawUrl: string,
+  config: Partial<AuditConfig> = {},
+  onProgress?: (progress: {
+    status: string;
+    crawledCount: number;
+    discoveredCount: number;
+    currentUrl: string;
+  }) => void
+): Promise<AuditReport> {
+  // 1. SSRF and Domain Safety Check
+  const validation = await validateTargetUrl(rawUrl);
+  if (!validation.isValid || !validation.normalizedUrl) {
+    throw new Error(validation.error || 'Failed safety validation.');
+  }
+
+  const effectiveConfig: AuditConfig = {
+    targetUrl: validation.normalizedUrl,
+    auditDepth: config.auditDepth || 'quick',
+    maxPages: config.maxPages || (config.auditDepth === 'quick' ? 25 : config.auditDepth === 'deep' ? 200 : 100),
+    includeContentAnalysis: config.includeContentAnalysis ?? true,
+    includeAeoGeo: config.includeAeoGeo ?? true,
+    includeStructuredData: config.includeStructuredData ?? true,
+    checkBrokenLinks: config.checkBrokenLinks ?? true,
+    searchDiscoveryEnabled: config.searchDiscoveryEnabled ?? false,
+  };
+
+  // 2. Execute Crawler
+  const crawlResult = await executeBoundedCrawl(validation.normalizedUrl, effectiveConfig, onProgress);
+  const { pages, crawlStats, targetNormalizedUrl, targetDomain } = crawlResult;
+
+  onProgress?.({
+    status: 'Analyzing crawl evidence across technical, on-page, AEO, and GEO dimensions...',
+    crawledCount: pages.length,
+    discoveredCount: crawlStats.totalPagesDiscovered,
+    currentUrl: targetNormalizedUrl,
+  });
+
+  // 3. Run Analysis Engines
+  const allFindings: Finding[] = [];
+
+  // Technical SEO
+  const techFindings = analyzeTechnicalSeo(pages, crawlStats.sitemapsFound, crawlStats.robotsTxtPresent);
+  allFindings.push(...techFindings);
+
+  // On-page SEO
+  const onpageFindings = analyzeOnPageSeo(pages);
+  allFindings.push(...onpageFindings);
+
+  // Structured Data
+  if (effectiveConfig.includeStructuredData) {
+    const schemaFindings = analyzeStructuredData(pages);
+    allFindings.push(...schemaFindings);
+  }
+
+  // Content Quality
+  if (effectiveConfig.includeContentAnalysis) {
+    const contentFindings = analyzeContentQuality(pages);
+    allFindings.push(...contentFindings);
+  }
+
+  // AEO & GEO
+  if (effectiveConfig.includeAeoGeo) {
+    const aeoFindings = analyzeAeo(pages);
+    allFindings.push(...aeoFindings);
+
+    const geoFindings = analyzeGeo(pages, crawlStats.llmsTxtPresent);
+    allFindings.push(...geoFindings);
+  }
+
+  // Candidate Keywords
+  const candidateKeywords = extractCandidateKeywords(pages);
+
+  // Search Observations
+  const { observations, competitors } = buildSearchObservations(
+    targetDomain,
+    candidateKeywords,
+    effectiveConfig.searchDiscoveryEnabled
+  );
+
+  // Scoring
+  const { overallScore, categoryScores } = calculateAuditScores(allFindings);
+
+  // Roadmap
+  const roadMap = buildPrioritizedRoadmap(allFindings);
+
+  // Site title and branding heuristics
+  const homePage = pages[0];
+  const siteTitle = homePage?.title || targetDomain;
+  let organizationName = targetDomain;
+  if (homePage) {
+    const orgSchema = homePage.structuredData.find((sd) => sd.type.toLowerCase().includes('organization'));
+    if (orgSchema) {
+      try {
+        const parsed = JSON.parse(orgSchema.rawJson);
+        if (parsed.name) organizationName = parsed.name;
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  const report: AuditReport = {
+    id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`,
+    auditDate: new Date().toISOString(),
+    targetDomain,
+    targetNormalizedUrl,
+    siteTitle,
+    organizationName,
+    faviconUrl: `${new URL(targetNormalizedUrl).origin}/favicon.ico`,
+    config: effectiveConfig,
+    crawlerUserAgent: 'SearchScope-Auditor/1.0 (+https://searchscope.app/bot)',
+    overallScore,
+    categoryScores,
+    crawlStats,
+    pages,
+    findings: allFindings,
+    keywordCandidates: candidateKeywords,
+    searchObservations: observations,
+    competitors,
+    roadMap,
+    methodology:
+      'Deterministic rule-based audit engine evaluating crawlability, indexability, metadata completeness, semantic heading architecture, Structured Data (Schema.org JSON-LD), content depth, readability ease (Flesch-Kincaid), Answer Engine Optimization (AEO) direct-answer structure, and Generative Engine Optimization (GEO) machine-readability cues.',
+    disclaimers: [
+      'Internal audit scores reflect deterministic technical guidelines and best practices; they are not official Google, Bing, or OpenAI ranking formulas.',
+      'No account credentials, private analytics, or paid proprietary SEO databases were accessed.',
+      'Audit state is transient and held in active memory during the session only. No database or persistent storage is maintained.',
+      'Search results and AI engine answers vary dynamically based on geolocation, personalization, device type, and temporal updates.',
+    ],
+  };
+
+  return report;
+}
