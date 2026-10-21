@@ -61,6 +61,8 @@ export interface StructuredDataItem {
   propertiesFound: string[];
 }
 
+export type CrawledPage = ExtractedPageData;
+
 export interface ExtractedPageData {
   url: string;
   normalizedUrl: string;

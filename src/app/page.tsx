@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Archive,
   Server,
+  Bot,
 } from 'lucide-react';
 import { AuditHeader } from '@/components/AuditHeader';
 import { AuditConfigForm } from '@/components/AuditConfigForm';
@@ -26,6 +27,7 @@ import { RoadmapView } from '@/components/RoadmapView';
 import { ExportCenter } from '@/components/ExportCenter';
 import { CrawlDiagnostics } from '@/components/CrawlDiagnostics';
 import { PrivacyModal } from '@/components/PrivacyModal';
+import { AgentTab } from '@/components/agent/AgentTab';
 import { Button } from '@/components/ui/Button';
 import { AuditConfig, AuditReport } from '@/types/audit';
 import { generateAuditPdf } from '@/lib/export/pdf-generator';
@@ -35,7 +37,7 @@ export default function SearchScopePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'findings' | 'urls' | 'aeo_geo' | 'search' | 'roadmap' | 'export' | 'diagnostics'
+    'overview' | 'findings' | 'urls' | 'aeo_geo' | 'search' | 'roadmap' | 'agent' | 'export' | 'diagnostics'
   >('overview');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
@@ -287,6 +289,18 @@ export default function SearchScopePage() {
                 </button>
 
                 <button
+                  onClick={() => setActiveTab('agent')}
+                  className={`pb-3 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center whitespace-nowrap transition-colors ${
+                    activeTab === 'agent'
+                      ? 'border-purple-600 text-purple-600 font-bold'
+                      : 'border-transparent text-purple-600 hover:text-purple-800 hover:border-purple-300'
+                  }`}
+                >
+                  <Bot className="h-4 w-4 mr-2 text-purple-600" />
+                  AI Agent
+                </button>
+
+                <button
                   onClick={() => setActiveTab('export')}
                   className={`pb-3 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center whitespace-nowrap transition-colors ${
                     activeTab === 'export'
@@ -341,6 +355,8 @@ export default function SearchScopePage() {
                 totalAttempted={report.crawlStats.totalPagesCrawled}
               />
             )}
+
+            {activeTab === 'agent' && <AgentTab report={report} />}
 
             {activeTab === 'export' && <ExportCenter report={report} />}
           </div>

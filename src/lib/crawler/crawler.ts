@@ -75,6 +75,7 @@ export async function executeBoundedCrawl(
   const queue: string[] = [];
   const discoveredSet = new Set<string>();
   const visitedSet = new Set<string>();
+  const visitedNormalizedPages = new Set<string>();
   const pages: ExtractedPageData[] = [];
 
   let skippedCount = 0;
@@ -88,7 +89,7 @@ export async function executeBoundedCrawl(
   // Seed queue with sitemap URLs (up to maxPages * 2)
   for (const sitemapUrl of sitemapResult.discoveredUrls) {
     const norm = normalizeUrl(sitemapUrl, canonicalOrigin);
-    if (norm && isInternalUrl(norm, canonicalHostname) && !discoveredSet.has(norm)) {
+    if (norm && isInternalUrl(norm, canonicalHostname, true) && !discoveredSet.has(norm)) {
       discoveredSet.add(norm);
       if (queue.length < maxPages * 2) {
         queue.push(norm);
@@ -106,8 +107,13 @@ export async function executeBoundedCrawl(
     }
 
     const currentUrl = queue.shift()!;
-    if (visitedSet.has(currentUrl)) continue;
+    const normCurrent = normalizeUrl(currentUrl, canonicalOrigin) || currentUrl;
+
+    if (visitedSet.has(currentUrl) || visitedNormalizedPages.has(normCurrent)) {
+      continue;
+    }
     visitedSet.add(currentUrl);
+    visitedNormalizedPages.add(normCurrent);
 
     // Respect robots.txt if requested (default: true)
     if (config.respectRobotsTxt !== false) {
@@ -185,6 +191,12 @@ export async function executeBoundedCrawl(
         pageData.llmsTxtDetected = llmsTxtPresent;
         pageData.isJsRendered = isJsRendered;
         pageData.rawVsRenderedDiff = rawVsRenderedDiff;
+
+        if (visitedNormalizedPages.has(pageData.normalizedUrl) && pageData.normalizedUrl !== normCurrent) {
+          // Already have an extracted page for this canonical destination
+          continue;
+        }
+        visitedNormalizedPages.add(pageData.normalizedUrl);
 
         if (res.failureCode) {
           pageData.failureCode = res.failureCode;

@@ -83,3 +83,39 @@ SearchScope exports 7 comprehensive deliverables:
 6. `ROADMAP.md`: 5-phase impact × effort action plan.
 7. Auto-generated files in `/generated/`: Corrected `robots.txt`, `sitemap.xml`, `llms.txt`, and page-level JSON-LD snippets.
 8. **Download Everything (ZIP)**: Assembled client-side using `jszip`.
+
+---
+
+## 5. Root Cause Analysis: Duplicate React Keys (`GEO-ENTITY-CLARITY-...`)
+
+### Discovery
+Running an audit on `https://kingshyer.com` triggered console errors:
+`Encountered two children with the same key, 'GEO-ENTITY-CLARITY-https://www.kingshyer.com/product/midas-reserve'`.
+
+### Root Cause
+1. During link extraction, both apex links (`https://kingshyer.com/product/...`) and www links (`https://www.kingshyer.com/product/...`) were enqueued.
+2. When fetched, redirect resolution normalized them both to `https://www.kingshyer.com/product/...`.
+3. Both responses were pushed into `pages`, creating two pages with the same `normalizedUrl`.
+4. The GEO entity clarity analyzer generated findings per page, producing two findings with identical `id` (`GEO-ENTITY-CLARITY-https://www.kingshyer.com/...`).
+
+### Fix
+1. In `src/lib/crawler/crawler.ts`: Added `visitedNormalizedPages` tracking across redirects to ensure a normalized URL is never recorded twice.
+2. In `src/lib/audit-runner.ts`: Deduplicated `allFindings` using a `Map<string, Finding>`.
+3. In `src/components/CategoryFindings.tsx`: Used compound unique keys: ``key={`${finding.id}-${idx}`}``.
+
+---
+
+## 6. SearchScope Autonomous AI Agent Mode (BYOK)
+
+### Architectural Decisions
+1. **Zero Database / Transient Memory:**
+   API keys and session parameters are kept exclusively in client-side React memory. The `/api/agent/proxy` endpoint functions strictly as a transient conduit to prevent CORS issues without persisting anything to disk or databases.
+2. **Deterministic & Mock Testing:**
+   A deterministic `MockProvider` was engineered to enable 100% offline, zero-cost unit testing in Vitest, allowing CI/CD to verify all 5 stages of the agent pipeline without hitting external APIs.
+3. **Strict Zero-Hallucination Guardrails:**
+   All content generation is restricted to crawled page facts. Any unverified specification, ingredient, pricing, or warranty is systematically enveloped in `[[CONFIRM: ...]]` placeholders and flagged for human sign-off in the Owner Confirmation Checklist.
+4. **Platform Footprint Detection & Code Patching:**
+   The agent detects whether the target site runs Next.js (App Router or Pages Router), Shopify, WordPress, Webflow, etc., and provides platform-native implementation guidance with exact file paths (`app/product/[slug]/page.tsx`), Next.js `generateMetadata()` snippets, and unified diffs.
+5. **Multi-Format Deliverables:**
+   Outputs include `UPDATE_PLAN.md`, `AGENT_TASKS.md`, `update-plan.json` (schema-validated), `update-plan.csv`, and client-side ZIP packaging via `JSZip`.
+

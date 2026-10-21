@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SearchScopeUpdatePlan",
+  "type": "object",
+  "required": [
+    "siteProfile",
+    "nicheInsights",
+    "changes",
+    "siteWideChanges",
+    "newContentBriefs",
+    "factsNeededFromOwner",
+    "qaSummary"
+  ],
+  "properties": {
+    "siteProfile": {
+      "type": "object",
+      "required": ["businessType", "niche", "productsAndServices", "targetAudience", "geography", "pricePositioning", "brandVoice"],
+      "properties": {
+        "businessType": { "type": "string" },
+        "niche": { "type": "string" },
+        "subNiche": { "type": "string" },
+        "productsAndServices": { "type": "array", "items": { "type": "string" } },
+        "targetAudience": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "personaName": { "type": "string" },
+              "description": { "type": "string" },
+              "searchIntent": { "type": "string" }
+            }
+          }
+        },
+        "geography": { "type": "object" },
+        "pricePositioning": { "type": "string", "enum": ["luxury_premium", "mid_market", "budget_value"] },
+        "brandVoice": { "type": "object" },
+        "verifiedUSPs": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "nicheInsights": {
+      "type": "object",
+      "required": ["topicClusters", "contentGaps", "commonQuestions", "serpOpportunities"],
+      "properties": {
+        "topicClusters": { "type": "array" },
+        "contentGaps": { "type": "array" },
+        "commonQuestions": { "type": "array" },
+        "serpOpportunities": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "priority", "effort", "impact", "category", "targetUrl", "changeType", "whereToChange", "current", "proposed", "rationale", "qaStatus", "owner", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+          "effort": { "type": "string", "enum": ["S", "M", "L"] },
+          "impact": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "category": { "type": "string" },
+          "targetUrl": { "type": "string" },
+          "changeType": { "type": "string" },
+          "whereToChange": { "type": "object" },
+          "current": { "type": "string" },
+          "proposed": { "type": "string" },
+          "rationale": { "type": "string" },
+          "qaStatus": { "type": "string", "enum": ["passed", "needs_human"] },
+          "owner": { "type": "string", "enum": ["content", "dev", "seo"] },
+          "status": { "type": "string", "enum": ["proposed", "approved", "rejected", "done"] }
+        }
+      }
+    },
+    "siteWideChanges": {
+      "type": "object",
+      "properties": {
+        "robotsTxt": { "type": "string" },
+        "llmsTxt": { "type": "string" },
+        "sitemapXml": { "type": "string" },
+        "rootJsonLd": { "type": "string" }
+      }
+    },
+    "newContentBriefs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "intent", "slug", "outline", "targetWordCount"],
+        "properties": {
+          "title": { "type": "string" },
+          "intent": { "type": "string" },
+          "slug": { "type": "string" },
+          "outline": { "type": "array", "items": { "type": "string" } },
+          "entitiesToInclude": { "type": "array", "items": { "type": "string" } },
+          "targetWordCount": { "type": "number" },
+          "initialDraft": { "type": "string" }
+        }
+      }
+    },
+    "factsNeededFromOwner": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "qaSummary": {
+      "type": "object",
+      "required": ["totalItems", "passedQa", "flaggedNeedsHuman", "bannedClaimsIntercepted"],
+      "properties": {
+        "totalItems": { "type": "number" },
+        "passedQa": { "type": "number" },
+        "flaggedNeedsHuman": { "type": "number" },
+        "bannedClaimsIntercepted": { "type": "number" }
+      }
+    }
+  }
+}

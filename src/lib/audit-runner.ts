@@ -104,6 +104,15 @@ export async function runCompleteAudit(
     }
   }
 
+  // Deduplicate findings by finding ID to prevent duplicate React keys or double scoring
+  const uniqueFindingsMap = new Map<string, Finding>();
+  for (const f of allFindings) {
+    if (!uniqueFindingsMap.has(f.id)) {
+      uniqueFindingsMap.set(f.id, f);
+    }
+  }
+  const uniqueFindings = Array.from(uniqueFindingsMap.values());
+
   // Candidate Keywords
   const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];
 
@@ -116,12 +125,12 @@ export async function runCompleteAudit(
 
   // Scoring
   const { overallScore, categoryScores } = calculateAuditScores(
-    allFindings,
+    uniqueFindings,
     crawlStats.successfulPagesCount
   );
 
   // Roadmap
-  const roadMap = !isCrawlFailed ? buildPrioritizedRoadmap(allFindings) : [];
+  const roadMap = !isCrawlFailed ? buildPrioritizedRoadmap(uniqueFindings) : [];
 
   // Site title and branding heuristics
   const homePage = pages.find((p) => p.statusCode === 200 && p.isHtml) || pages[0];
@@ -158,7 +167,7 @@ export async function runCompleteAudit(
     categoryScores,
     crawlStats,
     pages,
-    findings: allFindings,
+    findings: uniqueFindings,
     keywordCandidates: candidateKeywords,
     searchObservations: observations,
     competitors,

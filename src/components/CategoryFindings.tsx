@@ -142,12 +142,12 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredFindings.map((finding) => {
+          {filteredFindings.map((finding, idx) => {
             const isExpanded = expandedId === finding.id;
 
             return (
               <Card
-                key={finding.id}
+                key={`${finding.id}-${idx}`}
                 className="p-5 sm:p-6 bg-white border-slate-200 hover:border-slate-300 transition-all shadow-sm"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
