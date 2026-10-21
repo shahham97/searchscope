@@ -121,37 +121,112 @@ export function analyzeOnPageSeo(pages: ExtractedPageData[]): Finding[] {
     }
 
     // 3. Headings checks
+    const parsedPath = new URL(page.url).pathname;
+    const isHomepage = parsedPath === '/' || parsedPath === '';
+
     if (page.h1s.length === 0) {
-      findings.push({
-        id: `ONPAGE-H1-MISSING-${page.normalizedUrl}`,
-        category: 'onpage',
-        severity: 'high',
-        title: 'Missing primary <h1> heading',
-        evidence: 'Document contains zero <h1> elements.',
-        affectedUrl: page.url,
-        whyItMatters:
-          'The H1 tag communicates the page primary subject to search engines and screen readers, establishing content hierarchy.',
-        confidence: 'high',
-        recommendedFix: 'Add a single descriptive <h1> element at the top of the main content area.',
-        implementationExample: `<h1>${page.title || 'Primary Page Topic'}</h1>`,
-        effort: 'quick_win',
-        validationInstructions: 'Confirm an <h1> element exists in the rendered DOM.',
-      });
-    } else if (page.h1s.length > 1) {
-      findings.push({
-        id: `ONPAGE-H1-MULTIPLE-${page.normalizedUrl}`,
-        category: 'onpage',
-        severity: 'medium',
-        title: `Multiple <h1> headings found (${page.h1s.length} detected)`,
-        evidence: `H1 headings found: ${page.h1s.map((h) => `"${h}"`).join(', ')}`,
-        affectedUrl: page.url,
-        whyItMatters:
-          'While HTML5 permits multiple H1s, SEO best practice recommends a single authoritative H1 representing the main topic, with subtopics organized under H2s and H3s.',
-        confidence: 'medium',
-        recommendedFix: 'Reserve <h1> for the page title and convert secondary headings to <h2> tags.',
-        effort: 'quick_win',
-        validationInstructions: 'Inspect heading structure and confirm exactly one <h1> is rendered.',
-      });
+      if (page.emptyH1Count && page.emptyH1Count > 0) {
+        findings.push({
+          id: `ONPAGE-H1-EMPTY-${page.normalizedUrl}`,
+          category: 'onpage',
+          severity: 'high',
+          title: 'Empty <h1> heading tag detected',
+          evidence: `Document contains ${page.emptyH1Count} <h1> element(s), but none contain accessible text content.`,
+          affectedUrl: page.url,
+          whyItMatters:
+            'Empty H1 tags convey no topical signal to search engine spiders or assistive screen readers.',
+          confidence: 'high',
+          recommendedFix: 'Populate the <h1> tag with descriptive, keyword-aligned title text.',
+          implementationExample: `<h1>${page.title ? page.title.split('|')[0].trim() : 'Primary Page Topic'}</h1>`,
+          effort: 'quick_win',
+          validationInstructions: 'Inspect DOM to verify the <h1> tag contains visible descriptive text.',
+        });
+      } else {
+        findings.push({
+          id: `ONPAGE-H1-MISSING-${page.normalizedUrl}`,
+          category: 'onpage',
+          severity: 'high',
+          title: 'Missing primary <h1> heading',
+          evidence: 'Document contains zero <h1> elements in both raw HTML and rendered DOM.',
+          affectedUrl: page.url,
+          whyItMatters:
+            'The H1 tag communicates the page primary subject to search engines and screen readers, establishing content hierarchy.',
+          confidence: 'high',
+          recommendedFix: 'Add a single descriptive <h1> element at the top of the main content area.',
+          implementationExample: `<h1>${page.title ? page.title.split('|')[0].trim() : 'Primary Page Topic'}</h1>`,
+          effort: 'quick_win',
+          validationInstructions: 'Confirm an <h1> element exists in the rendered DOM.',
+        });
+      }
+    } else {
+      // H1 is present — check quality and delivery
+      if (page.isH1OnlyInJs) {
+        findings.push({
+          id: `ONPAGE-H1-JS-ONLY-${page.normalizedUrl}`,
+          category: 'onpage',
+          severity: 'medium',
+          title: 'Primary <h1> only present after JavaScript execution',
+          evidence: `H1 ("${page.h1s[0]}") was detected in the rendered DOM but was absent from the initial raw server HTML response.`,
+          affectedUrl: page.url,
+          whyItMatters:
+            'Search engine bots that do not execute client-side JavaScript or delay rendering may index the page without its primary heading, impairing topical relevance.',
+          confidence: 'high',
+          recommendedFix: 'Render the primary <h1> server-side (SSG/SSR) rather than dynamically inside a client-side component.',
+          effort: 'moderate',
+          validationInstructions: 'View raw HTML source (Ctrl+U) and confirm <h1> is present before script hydration.',
+        });
+      }
+
+      if (page.isH1Hidden) {
+        findings.push({
+          id: `ONPAGE-H1-HIDDEN-${page.normalizedUrl}`,
+          category: 'onpage',
+          severity: 'high',
+          title: 'Primary <h1> is visually hidden with CSS or attributes',
+          evidence: `H1 ("${page.h1s[0]}") is visually hidden: ${page.h1HiddenReason || 'hidden via inline CSS or hidden attribute'}.`,
+          affectedUrl: page.url,
+          whyItMatters:
+            'Search engines may flag hidden primary headings as manipulative keyword stuffing or devalue their ranking signals.',
+          confidence: 'high',
+          recommendedFix: 'Make the primary <h1> visible in normal page layout or replace with standard visible typography.',
+          effort: 'quick_win',
+          validationInstructions: 'Verify H1 is visibly rendered without display:none or visibility:hidden.',
+        });
+      }
+
+      if (isHomepage && page.isH1InCarousel) {
+        findings.push({
+          id: `ONPAGE-H1-CAROUSEL-${page.normalizedUrl}`,
+          category: 'onpage',
+          severity: 'medium',
+          title: 'Homepage <h1> is slide-dependent; use a stable brand/category H1',
+          evidence: `Primary H1 ("${page.h1s[0]}") is located inside a rotating carousel or slide component.`,
+          affectedUrl: page.url,
+          whyItMatters:
+            'Rotating carousel headings change dynamically and may fail to consistently signal the core brand and store category to search engine crawlers.',
+          confidence: 'high',
+          recommendedFix: 'Move the primary <h1> outside of rotating slider elements so it remains static and always visible.',
+          effort: 'quick_win',
+          validationInstructions: 'Confirm the homepage <h1> is a stable, persistent element above or beside the hero carousel.',
+        });
+      }
+
+      if (page.h1s.length > 1) {
+        findings.push({
+          id: `ONPAGE-H1-MULTIPLE-${page.normalizedUrl}`,
+          category: 'onpage',
+          severity: 'medium',
+          title: `Multiple <h1> headings found (${page.h1s.length} detected)`,
+          evidence: `H1 headings found: ${page.h1s.map((h) => `"${h}"`).join(', ')}`,
+          affectedUrl: page.url,
+          whyItMatters:
+            'While HTML5 permits multiple H1s, SEO best practice recommends a single authoritative H1 representing the main topic, with subtopics organized under H2s and H3s.',
+          confidence: 'medium',
+          recommendedFix: 'Reserve <h1> for the page title and convert secondary headings to <h2> tags.',
+          effort: 'quick_win',
+          validationInstructions: 'Inspect heading structure and confirm exactly one <h1> is rendered.',
+        });
+      }
     }
 
     if (!page.headingHierarchyValid && page.headingIssues.length > 0) {

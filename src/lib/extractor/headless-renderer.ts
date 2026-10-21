@@ -3,6 +3,9 @@ import * as cheerio from 'cheerio';
 export interface HeadlessRenderResult {
   renderedHtml: string;
   isJsRendered: boolean;
+  rawH1s?: string[];
+  renderedH1s?: string[];
+  isH1OnlyInJs?: boolean;
   rawVsRenderedDiff?: {
     rawWordCount: number;
     renderedWordCount: number;
@@ -39,8 +42,19 @@ export async function renderHeadlessDom(
   rawHtml: string
 ): Promise<HeadlessRenderResult> {
   const $raw = cheerio.load(rawHtml);
-  $raw('script, style, noscript, svg, nav, footer, header').remove();
-  const rawWords = ($raw.text().match(/\b[\w'-]+\b/g) || []).length;
+  // Extract raw headings from FULL untouched DOM
+  const rawH1s: string[] = [];
+  $raw('h1').each((_, el) => {
+    const t = $raw(el).text().trim();
+    if (t) rawH1s.push(t);
+  });
+  const rawHeadingsCount = $raw('h1, h2, h3').length;
+  const rawLinksCount = $raw('a[href]').length;
+  const rawSchemaCount = $raw('script[type="application/ld+json"]').length;
+
+  const rawClone = $raw('body').clone();
+  rawClone.find('script, style, noscript, svg, nav, footer, header').remove();
+  const rawWords = (rawClone.text().match(/\b[\w'-]+\b/g) || []).length;
 
   try {
     const chromium = await import('@sparticuz/chromium').then((m) => m.default || m);
@@ -49,7 +63,7 @@ export async function renderHeadlessDom(
     // Launch Chromium with resource-blocking to conserve memory
     const executablePath = await chromium.executablePath();
     if (!executablePath) {
-      return { renderedHtml: rawHtml, isJsRendered: false };
+      return { renderedHtml: rawHtml, isJsRendered: false, rawH1s };
     }
 
     const browser = await playwright.chromium.launch({
@@ -79,24 +93,29 @@ export async function renderHeadlessDom(
     await browser.close();
 
     const $rendered = cheerio.load(renderedHtml);
-    $rendered('script, style, noscript, svg, nav, footer, header').remove();
-    const renderedWords = ($rendered.text().match(/\b[\w'-]+\b/g) || []).length;
-
-    const rawHeadingsCount = $raw('h1, h2, h3').length;
+    const renderedH1s: string[] = [];
+    $rendered('h1').each((_, el) => {
+      const t = $rendered(el).text().trim();
+      if (t) renderedH1s.push(t);
+    });
     const renderedHeadingsCount = $rendered('h1, h2, h3').length;
-
-    const rawLinksCount = $raw('a[href]').length;
     const renderedLinksCount = $rendered('a[href]').length;
+    const renderedSchemaCount = $rendered('script[type="application/ld+json"]').length;
 
-    const rawSchemaCount = cheerio.load(rawHtml)('script[type="application/ld+json"]').length;
-    const renderedSchemaCount = cheerio.load(renderedHtml)('script[type="application/ld+json"]').length;
+    const renderedClone = $rendered('body').clone();
+    renderedClone.find('script, style, noscript, svg, nav, footer, header').remove();
+    const renderedWords = (renderedClone.text().match(/\b[\w'-]+\b/g) || []).length;
 
     const wordDiff = renderedWords - rawWords;
     const dependsOnJs = wordDiff > 100 || (rawWords < 80 && renderedWords > 200);
+    const isH1OnlyInJs = rawH1s.length === 0 && renderedH1s.length > 0;
 
     return {
       renderedHtml,
       isJsRendered: true,
+      rawH1s,
+      renderedH1s,
+      isH1OnlyInJs,
       rawVsRenderedDiff: {
         rawWordCount: rawWords,
         renderedWordCount: renderedWords,
@@ -109,9 +128,6 @@ export async function renderHeadlessDom(
     };
   } catch (err: unknown) {
     // If headless environment fails or is unsupported on this OS/container, fall back seamlessly
-    return {
-      renderedHtml: rawHtml,
-      isJsRendered: false,
-    };
+    return { renderedHtml: rawHtml, isJsRendered: false, rawH1s };
   }
 }

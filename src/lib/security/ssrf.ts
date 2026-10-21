@@ -88,9 +88,25 @@ export function isPrivateOrReservedIp(ipString: string): boolean {
  * Validates a hostname and ensures all its resolved IPv4 and IPv6 addresses
  * are safe and non-private.
  */
+// Short in-memory DNS cache to protect against rapid-fire OS resolver saturation (TTL: 60s)
+const dnsSafetyCache = new Map<string, { result: IpValidationResult; expiry: number }>();
+
 export async function validateHostSafety(hostname: string): Promise<IpValidationResult> {
   const lowerHost = hostname.toLowerCase().trim();
+  const now = Date.now();
+  const cached = dnsSafetyCache.get(lowerHost);
+  if (cached && cached.expiry > now) {
+    return cached.result;
+  }
 
+  const result = await validateHostSafetyInternal(lowerHost);
+  if (result.isValid) {
+    dnsSafetyCache.set(lowerHost, { result, expiry: now + 60000 });
+  }
+  return result;
+}
+
+async function validateHostSafetyInternal(lowerHost: string): Promise<IpValidationResult> {
   // Disallow explicit localhost or metadata names immediately
   if (
     lowerHost === 'localhost' ||
@@ -103,7 +119,7 @@ export async function validateHostSafety(hostname: string): Promise<IpValidation
   ) {
     return {
       isValid: false,
-      reason: `Hostname '${hostname}' is a reserved internal or loopback address.`,
+      reason: `Hostname '${lowerHost}' is a reserved internal or loopback address.`,
     };
   }
 
@@ -121,12 +137,12 @@ export async function validateHostSafety(hostname: string): Promise<IpValidation
 
   // Perform DNS resolution for both A (IPv4) and AAAA (IPv6)
   try {
+    let resolvedIps: string[] = [];
+
     const [ipv4Addresses, ipv6Addresses] = await Promise.allSettled([
       dns.resolve4(lowerHost),
       dns.resolve6(lowerHost),
     ]);
-
-    const resolvedIps: string[] = [];
 
     if (ipv4Addresses.status === 'fulfilled') {
       resolvedIps.push(...ipv4Addresses.value);
@@ -135,10 +151,20 @@ export async function validateHostSafety(hostname: string): Promise<IpValidation
       resolvedIps.push(...ipv6Addresses.value);
     }
 
+    // Fallback to dns.lookup if direct resolver returns empty (common on local dev / VPNs)
+    if (resolvedIps.length === 0) {
+      try {
+        const lookupResult = await dns.lookup(lowerHost, { all: true });
+        resolvedIps = lookupResult.map((r) => r.address);
+      } catch {
+        // ignore fallback failure
+      }
+    }
+
     if (resolvedIps.length === 0) {
       return {
         isValid: false,
-        reason: `Could not resolve DNS records for '${hostname}'.`,
+        reason: `Could not resolve DNS records for '${lowerHost}'.`,
       };
     }
 
@@ -148,7 +174,7 @@ export async function validateHostSafety(hostname: string): Promise<IpValidation
         return {
           isValid: false,
           ip,
-          reason: `Resolved IP '${ip}' for host '${hostname}' is in a private/restricted address range.`,
+          reason: `Resolved IP '${ip}' for host '${lowerHost}' is in a private/restricted address range.`,
         };
       }
     }
@@ -161,7 +187,7 @@ export async function validateHostSafety(hostname: string): Promise<IpValidation
     const errorMsg = err instanceof Error ? err.message : String(err);
     return {
       isValid: false,
-      reason: `DNS lookup failed for '${hostname}': ${errorMsg}`,
+      reason: `DNS lookup failed for '${lowerHost}': ${errorMsg}`,
     };
   }
 }

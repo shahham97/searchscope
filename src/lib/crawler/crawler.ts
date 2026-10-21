@@ -171,12 +171,19 @@ export async function executeBoundedCrawl(
         let rawVsRenderedDiff;
 
         // Check if headless rendering is needed/enabled
+        let rawH1s: string[] | undefined;
+        let renderedH1s: string[] | undefined;
+        let isH1OnlyInJs: boolean | undefined;
+
         if (config.enableHeadlessRendering && isLikelySpaShell(res.body, 100)) {
           const renderResult = await renderHeadlessDom(res.url, res.body);
           if (renderResult.isJsRendered) {
             finalHtml = renderResult.renderedHtml;
             isJsRendered = true;
             rawVsRenderedDiff = renderResult.rawVsRenderedDiff;
+            rawH1s = renderResult.rawH1s;
+            renderedH1s = renderResult.renderedH1s;
+            isH1OnlyInJs = renderResult.isH1OnlyInJs;
           }
         }
 
@@ -191,6 +198,9 @@ export async function executeBoundedCrawl(
         pageData.llmsTxtDetected = llmsTxtPresent;
         pageData.isJsRendered = isJsRendered;
         pageData.rawVsRenderedDiff = rawVsRenderedDiff;
+        if (rawH1s) pageData.rawH1s = rawH1s;
+        if (renderedH1s) pageData.renderedH1s = renderedH1s;
+        if (isH1OnlyInJs !== undefined) pageData.isH1OnlyInJs = isH1OnlyInJs;
 
         if (visitedNormalizedPages.has(pageData.normalizedUrl) && pageData.normalizedUrl !== normCurrent) {
           // Already have an extracted page for this canonical destination

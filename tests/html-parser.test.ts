@@ -71,6 +71,71 @@ describe('HTML Content Extractor & Metadata Parser', () => {
     expect(data.images[1].hasAlt).toBe(false);
   });
 
+  it('correctly extracts H1 inside <header> within product layout (no false positive missing H1)', () => {
+    const productHtml = `
+      <html>
+        <head><title>Velvet Amber Oud</title></head>
+        <body>
+          <main>
+            <article>
+              <header class="product-header">
+                <h1 class="font-display text-4xl">Velvet Amber</h1>
+                <p class="tagline">Artisanal perfume oil</p>
+              </header>
+              <div class="content"><p>Rich amber and oud notes.</p></div>
+            </article>
+          </main>
+        </body>
+      </html>
+    `;
+    const data = parseHtmlContent('https://example.com/product/velvet-amber', productHtml);
+    expect(data.h1s).toEqual(['Velvet Amber']);
+    expect(data.headingIssues).not.toContain('Missing H1 heading tag.');
+  });
+
+  it('detects rotating slide/carousel H1 on homepage', () => {
+    const carouselHtml = `
+      <html>
+        <head><title>Brand Home</title></head>
+        <body>
+          <section class="hero-swiper swiper-container">
+            <div class="swiper-slide" role="group" aria-roledescription="slide">
+              <h1 class="slide-title">The Art of Desert Sovereign.</h1>
+            </div>
+          </section>
+        </body>
+      </html>
+    `;
+    const data = parseHtmlContent('https://example.com/', carouselHtml);
+    expect(data.h1s).toEqual(['The Art of Desert Sovereign.']);
+    expect(data.isH1InCarousel).toBe(true);
+  });
+
+  it('detects empty and visually hidden H1 elements', () => {
+    const hiddenHtml = `
+      <html>
+        <head><title>Hidden Test</title></head>
+        <body>
+          <h1 style="display:none">Hidden SEO Title</h1>
+        </body>
+      </html>
+    `;
+    const hiddenData = parseHtmlContent('https://example.com/hidden', hiddenHtml);
+    expect(hiddenData.isH1Hidden).toBe(true);
+
+    const emptyHtml = `
+      <html>
+        <head><title>Empty Test</title></head>
+        <body>
+          <h1>   </h1>
+        </body>
+      </html>
+    `;
+    const emptyData = parseHtmlContent('https://example.com/empty', emptyHtml);
+    expect(emptyData.h1s).toHaveLength(0);
+    expect(emptyData.emptyH1Count).toBe(1);
+  });
+
   it('parses and validates JSON-LD structured data', () => {
     const data = parseHtmlContent('https://example.com/platform', sampleHtml);
     expect(data.structuredData).toHaveLength(1);

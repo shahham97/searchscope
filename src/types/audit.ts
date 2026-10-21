@@ -98,6 +98,13 @@ export interface ExtractedPageData {
   h1s: string[];
   h2s: string[];
   h3s: string[];
+  rawH1s?: string[];
+  renderedH1s?: string[];
+  isH1OnlyInJs?: boolean;
+  emptyH1Count?: number;
+  isH1InCarousel?: boolean;
+  isH1Hidden?: boolean;
+  h1HiddenReason?: string;
   headingHierarchyValid: boolean;
   headingIssues: string[];
 

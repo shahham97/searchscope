@@ -99,11 +99,67 @@ export function parseHtmlContent(
   const ogImage = $('meta[property="og:image" i]').attr('content')?.trim();
   const ogType = $('meta[property="og:type" i]').attr('content')?.trim();
 
-  // Headings
+  // Headings — extracted from the FULL DOM before any text stripping
   const h1s: string[] = [];
+  let emptyH1Count = 0;
+  let isH1InCarousel = false;
+  let isH1Hidden = false;
+  let h1HiddenReason = '';
+
   $('h1').each((_, el) => {
-    const text = $(el).text().trim();
-    if (text) h1s.push(text);
+    const rawText = $(el).text();
+    const text = rawText.trim();
+    if (!text) {
+      emptyH1Count++;
+    } else {
+      h1s.push(text);
+    }
+
+    // Check if hidden with CSS or attributes
+    const style = ($(el).attr('style') || '').toLowerCase();
+    const hiddenAttr = $(el).attr('hidden');
+    const ariaHidden = $(el).attr('aria-hidden');
+    const className = ($(el).attr('class') || '').toLowerCase();
+
+    if (
+      style.includes('display:none') ||
+      style.includes('display: none') ||
+      style.includes('visibility:hidden') ||
+      style.includes('visibility: hidden') ||
+      style.includes('opacity:0') ||
+      style.includes('opacity: 0') ||
+      hiddenAttr !== undefined ||
+      ariaHidden === 'true' ||
+      className.split(/\s+/).includes('hidden') ||
+      className.split(/\s+/).includes('invisible')
+    ) {
+      isH1Hidden = true;
+      h1HiddenReason = `H1 has hiding attribute/style: ${style ? `style="${style}"` : ariaHidden ? `aria-hidden="${ariaHidden}"` : className}`;
+    }
+
+    // Check if inside a rotating carousel / slider
+    const ancestors = $(el).parents();
+    ancestors.each((_, ancestor) => {
+      const parentClass = ($(ancestor).attr('class') || '').toLowerCase();
+      const parentRoleDesc = ($(ancestor).attr('aria-roledescription') || '').toLowerCase();
+      const parentRole = ($(ancestor).attr('role') || '').toLowerCase();
+      const parentId = ($(ancestor).attr('id') || '').toLowerCase();
+
+      if (
+        parentRoleDesc.includes('carousel') ||
+        parentRoleDesc.includes('slide') ||
+        parentRole === 'marquee' ||
+        parentClass.includes('carousel') ||
+        parentClass.includes('slider') ||
+        parentClass.includes('swiper') ||
+        parentClass.includes('slick') ||
+        parentClass.includes('slide') ||
+        parentId.includes('carousel') ||
+        parentId.includes('slider')
+      ) {
+        isH1InCarousel = true;
+      }
+    });
   });
 
   const h2s: string[] = [];
@@ -120,11 +176,23 @@ export function parseHtmlContent(
 
   const headingIssues: string[] = [];
   if (h1s.length === 0) {
-    headingIssues.push('Missing H1 heading tag.');
+    if (emptyH1Count > 0) {
+      headingIssues.push(`Empty H1 tag detected (${emptyH1Count} empty H1).`);
+    } else {
+      headingIssues.push('Missing H1 heading tag.');
+    }
   } else if (h1s.length > 1) {
     headingIssues.push(
       `Multiple H1 headings detected (${h1s.length} H1s). Standard SEO hierarchy recommends a single primary H1.`
     );
+  }
+
+  if (isH1Hidden) {
+    headingIssues.push(`H1 is visually hidden: ${h1HiddenReason}`);
+  }
+
+  if (isH1InCarousel) {
+    headingIssues.push('H1 is inside a rotating slide or carousel container.');
   }
 
   if (h3s.length > 0 && h2s.length === 0) {
@@ -294,6 +362,10 @@ export function parseHtmlContent(
     h1s,
     h2s,
     h3s,
+    emptyH1Count,
+    isH1InCarousel,
+    isH1Hidden,
+    h1HiddenReason,
     headingHierarchyValid: headingIssues.length === 0,
     headingIssues,
 
