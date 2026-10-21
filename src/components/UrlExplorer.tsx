@@ -249,6 +249,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({ pages, crawlStats }) =
           </table>
         </div>
       </Card>
+      )}
 
       {/* URL Detail Inspection Modal */}
       {selectedPage && (

@@ -64,8 +64,11 @@ export function analyzeTextQualityAndTypos(pages: ExtractedPageData[]): Finding[
   ]);
 
   for (const page of pages) {
-    if (page.organizationName) {
-      page.organizationName.toLowerCase().split(/\W+/).forEach((w) => w && allowlist.add(w));
+    if ((page as any).organizationName) {
+      String((page as any).organizationName)
+        .toLowerCase()
+        .split(/\W+/)
+        .forEach((w) => w && allowlist.add(w));
     }
     try {
       const hostParts = new URL(page.url).hostname.split('.');
@@ -103,7 +106,7 @@ export function analyzeTextQualityAndTypos(pages: ExtractedPageData[]): Finding[
             correction,
             location,
             contextSnippet,
-            isNav,
+            isNavigation: isNav,
           });
 
           if (isNav) {
@@ -132,7 +135,7 @@ export function analyzeTextQualityAndTypos(pages: ExtractedPageData[]): Finding[
     }
 
     // Page-level content typos (excluding navigation which is grouped site-wide)
-    const contentTypos = pageTypos.filter((t) => !t.isNav);
+    const contentTypos = pageTypos.filter((t) => !t.isNavigation);
     if (contentTypos.length > 0) {
       const summaryList = contentTypos
         .slice(0, 3)

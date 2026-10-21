@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Loader2, CheckCircle2, AlertCircle, ArrowRight, Terminal } from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle2, AlertCircle, ArrowRight, Terminal, ShieldCheck } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
