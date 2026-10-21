@@ -5,6 +5,13 @@ import { analyzeStructuredData } from './analyzer/structured-data';
 import { analyzeContentQuality } from './analyzer/content-quality';
 import { analyzeAeo } from './analyzer/aeo';
 import { analyzeGeo } from './analyzer/geo';
+import { analyzeImageAltQuality } from './analyzer/image-quality';
+import { analyzeTextQualityAndTypos } from './analyzer/typo-detector';
+import { analyzeFacetedAndFallbackUrls } from './analyzer/faceted-urls';
+import { analyzeContentSimilarity } from './analyzer/similarity';
+import { analyzeWeakAndAmbiguousLinks } from './analyzer/weak-links';
+import { analyzeSchemaDomParity } from './analyzer/schema-parity';
+import { analyzeSocialMetadata } from './analyzer/social-metadata';
 import { extractCandidateKeywords, buildSearchObservations } from './analyzer/search-intelligence';
 import { calculateAuditScores } from './analyzer/scoring';
 import { buildPrioritizedRoadmap } from './analyzer/roadmap';
@@ -78,20 +85,41 @@ export async function runCompleteAudit(
     );
     allFindings.push(...techFindings);
 
-    // On-page SEO
+    // On-page SEO & Image Quality
     const onpageFindings = analyzeOnPageSeo(pages);
     allFindings.push(...onpageFindings);
 
-    // Structured Data
+    const imageQualityFindings = analyzeImageAltQuality(pages);
+    allFindings.push(...imageQualityFindings);
+
+    const socialFindings = analyzeSocialMetadata(pages);
+    allFindings.push(...socialFindings);
+
+    const facetedFindings = analyzeFacetedAndFallbackUrls(pages);
+    allFindings.push(...facetedFindings);
+
+    const weakLinksFindings = analyzeWeakAndAmbiguousLinks(pages);
+    allFindings.push(...weakLinksFindings);
+
+    // Structured Data & DOM Parity
     if (effectiveConfig.includeStructuredData) {
       const schemaFindings = analyzeStructuredData(pages);
       allFindings.push(...schemaFindings);
+
+      const parityFindings = analyzeSchemaDomParity(pages);
+      allFindings.push(...parityFindings);
     }
 
-    // Content Quality
+    // Content Quality & Typos & Similarity
     if (effectiveConfig.includeContentAnalysis) {
       const contentFindings = analyzeContentQuality(pages);
       allFindings.push(...contentFindings);
+
+      const typoFindings = analyzeTextQualityAndTypos(pages);
+      allFindings.push(...typoFindings);
+
+      const similarityFindings = analyzeContentSimilarity(pages);
+      allFindings.push(...similarityFindings);
     }
 
     // AEO & GEO

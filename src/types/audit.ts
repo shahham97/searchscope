@@ -94,6 +94,9 @@ export interface ExtractedPageData {
   ogImage?: string;
   ogType?: string;
   ogUrl?: string;
+  ogImageWidth?: string;
+  ogImageHeight?: string;
+  ogImageAlt?: string;
   twitterImage?: string;
 
   // Canonical & Hreflang Diagnostics

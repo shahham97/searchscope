@@ -111,6 +111,9 @@ export function parseHtmlContent(
   const ogImage = $('meta[property="og:image" i]').attr('content')?.trim();
   const ogType = $('meta[property="og:type" i]').attr('content')?.trim();
   const ogUrl = $('meta[property="og:url" i]').attr('content')?.trim();
+  const ogImageWidth = $('meta[property="og:image:width" i]').attr('content')?.trim();
+  const ogImageHeight = $('meta[property="og:image:height" i]').attr('content')?.trim();
+  const ogImageAlt = $('meta[property="og:image:alt" i]').attr('content')?.trim();
   const twitterImage =
     $('meta[name="twitter:image" i], meta[property="twitter:image" i]').attr('content')?.trim();
 
@@ -374,6 +377,9 @@ export function parseHtmlContent(
     ogImage,
     ogType,
     ogUrl,
+    ogImageWidth,
+    ogImageHeight,
+    ogImageAlt,
     twitterImage,
 
     hasCanonicalInBody,
