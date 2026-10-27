@@ -14,7 +14,7 @@ import { analyzeSchemaDomParity } from './analyzer/schema-parity';
 import { analyzeSocialMetadata } from './analyzer/social-metadata';
 import { analyzeContentClaimsAndRisks } from './analyzer/claim-risk-detector';
 import { extractCandidateKeywords, buildSearchObservations } from './analyzer/search-intelligence';
-import { calculateAuditScores } from './analyzer/scoring';
+import { calculateAuditScores, calculatePageHealthScore } from './analyzer/scoring';
 import { buildPrioritizedRoadmap } from './analyzer/roadmap';
 import { AuditConfig, AuditReport, Finding, ClaimItem } from '../types/audit';
 import { validateTargetUrl } from './security/ssrf';
@@ -147,6 +147,16 @@ export async function runCompleteAudit(
     }
   }
   const uniqueFindings = Array.from(uniqueFindingsMap.values());
+
+  // Compute per-page health scores (0-100)
+  for (const page of pages) {
+    const pageFindings = uniqueFindings.filter(
+      (f) =>
+        f.affectedUrls?.includes(page.url) ||
+        f.affectedUrls?.includes(page.normalizedUrl)
+    );
+    page.pageHealthScore = calculatePageHealthScore(page, pageFindings);
+  }
 
   // Candidate Keywords
   const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];

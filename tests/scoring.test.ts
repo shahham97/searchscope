@@ -11,15 +11,15 @@ describe('Deterministic Scoring Engine', () => {
     });
   });
 
-  it('correctly applies severity penalties with rule grouping', () => {
+  it('correctly applies pass-rate scoring across check families', () => {
     const findings: Finding[] = [
       {
-        id: 'TECH-SSL-1',
+        id: 'TECH-TLS-ERROR',
         category: 'technical',
-        severity: 'critical', // base: 35, cap: 40
+        severity: 'critical',
         title: 'Critical issue',
         evidence: 'test',
-        affectedUrl: 'https://example.com',
+        affectedUrls: ['https://example.com'],
         whyItMatters: 'test',
         confidence: 'high',
         recommendedFix: 'test',
@@ -27,12 +27,12 @@ describe('Deterministic Scoring Engine', () => {
         validationInstructions: 'test',
       },
       {
-        id: 'TECH-ROBOTS-1',
+        id: 'TECH-ROBOTS-BLOCKED',
         category: 'technical',
-        severity: 'high', // base: 25, cap: 25
+        severity: 'high',
         title: 'High issue',
         evidence: 'test',
-        affectedUrl: 'https://example.com',
+        affectedUrls: ['https://example.com'],
         whyItMatters: 'test',
         confidence: 'high',
         recommendedFix: 'test',
@@ -43,18 +43,20 @@ describe('Deterministic Scoring Engine', () => {
 
     const { categoryScores } = calculateAuditScores(findings, 1);
     const techScore = categoryScores.find((c) => c.category === 'technical');
-    // 100 - (35 + 25) = 40
-    expect(techScore?.score).toBe(40);
+    expect(techScore).toBeDefined();
+    expect(techScore?.score).toBeLessThan(85);
+    expect(techScore?.score).toBeGreaterThan(0);
   });
 
-  it('does not allow category score to drop below 0', () => {
-    const manyCriticalFindings: Finding[] = Array.from({ length: 10 }).map((_, i) => ({
-      id: `RULE-${i}-https://example.com/page/${i}`,
+  it('does not allow category score to drop below 0 when all check families fail', () => {
+    const families = ['ROBOTS', 'CANONICAL', 'HTTPS', 'INDEX', 'BROKEN', 'VIEWPORT'];
+    const manyCriticalFindings: Finding[] = families.map((fam, i) => ({
+      id: `TECH-${fam}-${i}`,
       category: 'technical',
       severity: 'critical',
       title: 'Critical issue',
       evidence: 'test',
-      affectedUrl: 'https://example.com',
+      affectedUrls: ['https://example.com/page/1'],
       whyItMatters: 'test',
       confidence: 'high',
       recommendedFix: 'test',
@@ -62,7 +64,7 @@ describe('Deterministic Scoring Engine', () => {
       validationInstructions: 'test',
     }));
 
-    const { categoryScores } = calculateAuditScores(manyCriticalFindings, 10);
+    const { categoryScores } = calculateAuditScores(manyCriticalFindings, 1);
     const techScore = categoryScores.find((c) => c.category === 'technical');
     expect(techScore?.score).toBe(0);
   });

@@ -16,7 +16,7 @@ import { analyzeSchemaDomParity } from '@/lib/analyzer/schema-parity';
 import { analyzeSocialMetadata } from '@/lib/analyzer/social-metadata';
 import { analyzeContentClaimsAndRisks } from '@/lib/analyzer/claim-risk-detector';
 import { extractCandidateKeywords, buildSearchObservations } from '@/lib/analyzer/search-intelligence';
-import { calculateAuditScores } from '@/lib/analyzer/scoring';
+import { calculateAuditScores, calculatePageHealthScore } from '@/lib/analyzer/scoring';
 import { buildPrioritizedRoadmap } from '@/lib/analyzer/roadmap';
 import { AuditConfig, AuditReport, ClaimItem, Finding } from '@/types/audit';
 import { BOT_USER_AGENT, BROWSER_USER_AGENT } from '@/lib/security/safe-fetch';
@@ -107,6 +107,16 @@ export async function POST(req: NextRequest) {
       }
     }
     const uniqueFindings = Array.from(uniqueFindingsMap.values());
+
+    // Compute per-page health scores (0-100)
+    for (const page of pages) {
+      const pageFindings = uniqueFindings.filter(
+        (f: any) =>
+          f.affectedUrls?.includes(page.url) ||
+          f.affectedUrls?.includes(page.normalizedUrl)
+      );
+      page.pageHealthScore = calculatePageHealthScore(page, pageFindings);
+    }
 
     const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];
     const { observations, competitors } = buildSearchObservations(

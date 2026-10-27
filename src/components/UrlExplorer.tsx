@@ -42,6 +42,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
   samplingDistribution,
 }) => {
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'default' | 'health_asc' | 'health_desc'>('default');
   const [filterTab, setFilterTab] = useState<
     'all' | 'success' | 'failed' | 'excluded' | 'uncrawled'
   >('all');
@@ -143,6 +144,20 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
       (entry.failureHint && entry.failureHint.toLowerCase().includes(q)) ||
       (entry.pageType && entry.pageType.toLowerCase().includes(q))
     );
+  });
+
+  const sortedEntries = [...filteredEntries].sort((a, b) => {
+    if (sortBy === 'health_asc') {
+      const scoreA = a.pageData?.pageHealthScore ?? (a.state === 'failed' ? -1 : 101);
+      const scoreB = b.pageData?.pageHealthScore ?? (b.state === 'failed' ? -1 : 101);
+      return scoreA - scoreB;
+    }
+    if (sortBy === 'health_desc') {
+      const scoreA = a.pageData?.pageHealthScore ?? (a.state === 'failed' ? -1 : 0);
+      const scoreB = b.pageData?.pageHealthScore ?? (b.state === 'failed' ? -1 : 0);
+      return scoreB - scoreA;
+    }
+    return 0;
   });
 
   const getStatusBadge = (entry: LedgerEntry) => {
@@ -260,18 +275,29 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="relative w-full sm:w-80">
-              <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search URLs, page titles, or errors..."
-                className="text-xs border border-slate-300 rounded-lg pl-9 pr-3 py-2 w-full placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-72">
+                <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search URLs, page titles, or errors..."
+                  className="text-xs border border-slate-300 rounded-lg pl-9 pr-3 py-2 w-full placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="default">Default Order</option>
+                <option value="health_asc">Worst Health First</option>
+                <option value="health_desc">Best Health First</option>
+              </select>
             </div>
             <span className="text-xs text-slate-500 font-mono">
-              Showing {filteredEntries.length} of {activeEntries.length} items
+              Showing {sortedEntries.length} of {activeEntries.length} items
             </span>
           </div>
         </div>
@@ -285,6 +311,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
               <tr>
                 <th className="px-4 py-3">State</th>
                 <th className="px-4 py-3">Discovered URL & Title</th>
+                <th className="px-4 py-3 text-center">Health</th>
                 <th className="px-4 py-3 text-center">Type</th>
                 <th className="px-4 py-3 text-center">Words</th>
                 <th className="px-4 py-3 text-center">Response</th>
@@ -293,7 +320,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
-              {filteredEntries.map((entry, idx) => {
+              {sortedEntries.map((entry, idx) => {
                 const p = entry.pageData;
                 return (
                   <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
@@ -310,6 +337,23 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
                       <div className="text-[11px] font-mono text-slate-500 truncate mt-0.5">
                         {entry.url}
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      {p?.pageHealthScore !== undefined ? (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-bold ${
+                            p.pageHealthScore >= 80
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : p.pageHealthScore >= 50
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {p.pageHealthScore}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 font-mono text-[11px]">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
                       <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600">

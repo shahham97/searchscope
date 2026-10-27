@@ -100,8 +100,10 @@ export interface Finding {
   category: Category;
   severity: Severity;
   title: string;
+  description?: string;
   evidence: string;
   affectedUrl: string;
+  affectedUrls?: string[];
   whyItMatters: string;
   confidence: 'high' | 'medium' | 'low';
   recommendedFix: string;
@@ -136,8 +138,9 @@ export interface ExtractedPageData {
   failureCode?: FailureCode;
   failureHint?: string;
 
-  // Page Classification
+  // Page Classification & Health
   pageType?: PageType;
+  pageHealthScore?: number;
 
   // SEO Metadata
   title?: string;
