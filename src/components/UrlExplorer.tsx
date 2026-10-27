@@ -105,45 +105,30 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
         timestamp: new Date().toISOString(),
       }));
 
-  // Build the list of active entries based on selected tab
-  const getTabEntries = (): LedgerEntry[] => {
-    if (filterTab === 'success') return successfulEntries;
-    if (filterTab === 'failed') return failedEntries;
-    if (filterTab === 'excluded') return excludedEntries;
-    if (filterTab === 'uncrawled') return uncrawledEntries;
-    // 'all': return all ledger entries if available, otherwise synthesize from pages and uncrawled
-    if (hasLedger) return ledgerEntries;
-    return [
-      ...pages.map((p) => ({
-        url: p.url,
-        normalizedUrl: p.normalizedUrl,
-        state: (p.failureCode || p.statusCode >= 400 || p.statusCode === 0
-          ? 'failed'
-          : 'crawled_ok') as any,
-        statusCode: p.statusCode,
-        depth: 0,
-        failureCode: p.failureCode,
-        failureHint: p.failureHint,
-        pageData: p,
-        timestamp: new Date().toISOString(),
-      })),
-      ...uncrawledEntries,
-    ];
-  };
-
-  const activeEntries = getTabEntries();
+  let activeEntries: LedgerEntry[] = [];
+  if (filterTab === 'all') {
+    activeEntries = hasLedger
+      ? ledgerEntries
+      : [...successfulEntries, ...failedEntries, ...uncrawledEntries];
+  } else if (filterTab === 'success') {
+    activeEntries = successfulEntries;
+  } else if (filterTab === 'failed') {
+    activeEntries = failedEntries;
+  } else if (filterTab === 'excluded') {
+    activeEntries = excludedEntries;
+  } else if (filterTab === 'uncrawled') {
+    activeEntries = uncrawledEntries;
+  }
 
   const filteredEntries = activeEntries.filter((entry) => {
-    if (!search.trim()) return true;
     const q = search.toLowerCase();
-    const p = entry.pageData;
-    return (
-      entry.url.toLowerCase().includes(q) ||
-      (p?.title && p.title.toLowerCase().includes(q)) ||
-      (entry.failureCode && entry.failureCode.toLowerCase().includes(q)) ||
-      (entry.failureHint && entry.failureHint.toLowerCase().includes(q)) ||
-      (entry.pageType && entry.pageType.toLowerCase().includes(q))
-    );
+    const urlMatch = entry.url.toLowerCase().includes(q);
+    const titleMatch = entry.pageData?.title?.toLowerCase().includes(q) || false;
+    const errorMatch =
+      entry.failureHint?.toLowerCase().includes(q) ||
+      entry.failureCode?.toLowerCase().includes(q) ||
+      false;
+    return urlMatch || titleMatch || errorMatch;
   });
 
   const sortedEntries = [...filteredEntries].sort((a, b) => {
@@ -187,27 +172,27 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
     <div className="space-y-6">
       {/* Sampling and Integrity Banner */}
       {samplingDistribution && (
-        <div className="bg-indigo-50 border border-indigo-200 text-indigo-900 px-4 py-3 rounded-xl text-xs flex items-center justify-between">
+        <div className="bg-jet-900 border border-cerulean/30 text-cerulean-300 px-4 py-3 rounded-xl text-xs flex items-center justify-between shadow-glow-cerulean">
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-indigo-600 shrink-0" />
-            <span className="font-medium">{samplingDistribution}</span>
+            <Layers className="w-4 h-4 text-cerulean shrink-0" />
+            <span className="font-medium text-white">{samplingDistribution}</span>
           </div>
-          <span className="text-[11px] font-mono text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">
+          <span className="text-[11px] font-mono text-cerulean bg-cerulean/10 border border-cerulean/30 px-2.5 py-0.5 rounded">
             Stratified Sampling
           </span>
         </div>
       )}
 
       {dataIntegrity?.isValid && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-2.5 rounded-xl text-xs flex items-center justify-between">
+        <div className="bg-jet-900 border border-emerald-500/30 text-emerald-300 px-4 py-2.5 rounded-xl text-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
-              <strong>Result Ledger Reconciled:</strong> 100% Invariants Verified across Discovered,
+              <strong className="text-white">Result Ledger Reconciled:</strong> 100% Invariants Verified across Discovered,
               Crawled, Skipped, and Findings.
             </span>
           </div>
-          <span className="font-mono text-[11px] text-emerald-700">
+          <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded">
             {totalDiscovered} Discovered = {successfulEntries.length} OK + {failedEntries.length} Fail +{' '}
             {excludedEntries.length} Policy + {uncrawledEntries.length} Limit
           </span>
@@ -215,35 +200,35 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
       )}
 
       {/* Filter Tabs & Search Header */}
-      <Card className="p-4 bg-white border-slate-200">
+      <Card className="p-4 bg-jet-900 border-jet-800">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+          <div className="flex flex-wrap items-center gap-2 border-b border-jet-800 pb-3">
             <button
               onClick={() => setFilterTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
                 filterTab === 'all'
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-cerulean text-jet-950 shadow-glow-cerulean font-bold'
+                  : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
               }`}
             >
               All Discovered ({totalDiscovered})
             </button>
             <button
               onClick={() => setFilterTab('success')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
                 filterTab === 'success'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                  ? 'bg-emerald-500 text-jet-950 font-bold'
+                  : 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60'
               }`}
             >
               Successful ({successfulEntries.length})
             </button>
             <button
               onClick={() => setFilterTab('failed')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
                 filterTab === 'failed'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'bg-rose-50 text-rose-800 hover:bg-rose-100'
+                  ? 'bg-neon text-white font-bold shadow-glow-rose'
+                  : 'bg-rose-950/40 text-neon border border-neon/30 hover:bg-rose-900/60'
               }`}
             >
               Failed ({failedEntries.length})
@@ -251,10 +236,10 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             {excludedEntries.length > 0 && (
               <button
                 onClick={() => setFilterTab('excluded')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
                   filterTab === 'excluded'
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-indigo-50 text-indigo-800 hover:bg-indigo-100'
+                    ? 'bg-cerulean-600 text-white font-bold'
+                    : 'bg-jet-800 text-slate-300 hover:bg-jet-700'
                 }`}
               >
                 Excluded / Policy ({excludedEntries.length})
@@ -263,10 +248,10 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             {uncrawledEntries.length > 0 && (
               <button
                 onClick={() => setFilterTab('uncrawled')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
                   filterTab === 'uncrawled'
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                    ? 'bg-amber-500 text-jet-950 font-bold'
+                    : 'bg-amber-950/40 text-amber-300 border border-amber-500/30 hover:bg-amber-900/60'
                 }`}
               >
                 Not Crawled (Limit: {uncrawledEntries.length})
@@ -277,26 +262,26 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-72">
-                <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
+                <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search URLs, page titles, or errors..."
-                  className="text-xs border border-slate-300 rounded-lg pl-9 pr-3 py-2 w-full placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="text-xs bg-jet-950 border border-jet-700 rounded-lg pl-9 pr-3 py-2 w-full text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean"
                 />
               </div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="text-xs border border-jet-700 rounded-lg px-2.5 py-2 bg-jet-950 text-slate-200 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean"
               >
                 <option value="default">Default Order</option>
                 <option value="health_asc">Worst Health First</option>
                 <option value="health_desc">Best Health First</option>
               </select>
             </div>
-            <span className="text-xs text-slate-500 font-mono">
+            <span className="text-xs text-slate-400 font-mono">
               Showing {sortedEntries.length} of {activeEntries.length} items
             </span>
           </div>
@@ -304,10 +289,10 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
       </Card>
 
       {/* Main Table */}
-      <Card className="overflow-hidden bg-white border-slate-200 shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-            <thead className="bg-slate-50 text-slate-700 font-semibold uppercase tracking-wider text-[11px]">
+      <Card className="overflow-hidden bg-jet-900 border-jet-800 shadow-xl">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="min-w-full divide-y divide-jet-800 text-left text-xs">
+            <thead className="bg-jet-950/80 text-slate-400 font-rajdhani font-semibold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="px-4 py-3">State</th>
                 <th className="px-4 py-3">Discovered URL & Title</th>
@@ -319,14 +304,14 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
+            <tbody className="divide-y divide-jet-800/60 font-normal text-slate-300">
               {sortedEntries.map((entry, idx) => {
                 const p = entry.pageData;
                 return (
-                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                  <tr key={idx} className="hover:bg-jet-800/40 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap">{getStatusBadge(entry)}</td>
                     <td className="px-4 py-3 max-w-md">
-                      <div className="font-semibold text-slate-900 truncate">
+                      <div className="font-medium text-white truncate">
                         {p?.title ||
                           (entry.failureHint
                             ? `Failure: ${entry.failureHint}`
@@ -334,45 +319,45 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
                             ? '(Discovered via sitemap/links - Uncrawled Limit)'
                             : '(No Title Declared)')}
                       </div>
-                      <div className="text-[11px] font-mono text-slate-500 truncate mt-0.5">
+                      <div className="text-[11px] font-mono text-cerulean/80 truncate mt-0.5">
                         {entry.url}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
                       {p?.pageHealthScore !== undefined ? (
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-bold ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] font-bold border ${
                             p.pageHealthScore >= 80
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/40'
                               : p.pageHealthScore >= 50
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-rose-100 text-rose-800'
+                              ? 'bg-amber-950/60 text-amber-400 border-amber-500/40'
+                              : 'bg-rose-950/60 text-neon border-neon/40'
                           }`}
                         >
                           {p.pageHealthScore}
                         </span>
                       ) : (
-                        <span className="text-slate-400 font-mono text-[11px]">-</span>
+                        <span className="text-slate-600 font-mono text-[11px]">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
-                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-jet-950 text-slate-300 border border-jet-800">
                         {entry.pageType || p?.pageType || 'utility'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center whitespace-nowrap font-medium">
+                    <td className="px-4 py-3 text-center whitespace-nowrap font-medium text-slate-200">
                       {p?.wordCount ?? '-'}
                     </td>
-                    <td className="px-4 py-3 text-center whitespace-nowrap text-slate-500">
+                    <td className="px-4 py-3 text-center whitespace-nowrap text-slate-400 font-mono">
                       {p?.fetchDurationMs ? `${p.fetchDurationMs}ms` : '-'}
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
                       {p && p.structuredData?.length > 0 ? (
-                        <span className="font-semibold text-indigo-600">
+                        <span className="font-semibold text-cerulean">
                           {p.structuredData.length}
                         </span>
                       ) : (
-                        <span className="text-slate-400">0</span>
+                        <span className="text-slate-600">0</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -381,7 +366,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedPage(p)}
-                          className="text-xs text-indigo-600 hover:text-indigo-800"
+                          className="text-xs text-cerulean hover:text-white hover:bg-cerulean/20"
                         >
                           Inspect <ChevronRight className="h-3 w-3 ml-1" />
                         </Button>
@@ -390,7 +375,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedLedgerEntry(entry)}
-                          className="text-xs text-slate-600 hover:text-slate-800"
+                          className="text-xs text-slate-400 hover:text-white hover:bg-jet-800"
                         >
                           Details <ChevronRight className="h-3 w-3 ml-1" />
                         </Button>
@@ -413,9 +398,9 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
           maxWidth="2xl"
         >
           <div className="space-y-6">
-            <div className="p-4 bg-slate-50 rounded-xl space-y-2 border border-slate-200">
+            <div className="p-4 bg-jet-950 rounded-xl space-y-2 border border-jet-800">
               <div className="flex items-center justify-between gap-4">
-                <span className="font-mono text-xs text-indigo-600 break-all font-semibold">
+                <span className="font-mono text-xs text-cerulean break-all font-semibold">
                   {selectedPage.url}
                 </span>
                 {getStatusBadge({
@@ -428,34 +413,34 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
                   timestamp: '',
                 })}
               </div>
-              <div className="text-sm font-semibold text-slate-900">
+              <div className="text-sm font-semibold text-white">
                 {selectedPage.title || '(No Title Declared)'}
               </div>
               {selectedPage.metaDescription && (
-                <p className="text-xs text-slate-600">{selectedPage.metaDescription}</p>
+                <p className="text-xs text-slate-300 leading-relaxed">{selectedPage.metaDescription}</p>
               )}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-              <div className="p-3 bg-white border border-slate-200 rounded-lg">
-                <span className="text-slate-500 block">Word Count</span>
-                <span className="text-lg font-bold text-slate-900">{selectedPage.wordCount}</span>
+              <div className="p-3 bg-jet-950 border border-jet-800 rounded-lg">
+                <span className="text-slate-400 block text-[11px]">Word Count</span>
+                <span className="text-lg font-bold text-white font-mono">{selectedPage.wordCount}</span>
               </div>
-              <div className="p-3 bg-white border border-slate-200 rounded-lg">
-                <span className="text-slate-500 block">Fetch Duration</span>
-                <span className="text-lg font-bold text-slate-900">
+              <div className="p-3 bg-jet-950 border border-jet-800 rounded-lg">
+                <span className="text-slate-400 block text-[11px]">Fetch Duration</span>
+                <span className="text-lg font-bold text-white font-mono">
                   {selectedPage.fetchDurationMs}ms
                 </span>
               </div>
-              <div className="p-3 bg-white border border-slate-200 rounded-lg">
-                <span className="text-slate-500 block">Internal Links</span>
-                <span className="text-lg font-bold text-slate-900">
+              <div className="p-3 bg-jet-950 border border-jet-800 rounded-lg">
+                <span className="text-slate-400 block text-[11px]">Internal Links</span>
+                <span className="text-lg font-bold text-white font-mono">
                   {selectedPage.internalLinks.length}
                 </span>
               </div>
-              <div className="p-3 bg-white border border-slate-200 rounded-lg">
-                <span className="text-slate-500 block">Schemas</span>
-                <span className="text-lg font-bold text-indigo-600">
+              <div className="p-3 bg-jet-950 border border-jet-800 rounded-lg">
+                <span className="text-slate-400 block text-[11px]">Schemas</span>
+                <span className="text-lg font-bold text-cerulean font-mono">
                   {selectedPage.structuredData.length}
                 </span>
               </div>
@@ -463,22 +448,22 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
 
             {/* Headings */}
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-rajdhani">
                 Heading Structure
               </h4>
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2 max-h-48 overflow-y-auto font-mono text-xs">
+              <div className="p-3 bg-jet-950 border border-jet-800 rounded-lg space-y-2 max-h-48 overflow-y-auto font-mono text-xs custom-scrollbar">
                 {selectedPage.h1s.length > 0 ? (
                   selectedPage.h1s.map((h, i) => (
-                    <div key={i} className="text-indigo-900">
-                      <strong>H1:</strong> {h}
+                    <div key={i} className="text-cerulean">
+                      <strong className="text-white">H1:</strong> {h}
                     </div>
                   ))
                 ) : (
-                  <div className="text-rose-600">Missing H1 Heading</div>
+                  <div className="text-neon">Missing H1 Heading</div>
                 )}
                 {selectedPage.h2s.slice(0, 5).map((h, i) => (
-                  <div key={i} className="text-slate-700 pl-3">
-                    <strong>H2:</strong> {h}
+                  <div key={i} className="text-slate-300 pl-3">
+                    <strong className="text-slate-400">H2:</strong> {h}
                   </div>
                 ))}
               </div>
@@ -487,17 +472,17 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             {/* Schemas */}
             {selectedPage.structuredData.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-rajdhani">
                   Detected Schemas (JSON-LD)
                 </h4>
                 <div className="space-y-2">
                   {selectedPage.structuredData.map((sd, i) => (
                     <div
                       key={i}
-                      className="p-3 bg-slate-900 text-slate-100 rounded-lg font-mono text-[11px] overflow-x-auto"
+                      className="p-3 bg-jet-950 text-slate-200 border border-jet-800 rounded-lg font-mono text-[11px] overflow-x-auto custom-scrollbar"
                     >
                       <div className="text-emerald-400 font-bold mb-1">Type: {sd.type}</div>
-                      <pre>{sd.rawJson}</pre>
+                      <pre className="text-slate-300">{sd.rawJson}</pre>
                     </div>
                   ))}
                 </div>
@@ -516,15 +501,15 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
           maxWidth="2xl"
         >
           <div className="space-y-4 text-xs">
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <div className="font-mono text-slate-800 break-all">{selectedLedgerEntry.url}</div>
+            <div className="p-4 bg-jet-950 border border-jet-800 rounded-xl space-y-2">
+              <div className="font-mono text-cerulean break-all">{selectedLedgerEntry.url}</div>
               <div className="flex items-center gap-2">
                 {getStatusBadge(selectedLedgerEntry)}
-                <span className="font-mono text-slate-500">
+                <span className="font-mono text-slate-400">
                   Depth: {selectedLedgerEntry.depth}
                 </span>
                 {selectedLedgerEntry.pageType && (
-                  <span className="font-mono text-slate-500 uppercase">
+                  <span className="font-mono text-slate-300 uppercase">
                     Type: {selectedLedgerEntry.pageType}
                   </span>
                 )}
@@ -532,15 +517,15 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             </div>
 
             {selectedLedgerEntry.failureHint && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg">
+              <div className="p-3 bg-rose-950/40 border border-neon/40 text-neon rounded-lg font-mono">
                 <strong>Failure Detail:</strong> {selectedLedgerEntry.failureHint}
               </div>
             )}
 
             {selectedLedgerEntry.discoveredFrom && (
-              <div className="p-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-lg">
-                <strong>Discovered From:</strong>{' '}
-                <span className="font-mono">{selectedLedgerEntry.discoveredFrom}</span>
+              <div className="p-3 bg-jet-950 border border-jet-800 text-slate-300 rounded-lg">
+                <strong className="text-white">Discovered From:</strong>{' '}
+                <span className="font-mono text-cerulean">{selectedLedgerEntry.discoveredFrom}</span>
               </div>
             )}
           </div>

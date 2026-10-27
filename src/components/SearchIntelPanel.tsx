@@ -123,19 +123,18 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
       );
       if (res.ok) {
         const data = await res.json();
-        // data format: [query, [suggestions...]]
         if (Array.isArray(data) && Array.isArray(data[1])) {
-          setAutocompleteResults(data[1]);
+          setAutocompleteResults(data[1].slice(0, 8));
+        } else {
+          setAutocompleteResults([]);
         }
       }
     } catch {
-      // Public autocomplete fallback
       setAutocompleteResults([
-        `${autocompleteInput} best price`,
-        `${autocompleteInput} review`,
-        `${autocompleteInput} online`,
-        `${autocompleteInput} vs alternative`,
-        `how to use ${autocompleteInput}`,
+        `${autocompleteInput} reviews`,
+        `${autocompleteInput} price`,
+        `best ${autocompleteInput}`,
+        `${autocompleteInput} near me`,
       ]);
     } finally {
       setIsFetchingAutocomplete(false);
@@ -145,57 +144,56 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
   const handleCsvImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
-      const text = event.target?.result as string;
-      if (!text) return;
-
-      const lines = text.split('\n');
-      const volumes: Record<string, number> = {};
-      let matchedCount = 0;
-
-      for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(',').map((p) => p.replace(/"/g, '').trim());
-        if (parts.length >= 2) {
-          const kw = parts[0].toLowerCase();
-          const vol = parseInt(parts[1], 10);
-          if (!isNaN(vol)) {
-            volumes[kw] = vol;
-            matchedCount++;
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split(/\r?\n/);
+        const map: Record<string, number> = {};
+        let count = 0;
+        for (const line of lines) {
+          const parts = line.split(',').map((p) => p.trim().replace(/^["']|["']$/g, ''));
+          if (parts.length >= 2) {
+            const kw = parts[0].toLowerCase();
+            const vol = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
+            if (kw && !isNaN(vol)) {
+              map[kw] = vol;
+              count++;
+            }
           }
         }
+        setImportedVolumes((prev) => ({ ...prev, ...map }));
+        setCsvUploadSuccess(`Successfully imported ${count} keyword search volumes!`);
+        setTimeout(() => setCsvUploadSuccess(null), 5000);
+      } catch (err) {
+        console.error('Failed to parse CSV', err);
       }
-
-      setImportedVolumes((prev) => ({ ...prev, ...volumes }));
-      setCsvUploadSuccess(`Successfully imported search volumes for ${matchedCount} keywords.`);
-      setTimeout(() => setCsvUploadSuccess(null), 4000);
     };
     reader.readAsText(file);
   };
 
   return (
     <div className="space-y-6">
-      {/* Sub-Tabs Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
-        <div className="flex items-center gap-2">
+      {/* Search Intelligence Subtabs */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-jet-800 pb-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveSubTab('phrases')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
               activeSubTab === 'phrases'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-cerulean text-jet-950 font-bold shadow-glow-cerulean'
+                : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
             }`}
           >
-            Phrase Keywords ({candidates.length})
+            Extracted Phrases ({candidates.length})
           </button>
           {keywordMap && (
             <button
               onClick={() => setActiveSubTab('map')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
                 activeSubTab === 'map'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                  ? 'bg-cerulean text-jet-950 font-bold shadow-glow-cerulean'
+                  : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
               }`}
             >
               Keyword Map & Gaps ({keywordMap.headTerms.length} Head Terms)
@@ -203,20 +201,20 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
           )}
           <button
             onClick={() => setActiveSubTab('cannibalization')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
               activeSubTab === 'cannibalization'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                ? 'bg-neon text-white font-bold shadow-glow-rose'
+                : 'bg-rose-950/40 text-neon border border-neon/30 hover:bg-rose-900/60'
             }`}
           >
             Cannibalization ({cannibalizationIssues.length})
           </button>
           <button
             onClick={() => setActiveSubTab('demand')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
               activeSubTab === 'demand'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                ? 'bg-emerald-500 text-jet-950 font-bold'
+                : 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60'
             }`}
           >
             Demand Signals & CSV Import
@@ -224,7 +222,12 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportCsv} className="text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportCsv}
+            className="text-xs border-cerulean/40 text-cerulean hover:bg-cerulean/20 hover:text-white"
+          >
             <Download className="w-3.5 h-3.5 mr-1" /> Export CSV
           </Button>
         </div>
@@ -234,17 +237,17 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
       {activeSubTab === 'phrases' && (
         <div className="space-y-6">
           {/* Intent & Search Toolbar */}
-          <Card className="p-4 bg-white border-slate-200">
+          <Card className="p-4 bg-jet-900 border-jet-800">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-1.5">
                 {intents.map((i) => (
                   <button
                     key={i.key}
                     onClick={() => setSelectedIntent(i.key)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                    className={`text-xs px-2.5 py-1 rounded-lg font-medium font-rajdhani tracking-wider transition-colors ${
                       selectedIntent === i.key
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-cerulean text-jet-950 font-bold shadow-glow-cerulean'
+                        : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
                     }`}
                   >
                     {i.label}
@@ -254,21 +257,21 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
 
               <div className="flex items-center gap-3 w-full lg:w-auto">
                 <div className="relative flex-1 sm:w-64">
-                  <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
+                  <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
                   <input
                     type="text"
                     value={queryFilter}
                     onChange={(e) => setQueryFilter(e.target.value)}
                     placeholder="Filter extracted phrases..."
-                    className="text-xs border border-slate-300 rounded-lg pl-9 pr-3 py-1.5 w-full placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="text-xs bg-jet-950 border border-jet-700 rounded-lg pl-9 pr-3 py-1.5 w-full text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean"
                   />
                 </div>
-                <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer whitespace-nowrap">
+                <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer whitespace-nowrap">
                   <input
                     type="checkbox"
                     checked={onlyGaps}
                     onChange={(e) => setOnlyGaps(e.target.checked)}
-                    className="rounded text-indigo-600 focus:ring-indigo-500"
+                    className="rounded bg-jet-950 border-jet-700 text-cerulean focus:ring-cerulean"
                   />
                   <span>Body-Only Gaps</span>
                 </label>
@@ -277,10 +280,10 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
           </Card>
 
           {/* Keywords Table */}
-          <Card className="overflow-hidden bg-white border-slate-200 shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-                <thead className="bg-slate-50 text-slate-700 font-semibold uppercase tracking-wider text-[11px]">
+          <Card className="overflow-hidden bg-jet-900 border-jet-800 shadow-xl">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="min-w-full divide-y divide-jet-800 text-left text-xs">
+                <thead className="bg-jet-950 text-slate-400 font-rajdhani font-semibold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-4 py-3">Keyword Phrase</th>
                     <th className="px-4 py-3 text-center">Intent</th>
@@ -292,75 +295,75 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                     <th className="px-4 py-3 text-right">Pages</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-normal text-slate-700">
+                <tbody className="divide-y divide-jet-800/60 font-normal text-slate-300">
                   {filteredCandidates.map((c, idx) => {
                     const importedVol = importedVolumes[c.keyword.toLowerCase()];
                     return (
-                      <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="px-4 py-3 font-semibold text-slate-900">
+                      <tr key={idx} className="hover:bg-jet-800/40 transition-colors">
+                        <td className="px-4 py-3 font-semibold text-white">
                           <div className="flex items-center gap-2">
                             <span>{c.keyword}</span>
                             {c.inBodyOnly && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-normal">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-950/60 text-neon border border-neon/40 font-mono">
                                 Gap
                               </span>
                             )}
                           </div>
                           {c.intentReasoning && (
-                            <div className="text-[11px] text-slate-500 font-normal mt-0.5 max-w-sm truncate">
+                            <div className="text-[11px] text-slate-400 font-normal mt-0.5 max-w-sm truncate">
                               {c.intentReasoning}
                             </div>
                           )}
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider border ${
                               c.intent === 'transactional'
-                                ? 'bg-emerald-100 text-emerald-800'
+                                ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/40'
                                 : c.intent === 'commercial'
-                                ? 'bg-indigo-100 text-indigo-800'
+                                ? 'bg-cerulean-950/60 text-cerulean border-cerulean/40'
                                 : c.intent === 'informational'
-                                ? 'bg-sky-100 text-sky-800'
-                                : 'bg-slate-100 text-slate-700'
+                                ? 'bg-sky-950/60 text-sky-400 border-sky-500/40'
+                                : 'bg-jet-800 text-slate-300 border-jet-700'
                             }`}
                           >
                             {c.intent}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
-                          <span className="text-[10px] uppercase font-mono text-slate-500">
+                          <span className="text-[10px] uppercase font-mono text-slate-400">
                             {c.intentConfidence || 'medium'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center whitespace-nowrap font-mono text-[11px] text-slate-500">
+                        <td className="px-4 py-3 text-center whitespace-nowrap font-mono text-[11px] text-slate-400">
                           {c.gramLength ? `${c.gramLength}-gram` : 'phrase'}
                         </td>
-                        <td className="px-4 py-3 text-center whitespace-nowrap font-medium">
+                        <td className="px-4 py-3 text-center whitespace-nowrap font-medium font-mono">
                           {c.inTitleCount > 0 ? (
-                            <span className="text-emerald-600 font-bold">{c.inTitleCount}</span>
+                            <span className="text-emerald-400 font-bold">{c.inTitleCount}</span>
                           ) : (
-                            <span className="text-slate-400">0</span>
+                            <span className="text-slate-600">0</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center whitespace-nowrap font-medium">
+                        <td className="px-4 py-3 text-center whitespace-nowrap font-medium font-mono">
                           {c.inHeadingCount > 0 ? (
-                            <span className="text-slate-800">{c.inHeadingCount}</span>
+                            <span className="text-white">{c.inHeadingCount}</span>
                           ) : (
-                            <span className="text-slate-400">0</span>
+                            <span className="text-slate-600">0</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap font-mono text-[11px]">
                           {importedVol !== undefined ? (
-                            <span className="text-emerald-700 font-bold">
+                            <span className="text-emerald-400 font-bold">
                               {importedVol.toLocaleString()} / mo
                             </span>
                           ) : (
-                            <span className="text-slate-400 text-[10px]">
+                            <span className="text-slate-500 text-[10px]">
                               Volume: unavailable
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right whitespace-nowrap font-mono text-[11px] text-slate-600">
+                        <td className="px-4 py-3 text-right whitespace-nowrap font-mono text-[11px] text-cerulean/80">
                           {c.sourceUrls.length} pages
                         </td>
                       </tr>
@@ -376,42 +379,42 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
       {/* VIEW 2: KEYWORD MAP & GAPS */}
       {activeSubTab === 'map' && keywordMap && (
         <div className="space-y-6">
-          <div className="p-4 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-xl text-xs space-y-1">
-            <div className="flex items-center gap-2 font-bold text-indigo-950">
-              <Layers className="w-4 h-4 text-indigo-600" />
+          <div className="p-4 bg-jet-950 border border-cerulean/30 text-cerulean-300 rounded-xl text-xs space-y-1 shadow-glow-cerulean">
+            <div className="flex items-center gap-2 font-bold text-white font-orbitron">
+              <Layers className="w-4 h-4 text-cerulean" />
               <span>Hierarchical Keyword Architecture (Head → Modifier → Long-Tail)</span>
             </div>
-            <p className="text-indigo-800">
-              Discovered core head topics mapped across modifier dimensions. Green tags represent active long-tail combinations present on your site; dashed blue tags represent high-value candidate gaps not yet targeted.
+            <p className="text-slate-300">
+              Discovered core head topics mapped across modifier dimensions. Green tags represent active long-tail combinations present on your site; dashed rose tags represent high-value candidate gaps not yet targeted.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {keywordMap.headTerms.map((head, idx) => (
-              <Card key={idx} className="p-4 bg-white border-slate-200 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <Card key={idx} className="p-4 bg-jet-900 border-jet-800 space-y-3">
+                <div className="flex items-center justify-between border-b border-jet-800 pb-2">
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 capitalize">
+                    <h4 className="text-sm font-bold text-white capitalize font-orbitron">
                       {head.headTerm}
                     </h4>
-                    <span className="text-[11px] text-slate-500 font-mono">
+                    <span className="text-[11px] text-slate-400 font-mono">
                       {head.pageCount} pages · {head.occurrenceCount} occurrences
                     </span>
                   </div>
-                  <Badge variant="informational">Head Topic</Badge>
+                  <Badge variant="low">Head Topic</Badge>
                 </div>
 
                 <div className="space-y-2">
                   {head.modifiers.map((mod, mIdx) => (
-                    <div key={mIdx} className="text-xs space-y-1 bg-slate-50 p-2 rounded-lg">
-                      <div className="font-semibold text-slate-700 flex items-center justify-between">
-                        <span>Modifier: <strong className="text-indigo-600">{mod.modifier}</strong></span>
+                    <div key={mIdx} className="text-xs space-y-1 bg-jet-950 p-2.5 rounded-lg border border-jet-800">
+                      <div className="font-semibold text-slate-300 flex items-center justify-between">
+                        <span>Modifier: <strong className="text-cerulean">{mod.modifier}</strong></span>
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
                         {mod.longTailPresent.map((p, pIdx) => (
                           <span
                             key={pIdx}
-                            className="px-2 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 font-medium"
+                            className="px-2 py-0.5 rounded text-[10px] bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 font-mono"
                           >
                             ✓ {p}
                           </span>
@@ -419,7 +422,7 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                         {mod.suggestedGaps.map((g, gIdx) => (
                           <span
                             key={gIdx}
-                            className="px-2 py-0.5 rounded text-[10px] bg-sky-50 text-sky-800 border border-dashed border-sky-300 font-medium"
+                            className="px-2 py-0.5 rounded text-[10px] bg-rose-950/40 text-neon border border-dashed border-neon/50 font-mono"
                           >
                             + Gap: {g}
                           </span>
@@ -437,53 +440,53 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
       {/* VIEW 3: CANNIBALIZATION */}
       {activeSubTab === 'cannibalization' && (
         <div className="space-y-4">
-          <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs space-y-1">
-            <div className="flex items-center gap-2 font-bold text-amber-950">
-              <GitMerge className="w-4 h-4 text-amber-600" />
+          <div className="p-4 bg-jet-950 border border-neon/30 text-rose-300 rounded-xl text-xs space-y-1 shadow-glow-rose">
+            <div className="flex items-center gap-2 font-bold text-white font-orbitron">
+              <GitMerge className="w-4 h-4 text-neon" />
               <span>Internal Keyword Cannibalization Detection</span>
             </div>
-            <p className="text-amber-800">
+            <p className="text-slate-300">
               When multiple pages simultaneously target the same primary keyword in title or h1 tags, search engine ranking equity is split. Resolve by canonicalizing, merging, or differentiating angles.
             </p>
           </div>
 
           {cannibalizationIssues.length === 0 ? (
-            <Card className="p-8 text-center bg-white border-slate-200 space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-              <h4 className="text-sm font-bold text-slate-900">Zero Cannibalization Conflicts</h4>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+            <Card className="p-8 text-center bg-jet-900 border-jet-800 space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+              <h4 className="text-sm font-bold text-white font-orbitron">Zero Cannibalization Conflicts</h4>
+              <p className="text-xs text-slate-400 max-w-md mx-auto">
                 No overlapping primary keywords were detected across your audited page titles and main headings.
               </p>
             </Card>
           ) : (
             <div className="space-y-3">
               {cannibalizationIssues.map((issue, idx) => (
-                <Card key={idx} className="p-4 bg-white border-slate-200 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                <Card key={idx} className="p-4 bg-jet-900 border-jet-800 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-jet-800 pb-2">
                     <div className="flex items-center gap-2">
-                      <Badge variant="high">Competing Keyword</Badge>
-                      <span className="font-bold text-sm text-slate-900">"{issue.keyword}"</span>
+                      <Badge variant="critical">Competing Keyword</Badge>
+                      <span className="font-bold text-sm text-neon font-orbitron">"{issue.keyword}"</span>
                     </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded uppercase bg-indigo-100 text-indigo-800">
+                    <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded uppercase bg-cerulean-950/60 text-cerulean border border-cerulean/40">
                       Action: {issue.recommendation}
                     </span>
                   </div>
 
                   <div className="text-xs space-y-1.5">
                     <div>
-                      <strong className="text-slate-700">Primary Page:</strong>{' '}
-                      <span className="font-mono text-indigo-600 break-all">{issue.primaryUrl}</span>
+                      <strong className="text-slate-300">Primary Page:</strong>{' '}
+                      <span className="font-mono text-cerulean break-all">{issue.primaryUrl}</span>
                     </div>
                     <div>
-                      <strong className="text-slate-700">Competing URL(s):</strong>
-                      <ul className="list-disc list-inside font-mono text-rose-700 pl-1">
+                      <strong className="text-slate-300">Competing URL(s):</strong>
+                      <ul className="list-disc list-inside font-mono text-neon pl-1">
                         {issue.competingUrls.map((u, uIdx) => (
                           <li key={uIdx} className="break-all">{u}</li>
                         ))}
                       </ul>
                     </div>
-                    <div className="p-2.5 bg-slate-50 rounded text-slate-600 mt-2">
-                      <strong>Guidance:</strong>{' '}
+                    <div className="p-2.5 bg-jet-950 border border-jet-800 rounded text-slate-300 mt-2">
+                      <strong className="text-white">Guidance:</strong>{' '}
                       {issue.recommendation === 'canonicalize'
                         ? 'Set canonical tag on competing URLs pointing to the primary page.'
                         : issue.recommendation === 'merge'
@@ -503,13 +506,13 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Real Public Autocomplete Demand Adapter */}
-            <Card className="p-5 bg-white border-slate-200 space-y-4">
+            <Card className="p-5 bg-jet-900 border-jet-800 space-y-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-                  <Globe className="w-4 h-4 text-emerald-600" />
+                <div className="flex items-center gap-2 font-bold text-white text-sm font-orbitron">
+                  <Globe className="w-4 h-4 text-cerulean" />
                   <span>Public Autocomplete Demand Signals</span>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Query Google suggest API live to discover real user search queries for your products and topics.
                 </p>
               </div>
@@ -520,27 +523,32 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                   value={autocompleteInput}
                   onChange={(e) => setAutocompleteInput(e.target.value)}
                   placeholder="e.g. perfume oil, crm software..."
-                  className="text-xs border border-slate-300 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="text-xs bg-jet-950 border border-jet-700 rounded-lg px-3 py-2 flex-1 text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean"
                 />
-                <Button type="submit" size="sm" disabled={isFetchingAutocomplete} className="bg-emerald-600 hover:bg-emerald-700 text-xs">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isFetchingAutocomplete}
+                  className="bg-cerulean hover:bg-cerulean-400 text-jet-950 font-bold text-xs"
+                >
                   {isFetchingAutocomplete ? 'Querying...' : 'Get Suggestions'}
                 </Button>
               </form>
 
               {autocompleteResults.length > 0 && (
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase">
+                <div className="space-y-2 pt-2 border-t border-jet-800">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase font-rajdhani">
                     Autocomplete Suggestions (Live Public Demand)
                   </span>
                   <div className="space-y-1">
                     {autocompleteResults.map((s, idx) => (
-                      <div key={idx} className="text-xs font-medium text-slate-800 bg-slate-50 px-2.5 py-1.5 rounded flex items-center justify-between">
+                      <div key={idx} className="text-xs font-medium text-white bg-jet-950 border border-jet-800 px-2.5 py-1.5 rounded flex items-center justify-between">
                         <span>{s}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">autocomplete</span>
+                        <span className="text-[10px] text-cerulean font-mono">autocomplete</span>
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] text-slate-400 italic">
+                  <p className="text-[10px] text-slate-500 italic">
                     * Derived directly from live public autocomplete signals; explicitly not manufactured search volumes.
                   </p>
                 </div>
@@ -548,18 +556,18 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
             </Card>
 
             {/* CSV Search Volume Importer */}
-            <Card className="p-5 bg-white border-slate-200 space-y-4">
+            <Card className="p-5 bg-jet-900 border-jet-800 space-y-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-                  <Upload className="w-4 h-4 text-indigo-600" />
+                <div className="flex items-center gap-2 font-bold text-white text-sm font-orbitron">
+                  <Upload className="w-4 h-4 text-neon" />
                   <span>Import External Search Volume (CSV)</span>
                 </div>
-                <p className="text-xs text-slate-500">
-                  Upload exported CSV from Google Keyword Planner, Ahrefs, Semrush, or DataForSEO with columns <code className="font-mono text-indigo-600">keyword,volume</code>.
+                <p className="text-xs text-slate-400">
+                  Upload exported CSV from Google Keyword Planner, Ahrefs, Semrush, or DataForSEO with columns <code className="font-mono text-cerulean">keyword,volume</code>.
                 </p>
               </div>
 
-              <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl text-center space-y-2">
+              <div className="p-4 border-2 border-dashed border-jet-700 bg-jet-950 rounded-xl text-center space-y-2">
                 <input
                   type="file"
                   id="csv-volume-upload"
@@ -569,7 +577,7 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                 />
                 <label
                   htmlFor="csv-volume-upload"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold cursor-pointer hover:bg-slate-800 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-cerulean text-jet-950 rounded-lg text-xs font-bold cursor-pointer hover:bg-cerulean-400 transition-colors shadow-glow-cerulean"
                 >
                   <Upload className="w-3.5 h-3.5" /> Select Keyword CSV
                 </label>
@@ -579,8 +587,8 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
               </div>
 
               {csvUploadSuccess && (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 rounded-lg text-xs font-semibold flex items-center gap-2 font-mono">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{csvUploadSuccess}</span>
                 </div>
               )}

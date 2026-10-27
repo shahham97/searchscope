@@ -1,7 +1,7 @@
+'use client';
+
 import React from 'react';
-import { Loader2, XCircle, Globe, CheckCircle, AlertTriangle, FileText, FastForward } from 'lucide-react';
-import { Card } from './ui/Card';
-import { Button } from './ui/Button';
+import { Loader2, XCircle, Globe, AlertTriangle, FileText, FastForward, Activity } from 'lucide-react';
 
 interface LiveCrawlStatusProps {
   status: string;
@@ -27,77 +27,100 @@ export const LiveCrawlStatus: React.FC<LiveCrawlStatusProps> = ({
   const percentage = Math.min(100, Math.round((crawledCount / maxPages) * 100));
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4">
-      <Card className="p-8 border-slate-200/90 shadow-md bg-white">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-              <Loader2 className="h-5 w-5 animate-spin" />
+    <div className="max-w-3xl mx-auto py-16 px-4">
+      <div className="p-8 rounded-3xl bg-jet-900/95 border border-cerulean/50 shadow-glow-cerulean relative overflow-hidden backdrop-blur-xl">
+        {/* Glow corner ambient */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-cerulean/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-neon/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex items-center justify-between mb-8 relative z-10">
+          <div className="flex items-center space-x-3.5">
+            <div className="h-12 w-12 rounded-2xl bg-jet-850 border border-cerulean/60 flex items-center justify-center text-cerulean shadow-[0_0_20px_rgba(0,168,255,0.4)]">
+              <Loader2 className="h-6 w-6 animate-spin text-cerulean" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Audit In Progress</h2>
-              <p className="text-xs text-slate-500 font-mono truncate max-w-md">{currentUrl || 'Establishing secure connection...'}</p>
+              <h2 className="text-lg font-orbitron font-extrabold text-white tracking-wide">
+                AUTONOMOUS CRAWL IN PROGRESS
+              </h2>
+              <p className="text-xs text-slate-300 font-mono truncate max-w-md mt-0.5">
+                <span className="text-cerulean">SCAN //</span> {currentUrl || 'Establishing secure TLS connection...'}
+              </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={onCancel} className="text-slate-600 hover:text-rose-600">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider text-neon hover:text-white bg-jet-950 hover:bg-neon/20 border border-neon/50 hover:border-neon transition-all flex items-center min-h-[44px]"
+          >
             <XCircle className="h-4 w-4 mr-1.5" />
             Abort Audit
-          </Button>
+          </button>
         </div>
 
         {/* Progress Bar */}
-        <div className="space-y-2 mb-6">
-          <div className="flex justify-between text-xs font-semibold text-slate-700">
-            <span>{status}</span>
-            <span>{percentage}%</span>
+        <div className="space-y-2.5 mb-8 relative z-10">
+          <div className="flex justify-between text-xs font-rajdhani font-bold uppercase tracking-wider text-slate-300">
+            <span className="text-cerulean flex items-center">
+              <Activity className="h-3.5 w-3.5 mr-1.5 animate-pulse text-neon" />
+              {status}
+            </span>
+            <span className="font-orbitron font-bold text-white text-sm">{percentage}%</span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
+          <div className="w-full bg-jet-950 rounded-full h-3.5 overflow-hidden border border-jet-800 p-0.5">
             <div
-              className="bg-indigo-600 h-3 rounded-full transition-all duration-300 ease-out"
+              className="bg-gradient-to-r from-cerulean via-cerulean-light to-neon h-full rounded-full transition-all duration-300 ease-out shadow-glow-cerulean"
               style={{ width: `${Math.max(5, percentage)}%` }}
             />
           </div>
         </div>
 
         {/* Counter Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100 text-center">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div className="flex items-center justify-center text-indigo-600 mb-1">
-              <FileText className="h-4 w-4 mr-1" />
-              <span className="text-xs uppercase font-bold tracking-wider text-slate-500">Crawled</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-jet-800 text-center relative z-10">
+          <div className="p-3.5 bg-jet-950 rounded-2xl border border-jet-800">
+            <div className="flex items-center justify-center text-cerulean mb-1">
+              <FileText className="h-4 w-4 mr-1 text-cerulean" />
+              <span className="text-[11px] font-rajdhani uppercase font-bold tracking-widest text-slate-400">
+                Crawled
+              </span>
             </div>
-            <div className="text-xl font-extrabold text-slate-900">{crawledCount}</div>
-            <div className="text-[10px] text-slate-400">Target: {maxPages}</div>
+            <div className="text-2xl font-orbitron font-extrabold text-white">{crawledCount}</div>
+            <div className="text-[10px] font-mono text-slate-500">Target: {maxPages}</div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div className="flex items-center justify-center text-blue-600 mb-1">
-              <Globe className="h-4 w-4 mr-1" />
-              <span className="text-xs uppercase font-bold tracking-wider text-slate-500">Discovered</span>
+          <div className="p-3.5 bg-jet-950 rounded-2xl border border-jet-800">
+            <div className="flex items-center justify-center text-cerulean mb-1">
+              <Globe className="h-4 w-4 mr-1 text-cerulean" />
+              <span className="text-[11px] font-rajdhani uppercase font-bold tracking-widest text-slate-400">
+                Discovered
+              </span>
             </div>
-            <div className="text-xl font-extrabold text-slate-900">{discoveredCount}</div>
-            <div className="text-[10px] text-slate-400">In URL queue</div>
+            <div className="text-2xl font-orbitron font-extrabold text-white">{discoveredCount}</div>
+            <div className="text-[10px] font-mono text-slate-500">In Queue</div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div className="flex items-center justify-center text-amber-600 mb-1">
-              <FastForward className="h-4 w-4 mr-1" />
-              <span className="text-xs uppercase font-bold tracking-wider text-slate-500">Skipped</span>
+          <div className="p-3.5 bg-jet-950 rounded-2xl border border-jet-800">
+            <div className="flex items-center justify-center text-slate-300 mb-1">
+              <FastForward className="h-4 w-4 mr-1 text-slate-400" />
+              <span className="text-[11px] font-rajdhani uppercase font-bold tracking-widest text-slate-400">
+                Skipped
+              </span>
             </div>
-            <div className="text-xl font-extrabold text-slate-900">{skippedCount}</div>
-            <div className="text-[10px] text-slate-400">Robots or non-HTML</div>
+            <div className="text-2xl font-orbitron font-extrabold text-white">{skippedCount}</div>
+            <div className="text-[10px] font-mono text-slate-500">Robots / Media</div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <div className="flex items-center justify-center text-rose-600 mb-1">
-              <AlertTriangle className="h-4 w-4 mr-1" />
-              <span className="text-xs uppercase font-bold tracking-wider text-slate-500">Failed</span>
+          <div className="p-3.5 bg-jet-950 rounded-2xl border border-neon/40">
+            <div className="flex items-center justify-center text-neon mb-1">
+              <AlertTriangle className="h-4 w-4 mr-1 text-neon" />
+              <span className="text-[11px] font-rajdhani uppercase font-bold tracking-widest text-neon">
+                Failed
+              </span>
             </div>
-            <div className="text-xl font-extrabold text-slate-900">{failedCount}</div>
-            <div className="text-[10px] text-slate-400">HTTP 4xx/5xx/Timeout</div>
+            <div className="text-2xl font-orbitron font-extrabold text-white">{failedCount}</div>
+            <div className="text-[10px] font-mono text-slate-500">4xx / 5xx / Timeout</div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

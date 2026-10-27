@@ -1,21 +1,23 @@
+'use client';
+
 import React, { useState } from 'react';
 import {
   Check,
   Copy,
   Filter,
   Search,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   AlertCircle,
-  HelpCircle,
   Clock,
-  Sparkles,
+  Zap,
+  ShieldCheck,
+  Terminal,
 } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
-import { Finding, Category, Severity } from '../types/audit';
+import { Finding } from '../types/audit';
 
 interface CategoryFindingsProps {
   findings: Finding[];
@@ -23,17 +25,16 @@ interface CategoryFindingsProps {
 }
 
 export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
-  findings,
+  findings = [],
   initialCategory = 'all',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [urlSearch, setUrlSearch] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const categories: { key: string; label: string }[] = [
-    { key: 'all', label: 'All Categories' },
+    { key: 'all', label: 'All Dimensions' },
     { key: 'technical', label: 'Technical SEO' },
     { key: 'onpage', label: 'On-Page SEO' },
     { key: 'content', label: 'Content Quality' },
@@ -52,16 +53,18 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
     { key: 'informational', label: 'Info' },
   ];
 
-  const filteredFindings = findings.filter((f) => {
+  const filteredFindings = (findings || []).filter((f) => {
+    if (!f) return false;
     if (selectedCategory !== 'all' && f.category !== selectedCategory) return false;
     if (selectedSeverity !== 'all' && f.severity !== selectedSeverity) return false;
     if (urlSearch.trim()) {
       const q = urlSearch.toLowerCase();
-      return (
-        f.affectedUrl.toLowerCase().includes(q) ||
-        f.title.toLowerCase().includes(q) ||
-        f.evidence.toLowerCase().includes(q)
-      );
+      const urlMatch =
+        (f.affectedUrl || '').toLowerCase().includes(q) ||
+        (f.affectedUrls || []).some((u) => (u || '').toLowerCase().includes(q));
+      const titleMatch = (f.title || '').toLowerCase().includes(q);
+      const evidenceMatch = (f.evidence || '').toLowerCase().includes(q);
+      return urlMatch || titleMatch || evidenceMatch;
     }
     return true;
   });
@@ -72,23 +75,59 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const getSeverityBadge = (severity: string) => {
+    switch (severity?.toLowerCase()) {
+      case 'critical':
+        return (
+          <span className="px-2.5 py-0.5 rounded text-[11px] font-rajdhani font-bold uppercase tracking-wider bg-neon/15 text-neon border border-neon/50 shadow-[0_0_10px_rgba(255,0,127,0.3)]">
+            CRITICAL
+          </span>
+        );
+      case 'high':
+        return (
+          <span className="px-2.5 py-0.5 rounded text-[11px] font-rajdhani font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/40">
+            HIGH
+          </span>
+        );
+      case 'medium':
+        return (
+          <span className="px-2.5 py-0.5 rounded text-[11px] font-rajdhani font-bold uppercase tracking-wider bg-cerulean/15 text-cerulean border border-cerulean/40">
+            MEDIUM
+          </span>
+        );
+      case 'low':
+        return (
+          <span className="px-2.5 py-0.5 rounded text-[11px] font-rajdhani font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
+            LOW
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2.5 py-0.5 rounded text-[11px] font-rajdhani font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/40">
+            INFO
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters Toolbar */}
-      <Card className="p-4 bg-white border-slate-200 shadow-sm">
+      <div className="p-5 bg-jet-900/90 border border-jet-800 rounded-2xl shadow-cyber-card backdrop-blur-md">
         <div className="flex flex-col lg:flex-row gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mr-1 flex items-center">
-              <Filter className="h-3.5 w-3.5 mr-1" /> Category:
+            <span className="text-xs font-rajdhani font-bold uppercase tracking-widest text-cerulean mr-1 flex items-center">
+              <Filter className="h-3.5 w-3.5 mr-1 text-cerulean" /> Dimension:
             </span>
             {categories.map((c) => (
               <button
                 key={c.key}
+                type="button"
                 onClick={() => setSelectedCategory(c.key)}
-                className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                className={`text-xs px-3 py-1.5 rounded-lg font-rajdhani font-bold uppercase tracking-wider transition-all min-h-[36px] ${
                   selectedCategory === c.key
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-jet-850 text-white border border-cerulean shadow-glow-cerulean'
+                    : 'bg-jet-950 text-slate-400 hover:text-white hover:bg-jet-800 border border-jet-800'
                 }`}
               >
                 {c.label}
@@ -96,15 +135,15 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+          <div className="flex flex-col sm:flex-row gap-2.5 shrink-0">
             {/* Severity Filter */}
             <select
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value)}
-              className="text-xs font-medium border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="text-xs font-rajdhani font-bold uppercase tracking-wider border border-jet-800 rounded-lg px-3 py-2 bg-jet-950 text-slate-200 focus:outline-none focus:border-cerulean min-h-[44px]"
             >
               {severities.map((s) => (
-                <option key={s.key} value={s.key}>
+                <option key={s.key} value={s.key} className="bg-jet-950 text-white">
                   {s.label}
                 </option>
               ))}
@@ -112,112 +151,109 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
 
             {/* URL/Keyword Search */}
             <div className="relative">
-              <Search className="h-3.5 w-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+              <Search className="h-3.5 w-3.5 absolute left-3 top-3.5 text-slate-400" />
               <input
                 type="text"
                 value={urlSearch}
                 onChange={(e) => setUrlSearch(e.target.value)}
-                placeholder="Filter by keyword or URL..."
-                className="text-xs border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 w-full sm:w-48 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                placeholder="Filter by URL or keyword..."
+                className="text-xs border border-jet-800 rounded-lg pl-9 pr-3 py-2 w-full sm:w-56 bg-jet-950 text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean min-h-[44px]"
               />
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Findings Count Header */}
-      <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+      <div className="flex items-center justify-between text-xs font-rajdhani font-semibold uppercase tracking-wider text-slate-400 px-1">
         <span>
-          Showing <strong>{filteredFindings.length}</strong> finding
-          {filteredFindings.length !== 1 ? 's' : ''} (out of {findings.length} total)
+          Showing <strong className="text-white font-mono">{filteredFindings.length}</strong> findings (out of{' '}
+          <span className="font-mono">{findings.length}</span> total)
         </span>
       </div>
 
       {/* Findings List */}
       {filteredFindings.length === 0 ? (
-        <Card className="p-12 text-center bg-white border-slate-200">
-          <Check className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-          <h3 className="text-base font-bold text-slate-900">No issues found matching criteria</h3>
-          <p className="text-xs text-slate-500 mt-1">Try clearing filters or selecting another category.</p>
-        </Card>
+        <div className="p-12 text-center bg-jet-900 border border-jet-800 rounded-2xl shadow-cyber-card">
+          <Check className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
+          <h3 className="text-base font-orbitron font-bold text-white tracking-wide">No issues found matching criteria</h3>
+          <p className="text-xs text-slate-400 mt-1 font-sans">All analyzed pages passed the selected dimension checks.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {filteredFindings.map((finding, idx) => {
-            const isExpanded = expandedId === finding.id;
-
             return (
-              <Card
+              <div
                 key={`${finding.id}-${idx}`}
-                className="p-5 sm:p-6 bg-white border-slate-200 hover:border-slate-300 transition-all shadow-sm"
+                className="p-6 bg-jet-900/95 border border-jet-800/90 hover:border-cerulean/50 transition-all rounded-2xl shadow-cyber-card space-y-3.5"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={finding.severity as any}>
-                      {finding.severity.toUpperCase()}
-                    </Badge>
-                    <Badge variant="neutral">
-                      {finding.category.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                    <span className="text-[11px] font-mono text-slate-400">
+                    {getSeverityBadge(finding.severity)}
+                    <span className="px-2.5 py-0.5 rounded text-[11px] font-rajdhani font-bold uppercase tracking-wider bg-jet-850 text-slate-300 border border-jet-700">
+                      {(finding.category || '').replace('_', ' ').toUpperCase()}
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-500">
                       ID: {finding.id}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-3 text-xs text-slate-500">
+                  <div className="flex items-center space-x-3 text-xs font-rajdhani text-slate-400">
                     <span className="flex items-center">
                       <Clock className="h-3.5 w-3.5 mr-1 text-slate-400" />
-                      Effort: <strong className="ml-1 capitalize">{finding.effort.replace('_', ' ')}</strong>
+                      Effort: <strong className="ml-1 text-slate-200 capitalize">{(finding.effort || 'moderate').replace('_', ' ')}</strong>
                     </span>
                     <span>•</span>
                     <span>
-                      Confidence: <strong className="capitalize">{finding.confidence}</strong>
+                      Confidence: <strong className="text-slate-200 capitalize">{finding.confidence || 'high'}</strong>
                     </span>
                   </div>
                 </div>
 
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
+                <h3 className="text-base sm:text-lg font-orbitron font-bold text-white tracking-wide">
                   {finding.title}
                 </h3>
 
-                <p className="text-xs text-slate-500 font-mono mb-3 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 truncate">
-                  <strong>Affected URL:</strong> {finding.affectedUrl}
+                <p className="text-xs text-slate-300 font-mono bg-jet-950 px-3 py-2 rounded-lg border border-jet-800 truncate">
+                  <strong className="text-cerulean">Affected URL:</strong> {finding.affectedUrl || finding.affectedUrls?.[0] || 'Domain Level'}
                 </p>
 
                 {/* Evidence Box */}
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 mb-3 text-xs text-slate-700">
-                  <div className="font-semibold text-slate-900 mb-1 flex items-center">
-                    <AlertCircle className="h-3.5 w-3.5 mr-1 text-amber-600" />
+                <div className="p-3.5 bg-jet-950 rounded-xl border border-jet-800 text-xs text-slate-200">
+                  <div className="font-rajdhani font-bold text-neon uppercase tracking-wider mb-1 flex items-center">
+                    <AlertCircle className="h-3.5 w-3.5 mr-1 text-neon" />
                     Observed Evidence:
                   </div>
-                  <p className="font-mono text-slate-800 break-words">{finding.evidence}</p>
+                  <p className="font-mono text-slate-300 break-words leading-relaxed">{finding.evidence}</p>
                 </div>
 
                 {/* Why It Matters */}
-                <div className="text-xs text-slate-600 mb-4 leading-relaxed">
-                  <strong className="text-slate-800 font-semibold">Why it matters: </strong>
+                <div className="text-xs text-slate-300 leading-relaxed font-sans">
+                  <strong className="text-white font-semibold">Why it matters: </strong>
                   {finding.whyItMatters}
                 </div>
 
                 {/* Recommended Fix */}
-                <div className="p-4 bg-indigo-50/40 rounded-xl border border-indigo-100 text-xs">
-                  <div className="font-bold text-indigo-950 mb-1 flex items-center">
-                    <Sparkles className="h-3.5 w-3.5 mr-1.5 text-indigo-600" />
+                <div className="p-4 bg-jet-850/80 rounded-xl border border-cerulean/30 text-xs space-y-2">
+                  <div className="font-rajdhani font-bold text-cerulean uppercase tracking-wider flex items-center">
+                    <Zap className="h-3.5 w-3.5 mr-1.5 text-cerulean" />
                     Recommended Remediation:
                   </div>
-                  <p className="text-slate-700 mb-3 leading-relaxed">{finding.recommendedFix}</p>
+                  <p className="text-slate-200 leading-relaxed font-sans">{finding.recommendedFix}</p>
 
                   {/* Implementation Code Snippet if present */}
                   {finding.implementationExample && (
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 mb-1">
-                        <span>Copy-Ready Implementation Snippet:</span>
+                    <div className="mt-3 pt-2 border-t border-jet-700">
+                      <div className="flex items-center justify-between text-[11px] font-rajdhani font-bold uppercase text-slate-300 mb-1.5">
+                        <span className="text-cerulean">Implementation Snippet:</span>
                         <button
+                          type="button"
                           onClick={() => handleCopyCode(finding.id, finding.implementationExample!)}
-                          className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
+                          className="inline-flex items-center text-xs font-rajdhani font-bold uppercase tracking-wider text-cerulean hover:text-white"
                         >
                           {copiedId === finding.id ? (
                             <>
-                              <Check className="h-3 w-3 mr-1 text-emerald-600" /> Copied!
+                              <Check className="h-3 w-3 mr-1 text-emerald-400" /> Copied!
                             </>
                           ) : (
                             <>
@@ -226,19 +262,19 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
                           )}
                         </button>
                       </div>
-                      <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-[11px] font-mono overflow-x-auto">
+                      <pre className="p-3 bg-black text-cerulean-light rounded-lg text-[11px] font-mono overflow-x-auto border border-jet-700">
                         <code>{finding.implementationExample}</code>
                       </pre>
                     </div>
                   )}
 
                   {/* Validation Instructions */}
-                  <div className="mt-3 pt-3 border-t border-indigo-100/60 text-[11px] text-slate-600">
-                    <strong className="text-slate-800">How to validate: </strong>
+                  <div className="pt-2 text-[11px] text-slate-400 font-sans">
+                    <strong className="text-slate-200">How to validate: </strong>
                     {finding.validationInstructions}
                   </div>
                 </div>
-              </Card>
+              </div>
             );
           })}
         </div>

@@ -73,7 +73,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="antialiased bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans selection:bg-slate-200">
+      <body className="antialiased bg-jet-950 text-white min-h-screen flex flex-col font-sans selection:bg-neon selection:text-white">
         <SiteHeader />
         <main id="main-content" className="flex-1">
           {children}

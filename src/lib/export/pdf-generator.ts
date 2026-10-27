@@ -9,97 +9,127 @@ export function generateAuditPdf(report: AuditReport): void {
     format: 'a4',
   });
 
-  const primaryColor: [number, number, number] = [15, 23, 42]; // Slate 900
+  // High-contrast, executive cyber-grade typography & color palette
+  const primaryColor: [number, number, number] = [15, 23, 42]; // Slate 900 (ultra-crisp deep ink)
   const secondaryColor: [number, number, number] = [30, 41, 59]; // Slate 800
-  const accentColor: [number, number, number] = [79, 70, 229]; // Indigo 600
-  const textColor: [number, number, number] = [51, 65, 85]; // Slate 700
+  const accentCerulean: [number, number, number] = [0, 168, 255]; // Cerulean Blue (#00A8FF)
+  const accentRose: [number, number, number] = [255, 0, 127]; // Neon Rose (#FF007F)
+  const textColor: [number, number, number] = [15, 23, 42]; // Deep slate ink for 100% crisp readability
+  const mutedText: [number, number, number] = [71, 85, 105]; // Slate 600
   const lightBg: [number, number, number] = [248, 250, 252]; // Slate 50
-  const borderLight: [number, number, number] = [226, 232, 240]; // Slate 200
+  const borderLight: [number, number, number] = [203, 213, 225]; // Slate 300
 
   const drawHeaderBanner = (title: string, subtitle?: string) => {
-    doc.setFillColor(...accentColor);
-    doc.rect(0, 0, 210, 8, 'F');
+    // Cerulean top accent stripe
+    doc.setFillColor(...accentCerulean);
+    doc.rect(0, 0, 210, 6, 'F');
 
+    // Title
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
+    doc.setFontSize(15);
     doc.setTextColor(...primaryColor);
-    doc.text(title, 14, 20);
+    doc.text(title, 14, 18);
 
     if (subtitle) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
-      doc.setTextColor(100, 116, 139);
-      doc.text(subtitle, 14, 26);
+      doc.setTextColor(...mutedText);
+      doc.text(subtitle, 14, 24);
     }
+  };
+
+  // Common autoTable default settings for maximum readability
+  const commonTableOptions = {
+    theme: 'grid' as const,
+    margin: { top: 28, left: 14, right: 14, bottom: 20 },
+    styles: {
+      cellPadding: 2.4,
+      font: 'helvetica' as const,
+      fontSize: 8,
+      textColor: textColor,
+      lineColor: [226, 232, 240] as [number, number, number],
+      lineWidth: 0.15,
+      overflow: 'linebreak' as const,
+    },
+    headStyles: {
+      fillColor: primaryColor,
+      textColor: [255, 255, 255] as [number, number, number],
+      fontSize: 8.5,
+      fontStyle: 'bold' as const,
+      cellPadding: 2.8,
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252] as [number, number, number],
+    },
   };
 
   // ====================================================
   // SECTION 1: COVER & EXECUTIVE AUDIT SCORECARD
   // ====================================================
-  doc.setFillColor(...accentColor);
-  doc.rect(0, 0, 210, 8, 'F');
+  doc.setFillColor(...accentCerulean);
+  doc.rect(0, 0, 210, 6, 'F');
 
   // Brand Name
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(24);
   doc.setTextColor(...primaryColor);
-  doc.text('SearchScope', 14, 24);
+  doc.text('SearchScope', 14, 22);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(100, 116, 139);
-  doc.text('Production SEO, AEO & GEO Intelligence Audit Report', 14, 30);
+  doc.setTextColor(...mutedText);
+  doc.text('Production SEO, AEO & GEO Intelligence Audit Report', 14, 28);
 
   // Target Domain Info Box
   doc.setFillColor(...lightBg);
   doc.setDrawColor(...borderLight);
-  doc.roundedRect(14, 36, 182, 38, 2, 2, 'FD');
+  doc.roundedRect(14, 34, 182, 38, 2, 2, 'FD');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(15);
   doc.setTextColor(...primaryColor);
-  doc.text(report.targetDomain, 20, 46);
+  doc.text(report.targetDomain, 20, 44);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...textColor);
-  doc.text(`Site Title: ${report.siteTitle || 'N/A'}`, 20, 53);
+  doc.text(`Site Title: ${report.siteTitle || 'N/A'}`, 20, 51);
   doc.text(
     `Audited Date: ${new Date(report.auditDate).toLocaleDateString()} ${new Date(report.auditDate).toLocaleTimeString()}`,
     20,
-    59
+    57
   );
-  doc.text(`Crawler Agent: ${report.crawlerUserAgent}`, 20, 65);
+  doc.text(`Crawler Agent: ${report.crawlerUserAgent}`, 20, 63);
   doc.text(
     `Crawl Coverage: ${report.crawlCoverage?.summary || `${report.crawlStats.totalPagesCrawled} of ${report.crawlStats.totalPagesDiscovered} pages crawled`}`,
     20,
-    71
+    69
   );
 
   // Overall Score Badge
-  const scoreX = 154;
-  const scoreY = 40;
+  const scoreX = 152;
+  const scoreY = 38;
   const scoreColor =
-    report.overallScore >= 80 ? [16, 185, 129] : report.overallScore >= 60 ? [79, 70, 229] : [245, 158, 11];
+    report.overallScore >= 80 ? [16, 185, 129] : report.overallScore >= 60 ? [0, 168, 255] : [245, 158, 11];
   doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-  doc.roundedRect(scoreX, scoreY, 34, 26, 3, 3, 'F');
+  doc.roundedRect(scoreX, scoreY, 38, 28, 3, 3, 'F');
 
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.text(`${report.overallScore}/100`, scoreX + 17, scoreY + 13, { align: 'center' });
+  doc.setFontSize(20);
+  doc.text(`${report.overallScore}/100`, scoreX + 19, scoreY + 14, { align: 'center' });
 
-  doc.setFontSize(7);
-  doc.text('OVERALL SCORE', scoreX + 17, scoreY + 20, { align: 'center' });
+  doc.setFontSize(7.5);
+  doc.text('OVERALL SCORE', scoreX + 19, scoreY + 22, { align: 'center' });
 
   // Executive Narrative
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(...primaryColor);
-  doc.text('Executive Summary & Scope Assessment', 14, 82);
+  doc.text('Executive Summary & Scope Assessment', 14, 80);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
+  doc.setFontSize(8.8);
   doc.setTextColor(...textColor);
   const narrative =
     `SearchScope executed an automated, deterministic audit of ${report.targetDomain}. ` +
@@ -108,10 +138,11 @@ export function generateAuditPdf(report: AuditReport): void {
     `The audit evaluated technical indexability, on-page canonical & heading hierarchy, Schema.org structured data, content depth & E-E-A-T signals, ` +
     `Answer Engine Optimization (AEO), and Generative Engine Optimization (GEO). ` +
     `Total findings identified: ${report.findings.length} issues across all audit dimensions.`;
-  doc.text(doc.splitTextToSize(narrative, 182), 14, 88);
+  doc.text(doc.splitTextToSize(narrative, 182), 14, 86);
 
   // Crawl Accounting Balance Table
   autoTable(doc, {
+    ...commonTableOptions,
     startY: 104,
     head: [['Crawled OK', 'Capped (Limit)', 'Robots Skipped', 'Non-HTML', 'Failed', 'Total Discovered']],
     body: [
@@ -124,21 +155,21 @@ export function generateAuditPdf(report: AuditReport): void {
         report.crawlStats.totalPagesDiscovered.toString(),
       ],
     ],
-    theme: 'grid',
     headStyles: {
       fillColor: secondaryColor,
       textColor: [255, 255, 255],
-      fontSize: 8,
+      fontSize: 8.5,
       halign: 'center',
       fontStyle: 'bold',
+      cellPadding: 2.6,
     },
     bodyStyles: {
       fontSize: 9,
       textColor: primaryColor,
       halign: 'center',
       fontStyle: 'bold',
+      cellPadding: 2.8,
     },
-    margin: { left: 14, right: 14 },
   });
 
   // Category Scores Table
@@ -160,46 +191,35 @@ export function generateAuditPdf(report: AuditReport): void {
   ]);
 
   autoTable(doc, {
-    startY: catStartY + 3,
+    ...commonTableOptions,
+    startY: catStartY + 4,
     head: [['Audit Dimension', 'Score', 'Weight', 'Crit', 'High', 'Med', 'Low', 'Status']],
     body: categoryRows,
-    theme: 'grid',
-    headStyles: {
-      fillColor: primaryColor,
-      textColor: [255, 255, 255],
-      fontSize: 8,
-      fontStyle: 'bold',
-    },
-    bodyStyles: {
-      fontSize: 8,
-      textColor: textColor,
-    },
     columnStyles: {
-      0: { cellWidth: 50, fontStyle: 'bold' },
-      1: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },
+      0: { cellWidth: 52, fontStyle: 'bold' },
+      1: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },
       2: { cellWidth: 18, halign: 'center' },
-      3: { cellWidth: 16, halign: 'center', textColor: [225, 29, 72] },
-      4: { cellWidth: 16, halign: 'center', textColor: [217, 119, 6] },
+      3: { cellWidth: 16, halign: 'center', textColor: [225, 29, 72], fontStyle: 'bold' },
+      4: { cellWidth: 16, halign: 'center', textColor: [217, 119, 6], fontStyle: 'bold' },
       5: { cellWidth: 16, halign: 'center' },
       6: { cellWidth: 16, halign: 'center' },
       7: { cellWidth: 28, halign: 'center' },
     },
-    margin: { left: 14, right: 14 },
   });
 
   // What Passed Box on Cover Page
   const passStartY = (doc as any).lastAutoTable?.finalY + 6;
   doc.setFillColor(...lightBg);
   doc.setDrawColor(...borderLight);
-  doc.roundedRect(14, passStartY, 182, 38, 2, 2, 'FD');
+  doc.roundedRect(14, passStartY, 182, 34, 2, 2, 'FD');
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(16, 185, 129); // Green
-  doc.text('Key Technical Architecture That Passed Inspection', 20, passStartY + 7);
+  doc.text('Key Technical Architecture That Passed Inspection', 20, passStartY + 6);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.8);
+  doc.setFontSize(8.2);
   doc.setTextColor(...textColor);
   const passedItems = [
     report.crawlStats.robotsTxtPresent ? '✓ robots.txt detected and verified' : null,
@@ -211,10 +231,10 @@ export function generateAuditPdf(report: AuditReport): void {
     '✓ Zero broken internal links detected during crawl traversal',
   ].filter(Boolean);
 
-  let pY = passStartY + 14;
+  let pY = passStartY + 12;
   for (const item of passedItems.slice(0, 5)) {
     doc.text(item as string, 20, pY);
-    pY += 5;
+    pY += 4.6;
   }
 
   // ====================================================
@@ -248,7 +268,7 @@ export function generateAuditPdf(report: AuditReport): void {
             fillColor: [241, 245, 249],
             textColor: primaryColor,
             fontStyle: 'bold',
-            fontSize: 8.5,
+            fontSize: 8.8,
           },
         },
       ]);
@@ -269,19 +289,13 @@ export function generateAuditPdf(report: AuditReport): void {
   }
 
   autoTable(doc, {
-    startY: 32,
+    ...commonTableOptions,
+    startY: 30,
     head: [['Impact', 'Effort', 'Remediation Task', 'Affected URLs (Full)', 'Actionable Guidance & Snippet']],
     body: roadmapRows,
-    theme: 'grid',
-    headStyles: {
-      fillColor: primaryColor,
-      textColor: [255, 255, 255],
+    styles: {
+      ...commonTableOptions.styles,
       fontSize: 8,
-      fontStyle: 'bold',
-    },
-    bodyStyles: {
-      fontSize: 7,
-      textColor: textColor,
     },
     columnStyles: {
       0: { cellWidth: 16, halign: 'center', fontStyle: 'bold' },
@@ -290,7 +304,6 @@ export function generateAuditPdf(report: AuditReport): void {
       3: { cellWidth: 44, overflow: 'linebreak' }, // FULL URLs wrapped
       4: { cellWidth: 62 },
     },
-    margin: { left: 14, right: 14 },
   });
 
   // ====================================================
@@ -312,19 +325,13 @@ export function generateAuditPdf(report: AuditReport): void {
   ]);
 
   autoTable(doc, {
-    startY: 32,
+    ...commonTableOptions,
+    startY: 30,
     head: [['Severity', 'Category', 'Finding Title', 'Affected URL (Full)', 'Observed Evidence', 'Recommended Fix & Validation']],
     body: findingsRows,
-    theme: 'grid',
-    headStyles: {
-      fillColor: primaryColor,
-      textColor: [255, 255, 255],
-      fontSize: 7.5,
-      fontStyle: 'bold',
-    },
-    bodyStyles: {
-      fontSize: 6.8,
-      textColor: textColor,
+    styles: {
+      ...commonTableOptions.styles,
+      fontSize: 8,
     },
     columnStyles: {
       0: { cellWidth: 16, halign: 'center', fontStyle: 'bold' },
@@ -334,7 +341,6 @@ export function generateAuditPdf(report: AuditReport): void {
       4: { cellWidth: 34 },
       5: { cellWidth: 34 },
     },
-    margin: { left: 14, right: 14 },
   });
 
   // ====================================================
@@ -358,19 +364,13 @@ export function generateAuditPdf(report: AuditReport): void {
     ]);
 
     autoTable(doc, {
-      startY: 32,
+      ...commonTableOptions,
+      startY: 30,
       head: [['Check', 'Risk', 'Category', 'Observed Claim Text', 'Page URL', 'Legal / Compliance Risk', 'Owner Action Required']],
       body: claimRows,
-      theme: 'grid',
-      headStyles: {
-        fillColor: secondaryColor,
-        textColor: [255, 255, 255],
-        fontSize: 7.5,
-        fontStyle: 'bold',
-      },
-      bodyStyles: {
-        fontSize: 6.8,
-        textColor: textColor,
+      styles: {
+        ...commonTableOptions.styles,
+        fontSize: 8,
       },
       columnStyles: {
         0: { cellWidth: 10, halign: 'center', fontStyle: 'bold' },
@@ -381,7 +381,6 @@ export function generateAuditPdf(report: AuditReport): void {
         5: { cellWidth: 34 },
         6: { cellWidth: 30 },
       },
-      margin: { left: 14, right: 14 },
     });
   }
 
@@ -406,30 +405,23 @@ export function generateAuditPdf(report: AuditReport): void {
     ]);
 
     autoTable(doc, {
-      startY: 32,
+      ...commonTableOptions,
+      startY: 30,
       head: [['Extracted Keyword Candidate', 'Intent', 'Occurrences', 'In <title> Pages', 'In <h1> Pages', 'Gap Status', 'Spread Across']],
       body: kwRows,
-      theme: 'grid',
-      headStyles: {
-        fillColor: primaryColor,
-        textColor: [255, 255, 255],
+      styles: {
+        ...commonTableOptions.styles,
         fontSize: 8,
-        fontStyle: 'bold',
-      },
-      bodyStyles: {
-        fontSize: 7.2,
-        textColor: textColor,
       },
       columnStyles: {
         0: { cellWidth: 48, fontStyle: 'bold' },
-        1: { cellWidth: 26, halign: 'center' },
+        1: { cellWidth: 24, halign: 'center' },
         2: { cellWidth: 20, halign: 'center' },
         3: { cellWidth: 26, halign: 'center' },
         4: { cellWidth: 24, halign: 'center' },
         5: { cellWidth: 20, halign: 'center' },
-        6: { cellWidth: 18, halign: 'right' },
+        6: { cellWidth: 20, halign: 'right' },
       },
-      margin: { left: 14, right: 14 },
     });
   }
 
@@ -486,19 +478,13 @@ export function generateAuditPdf(report: AuditReport): void {
       ]);
 
   autoTable(doc, {
-    startY: 32,
+    ...commonTableOptions,
+    startY: 30,
     head: [['Status', 'URL (Full)', 'Title / Error Hint', 'Words', 'Response', 'Schemas']],
     body: urlRows,
-    theme: 'grid',
-    headStyles: {
-      fillColor: primaryColor,
-      textColor: [255, 255, 255],
+    styles: {
+      ...commonTableOptions.styles,
       fontSize: 8,
-      fontStyle: 'bold',
-    },
-    bodyStyles: {
-      fontSize: 6.8,
-      textColor: textColor,
     },
     columnStyles: {
       0: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },
@@ -508,7 +494,6 @@ export function generateAuditPdf(report: AuditReport): void {
       4: { cellWidth: 18, halign: 'center' },
       5: { cellWidth: 16, halign: 'center' },
     },
-    margin: { left: 14, right: 14 },
   });
 
   // ====================================================
@@ -538,19 +523,13 @@ export function generateAuditPdf(report: AuditReport): void {
     ]);
 
     autoTable(doc, {
+      ...commonTableOptions,
       startY: currentY + 3,
       head: [['Code', 'Stage', 'Target URL', 'Diagnostic Message', 'Remediation Hint']],
       body: diagRows,
-      theme: 'grid',
-      headStyles: {
-        fillColor: secondaryColor,
-        textColor: [255, 255, 255],
-        fontSize: 7.5,
-        fontStyle: 'bold',
-      },
-      bodyStyles: {
-        fontSize: 6.8,
-        textColor: textColor,
+      styles: {
+        ...commonTableOptions.styles,
+        fontSize: 8,
       },
       columnStyles: {
         0: { cellWidth: 24, fontStyle: 'bold' },
@@ -559,7 +538,6 @@ export function generateAuditPdf(report: AuditReport): void {
         3: { cellWidth: 48 },
         4: { cellWidth: 50 },
       },
-      margin: { left: 14, right: 14 },
     });
 
     currentY = (doc as any).lastAutoTable?.finalY + 8;
@@ -572,11 +550,11 @@ export function generateAuditPdf(report: AuditReport): void {
   doc.text('Audit Engine Methodology', 14, currentY);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.8);
+  doc.setFontSize(8.2);
   doc.setTextColor(...textColor);
   const methodLines = doc.splitTextToSize(report.methodology, 182);
   doc.text(methodLines, 14, currentY + 5);
-  currentY += methodLines.length * 4 + 8;
+  currentY += methodLines.length * 4.2 + 8;
 
   // Transient Memory Guarantee
   doc.setFont('helvetica', 'bold');
@@ -585,7 +563,7 @@ export function generateAuditPdf(report: AuditReport): void {
   doc.text('Zero-Data-Retention & Privacy Architecture', 14, currentY);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.8);
+  doc.setFontSize(8.2);
   doc.setTextColor(...textColor);
   const privacyText =
     'SearchScope operates on a strict zero-retention architecture. No databases, report caches, or user credentials are stored. ' +
@@ -593,7 +571,7 @@ export function generateAuditPdf(report: AuditReport): void {
     'Target websites are accessed strictly via public endpoints adhering to robots.txt and politeness throttles.';
   const privacyLines = doc.splitTextToSize(privacyText, 182);
   doc.text(privacyLines, 14, currentY + 5);
-  currentY += privacyLines.length * 4 + 8;
+  currentY += privacyLines.length * 4.2 + 8;
 
   // Disclaimers
   doc.setFont('helvetica', 'bold');
@@ -604,11 +582,11 @@ export function generateAuditPdf(report: AuditReport): void {
   currentY += 5;
   for (const disclaimer of report.disclaimers) {
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(8);
     doc.setTextColor(...textColor);
     const splitDisc = doc.splitTextToSize(`• ${disclaimer}`, 180);
     doc.text(splitDisc, 14, currentY);
-    currentY += splitDisc.length * 3.8 + 1.5;
+    currentY += splitDisc.length * 4 + 1.5;
   }
 
   // ====================================================
@@ -617,12 +595,12 @@ export function generateAuditPdf(report: AuditReport): void {
   const totalPages = (doc as any).internal.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    doc.setDrawColor(226, 232, 240);
+    doc.setDrawColor(...borderLight);
     doc.line(14, 286, 196, 286);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
-    doc.setTextColor(148, 163, 184);
+    doc.setTextColor(...mutedText);
     doc.text(`SearchScope Production Intelligence Audit — ${report.targetDomain}`, 14, 291);
     doc.text(`Page ${i} of ${totalPages}`, 196, 291, { align: 'right' });
   }

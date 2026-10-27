@@ -11,6 +11,34 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // Robotic Jet Black Palette
+        jet: {
+          950: "#040507",
+          900: "#07080D",
+          850: "#0B0D14",
+          800: "#10131E",
+          700: "#171B2B",
+          600: "#21263B",
+          500: "#323A56",
+        },
+        // Cerulean Blue Palette
+        cerulean: {
+          DEFAULT: "#00A8FF",
+          glow: "#38BDF8",
+          light: "#70D6FF",
+          dark: "#0077B6",
+          deep: "#023E8A",
+          muted: "rgba(0, 168, 255, 0.15)",
+        },
+        // Neon Rose Palette
+        neon: {
+          DEFAULT: "#FF007F",
+          glow: "#FF2A85",
+          light: "#FF5EAA",
+          dark: "#D0006F",
+          deep: "#8F004C",
+          muted: "rgba(255, 0, 127, 0.15)",
+        },
         scope: {
           50: "#f8fafc",
           100: "#f1f5f9",
@@ -24,43 +52,35 @@ const config: Config = {
           900: "#0f172a",
           950: "#020617",
         },
-        brand: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
-        },
-        emerald: {
-          50: "#ecfdf5",
-          100: "#d1fae5",
-          500: "#10b981",
-          600: "#059669",
-          700: "#047857",
-        },
-        amber: {
-          50: "#fffbeb",
-          100: "#fef3c7",
-          500: "#f59e0b",
-          600: "#d97706",
-          700: "#b45309",
-        },
-        rose: {
-          50: "#fff1f2",
-          100: "#ffe4e6",
-          500: "#f43f5e",
-          600: "#e11d48",
-          700: "#be123c",
-        }
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "-apple-system", "sans-serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        orbitron: ["var(--font-orbitron)", "Orbitron", "sans-serif"],
+        rajdhani: ["var(--font-rajdhani)", "Rajdhani", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
+        sans: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        "glow-cerulean": "0 0 25px rgba(0, 168, 255, 0.35)",
+        "glow-cerulean-lg": "0 0 50px rgba(0, 168, 255, 0.45)",
+        "glow-rose": "0 0 25px rgba(255, 0, 127, 0.35)",
+        "glow-rose-lg": "0 0 50px rgba(255, 0, 127, 0.45)",
+        "glow-dual": "0 0 30px rgba(0, 168, 255, 0.25), 0 0 30px rgba(255, 0, 127, 0.25)",
+        "cyber-card": "0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.07)",
+      },
+      animation: {
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "scanline": "scanline 8s linear infinite",
+        "float": "float 6s ease-in-out infinite",
+      },
+      keyframes: {
+        scanline: {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(1000%)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
     },
   },

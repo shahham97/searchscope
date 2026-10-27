@@ -1,15 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #050608;
+  --foreground: #F8FAFC;
+  --cerulean: #00A8FF;
+  --neon-rose: #FF007F;
+  --font-orbitron: 'Orbitron', sans-serif;
+  --font-rajdhani: 'Rajdhani', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--background);
+  font-family: var(--font-sans);
   min-height: 100vh;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(0, 168, 255, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(255, 0, 127, 0.07) 0%, transparent 45%),
+    linear-gradient(to bottom, rgba(5, 6, 8, 0.95), rgba(7, 8, 13, 0.98));
+  background-attachment: fixed;
+}
+
+/* Custom Cyber Robotic Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #07080d;
+}
+::-webkit-scrollbar-thumb {
+  background: #171b2b;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 168, 255, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00a8ff;
+  box-shadow: 0 0 10px #00a8ff;
+}
+
+/* Cyber Glow Utilities */
+.text-glow-cerulean {
+  text-shadow: 0 0 10px rgba(0, 168, 255, 0.7), 0 0 20px rgba(0, 168, 255, 0.4);
+}
+
+.text-glow-rose {
+  text-shadow: 0 0 10px rgba(255, 0, 127, 0.7), 0 0 20px rgba(255, 0, 127, 0.4);
+}
+
+.border-glow-cerulean {
+  border-color: rgba(0, 168, 255, 0.6);
+  box-shadow: 0 0 15px rgba(0, 168, 255, 0.3), inset 0 0 15px rgba(0, 168, 255, 0.1);
+}
+
+.border-glow-rose {
+  border-color: rgba(255, 0, 127, 0.6);
+  box-shadow: 0 0 15px rgba(255, 0, 127, 0.3), inset 0 0 15px rgba(255, 0, 127, 0.1);
+}
+
+/* Cyber Grid Background Overlay */
+.cyber-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.cyber-grid-dense {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 168, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 0, 127, 0.04) 1px, transparent 1px);
 }

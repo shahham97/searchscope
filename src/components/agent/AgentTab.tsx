@@ -129,7 +129,7 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
               variant="secondary"
               size="sm"
               onClick={() => setUpdatePlan(null)}
-              className="text-xs"
+              className="text-xs bg-jet-800 border-jet-700 text-slate-200 hover:text-white"
             >
               Modify Agent Config & Re-Run
             </Button>
@@ -144,16 +144,17 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
       ) : (
         <div className="space-y-6">
           {/* Intro Card */}
-          <Card className="p-6 bg-slate-900 border-slate-800 text-slate-100">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <Card className="p-6 bg-jet-950 border-jet-800 text-slate-100 shadow-glow-rose relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-neon/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
               <div className="space-y-1.5 max-w-2xl">
                 <div className="flex items-center gap-2">
-                  <Badge variant="neutral" className="bg-slate-800 text-slate-200 border-slate-700">
+                  <Badge variant="critical">
                     Autonomous Code & Content Agent
                   </Badge>
-                  <span className="text-xs text-slate-400">Strict Bring-Your-Own-Key (BYOK)</span>
+                  <span className="text-xs text-cerulean font-mono">Strict Bring-Your-Own-Key (BYOK)</span>
                 </div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-white font-orbitron tracking-wide">
                   SearchScope Developer & SEO Agent
                 </h2>
                 <p className="text-xs text-slate-300 leading-relaxed">
@@ -161,19 +162,23 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                 </p>
               </div>
 
-              <div className="p-3 bg-slate-800/80 border border-slate-700 rounded-lg text-center shrink-0">
-                <span className="text-[11px] text-slate-400 block font-semibold">Crawl Analyzed</span>
+              <div className="p-3.5 bg-jet-900 border border-jet-800 rounded-xl text-center shrink-0">
+                <span className="text-[11px] text-slate-400 block font-semibold font-rajdhani">Crawl Analyzed</span>
                 <span className="text-lg font-bold text-white font-mono">{report.pages.length} Pages</span>
-                <span className="text-[10px] text-slate-400 block font-mono">{report.findings.length} Findings</span>
+                <span className="text-[10px] text-cerulean block font-mono">{report.findings.length} Findings</span>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div className="mt-4 pt-3 border-t border-jet-800 flex flex-wrap items-center justify-between gap-3 relative z-10">
               <div className="flex items-center gap-2 text-xs text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>
-                  Brand Facts: <strong>{brandFacts.tradingName}</strong> (
-                  {brandFacts.countryOfOrigin.isOriginVerified ? 'Origin Verified ✓' : 'Origin Awaiting Verification ⚠️'}
+                  Brand Facts: <strong className="text-white">{brandFacts.tradingName}</strong> (
+                  {brandFacts.countryOfOrigin.isOriginVerified ? (
+                    <span className="text-emerald-400 font-mono">Origin Verified ✓</span>
+                  ) : (
+                    <span className="text-amber-400 font-mono">Origin Awaiting Verification ⚠️</span>
+                  )}
                   )
                 </span>
               </div>
@@ -181,9 +186,9 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowBrandFactsModal(true)}
-                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800 min-h-[44px]"
+                className="text-xs border-jet-700 bg-jet-900 text-slate-200 hover:text-white hover:border-cerulean/50 min-h-[44px]"
               >
-                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-slate-300" />
+                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-cerulean" />
                 Configure Brand Facts & Legal Guardrails
               </Button>
             </div>
@@ -199,15 +204,15 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
 
           {/* Active execution logs */}
           {isLaunching && (
-            <Card className="p-6 bg-slate-900 border-slate-750 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <Card className="p-6 bg-jet-950 border-jet-800 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-jet-800">
                 <div className="flex items-center gap-2.5">
-                  <Loader2 className="w-5 h-5 text-slate-300 animate-spin" />
-                  <h4 className="text-sm font-semibold text-white">
+                  <Loader2 className="w-5 h-5 text-neon animate-spin" />
+                  <h4 className="text-sm font-semibold text-white font-orbitron">
                     Agent Pipeline Running autonomously...
                   </h4>
                 </div>
-                <span className="text-xs text-slate-400 font-mono">
+                <span className="text-xs text-cerulean font-mono">
                   Target: {report.targetDomain}
                 </span>
               </div>
@@ -225,23 +230,23 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                       key={s.id}
                       className={`p-3 rounded-lg border text-xs transition-all ${
                         isComplete
-                          ? 'bg-emerald-950/20 border-emerald-800/50 text-emerald-300'
+                          ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
                           : isCurrent
-                          ? 'bg-slate-800 border-slate-500 text-white'
+                          ? 'bg-jet-900 border-cerulean text-white shadow-glow-cerulean'
                           : isFailed
-                          ? 'bg-red-950/30 border-red-800 text-red-300'
-                          : 'bg-slate-950/40 border-slate-800/60 text-slate-500'
+                          ? 'bg-rose-950/40 border-neon/50 text-neon'
+                          : 'bg-jet-900/60 border-jet-800 text-slate-500'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold">{s.id}</span>
+                        <span className="font-bold font-mono">{s.id}</span>
                         {isComplete && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                        {isCurrent && <Loader2 className="w-3.5 h-3.5 text-slate-200 animate-spin" />}
+                        {isCurrent && <Loader2 className="w-3.5 h-3.5 text-cerulean animate-spin" />}
                       </div>
-                      <span className="font-semibold block text-[11px] truncate">
+                      <span className="font-semibold block text-[11px] truncate font-rajdhani">
                         {s.name.replace(/Stage .: /, '')}
                       </span>
-                      <span className="text-[10px] text-neutral-400 block truncate mt-0.5">
+                      <span className="text-[10px] text-slate-400 block truncate mt-0.5">
                         {log?.message || s.desc}
                       </span>
                     </div>
@@ -250,17 +255,17 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
               </div>
 
               {/* Live console message */}
-              <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 font-mono text-xs text-neutral-300 space-y-1">
-                <div className="flex items-center gap-1.5 text-neutral-500 text-[11px]">
+              <div className="bg-jet-950 p-3 rounded-lg border border-jet-800 font-mono text-xs text-slate-300 space-y-1">
+                <div className="flex items-center gap-1.5 text-cerulean text-[11px]">
                   <Terminal className="w-3 h-3" />
                   <span>Agent Execution Log</span>
                 </div>
                 {stageLogs.map((log, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <span className="text-slate-400">[{log.stage}]</span>
+                    <span className="text-cerulean">[{log.stage}]</span>
                     <span>{log.message}</span>
                     {log.durationMs && (
-                      <span className="text-neutral-500 text-[10px]">({log.durationMs}ms)</span>
+                      <span className="text-slate-500 text-[10px]">({log.durationMs}ms)</span>
                     )}
                   </div>
                 ))}
@@ -270,12 +275,12 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 bg-red-950/30 border border-red-800/60 rounded-xl text-xs text-red-300 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="p-4 bg-rose-950/40 border border-neon/50 rounded-xl text-xs text-neon flex items-start gap-3 shadow-glow-rose">
+              <AlertCircle className="w-5 h-5 text-neon shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <span className="font-semibold text-white block">Agent Pipeline Error</span>
-                <p>{error}</p>
-                <p className="text-neutral-400 text-[11px] pt-1">
+                <span className="font-semibold text-white block font-orbitron">Agent Pipeline Error</span>
+                <p className="text-rose-200">{error}</p>
+                <p className="text-slate-400 text-[11px] pt-1">
                   Tip: You can test with "Mock Provider (Offline)" to verify the entire pipeline without an API key or network connection.
                 </p>
               </div>
