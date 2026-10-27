@@ -13,6 +13,11 @@ import { analyzeWeakAndAmbiguousLinks } from './analyzer/weak-links';
 import { analyzeSchemaDomParity } from './analyzer/schema-parity';
 import { analyzeSocialMetadata } from './analyzer/social-metadata';
 import { analyzeContentClaimsAndRisks } from './analyzer/claim-risk-detector';
+import { analyzeLinkGraph } from './analyzer/link-graph';
+import { analyzeIndexationHygiene } from './analyzer/indexation-hygiene';
+import { analyzeMobileAndRenderingParity } from './analyzer/mobile-parity';
+import { analyzeEcommerceAndInternational } from './analyzer/ecommerce-international';
+import { analyzePerformance } from './analyzer/performance';
 import {
   extractCandidateKeywords,
   buildSearchObservations,
@@ -142,6 +147,26 @@ export async function runCompleteAudit(
       const geoFindings = analyzeGeo(pages, crawlStats.llmsTxtPresent);
       allFindings.push(...geoFindings);
     }
+
+    // Link Graph, PageRank, Click Depth & Orphans
+    const linkGraphReport = analyzeLinkGraph(pages, crawlStats.uncrawledUrls);
+    allFindings.push(...linkGraphReport.findings);
+
+    // Indexation Hygiene & Crawl Traps
+    const indexHygieneReport = analyzeIndexationHygiene(pages, crawlStats.sitemapsFound);
+    allFindings.push(...indexHygieneReport.findings);
+
+    // Mobile Parity & Viewport
+    const mobileReport = analyzeMobileAndRenderingParity(pages);
+    allFindings.push(...mobileReport.findings);
+
+    // E-Commerce (GMC) & International (hreflang) & SimHash Near-Duplicates
+    const ecomReport = analyzeEcommerceAndInternational(pages);
+    allFindings.push(...ecomReport.findings);
+
+    // Performance & Crawler Latency
+    const perfReport = analyzePerformance(pages);
+    allFindings.push(...perfReport.findings);
   }
 
   // Candidate Keywords & Search Intelligence

@@ -15,6 +15,11 @@ import { analyzeWeakAndAmbiguousLinks } from '@/lib/analyzer/weak-links';
 import { analyzeSchemaDomParity } from '@/lib/analyzer/schema-parity';
 import { analyzeSocialMetadata } from '@/lib/analyzer/social-metadata';
 import { analyzeContentClaimsAndRisks } from '@/lib/analyzer/claim-risk-detector';
+import { analyzeLinkGraph } from '@/lib/analyzer/link-graph';
+import { analyzeIndexationHygiene } from '@/lib/analyzer/indexation-hygiene';
+import { analyzeMobileAndRenderingParity } from '@/lib/analyzer/mobile-parity';
+import { analyzeEcommerceAndInternational } from '@/lib/analyzer/ecommerce-international';
+import { analyzePerformance } from '@/lib/analyzer/performance';
 import {
   extractCandidateKeywords,
   buildSearchObservations,
@@ -65,6 +70,7 @@ export async function POST(req: NextRequest) {
     // Reconstruct ledger from entries
     const ledger = new ResultLedger(ledgerEntries);
     const ledgerSummary = ledger.reconcile();
+    const uncrawledUrls = ledger.getEntriesByState('not_crawled_limit').map((e) => e.url);
 
     const isCrawlFailed = ledgerSummary.crawledOk === 0 && pages.length > 0;
     const crawlFailureReason = isCrawlFailed
@@ -102,6 +108,26 @@ export async function POST(req: NextRequest) {
         allFindings.push(...analyzeAeo(pages));
         allFindings.push(...analyzeGeo(pages, llmsTxtPresent));
       }
+
+      // Link Graph, PageRank, Click Depth & Orphans
+      const linkGraphReport = analyzeLinkGraph(pages, uncrawledUrls);
+      allFindings.push(...linkGraphReport.findings);
+
+      // Indexation Hygiene & Crawl Traps
+      const indexHygieneReport = analyzeIndexationHygiene(pages, sitemapsFound);
+      allFindings.push(...indexHygieneReport.findings);
+
+      // Mobile Parity & Viewport
+      const mobileReport = analyzeMobileAndRenderingParity(pages);
+      allFindings.push(...mobileReport.findings);
+
+      // E-Commerce (GMC) & International (hreflang) & SimHash Near-Duplicates
+      const ecomReport = analyzeEcommerceAndInternational(pages);
+      allFindings.push(...ecomReport.findings);
+
+      // Performance & Crawler Latency
+      const perfReport = analyzePerformance(pages);
+      allFindings.push(...perfReport.findings);
     }
 
     // Candidate Keywords & Search Intelligence
@@ -162,8 +188,6 @@ export async function POST(req: NextRequest) {
     const discoveredCount = ledgerSummary.discovered;
     const coveragePercentage =
       discoveredCount > 0 ? Math.round((crawledCount / discoveredCount) * 100) : 100;
-
-    const uncrawledUrls = ledger.getEntriesByState('not_crawled_limit').map((e) => e.url);
 
     const crawlStats = {
       totalPagesDiscovered: discoveredCount,

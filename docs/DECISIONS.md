@@ -268,4 +268,60 @@ Comprehensive, multi-page vector PDF containing:
 4. **Stress Testing:**
    - Comprehensive 500-URL stress tests in `tests/crawler-ledger.test.ts` verifying 100% accounting balance and zero URL loss under normal, 404, 500, redirect, timeout, and robots-blocked conditions.
 
+---
+
+## 8. SearchScope v3: Part B — Calibrated Scoring & Monotonicity
+
+### Mathematical Foundation & Monotonicity
+- SearchScope v3 replaced ad-hoc deduction counters with an axiomatic pass-rate scoring model across 28 check families.
+- Formally satisfies **Monotonicity**: Adding finding $F$ to page set $P$ never increases the score ($\text{Score}(P \cup \{F\}) \le \text{Score}(P)$).
+- Enforces critical blocker severity gates: Any critical finding caps the affected category score $\le 40$.
+- Correlated check deduplication: Multiple related findings in the same check family are grouped and smoothly bounded by logarithmic or asymptotic dampening, preventing a single defect pattern from wiping out an entire category.
+- Zero-weight informational findings: Informational advisories never penalize category scores.
+- Documented in `/docs/SCORING.md` and calibrated against a 12-site corpus in `tests/scoring-calibration.test.ts`.
+
+---
+
+## 9. SearchScope v3: Part C — Phrase-First Search Intelligence & Intent Classification
+
+### Algorithmic Decisions
+1. **Phrase-First N-Gram Extraction with NPMI Filter:**
+   - Single-word keywords are frequently uninformative ("luxury", "best"). SearchScope extracts 2–5-gram phrases using Normalized Pointwise Mutual Information (NPMI) to retain genuine collocations ("alcohol free perfume", "vanilla body mist").
+2. **Deterministic Multi-Signal Search Intent Classifier:**
+   - Evaluates linguistic cues, title tokens, schema markup, and page archetype.
+   - Enforces strict commercial investigation precedence: queries with "best", "review", "vs", "top" on product pages are classified as `commercial` rather than `transactional`.
+   - Returns calibrated `intentConfidence` and transparent `intentReasoning`.
+3. **Hierarchical Keyword Map:**
+   - Organizes discovered search phrases by head entity terms and long-tail modifiers, highlighting keyword gaps where phrases appear in body text but are missing from page titles and H1 tags.
+4. **Keyword Cannibalization Matrix:**
+   - Flags competing pages targeting the same primary keyword and recommends canonicalization, consolidation, or differentiating content.
+5. **Demand Signals Adapter:**
+   - Integrates live Google Autocomplete search demand queries client-side with an optional CSV search volume importer, maintaining strict honesty by labeling metrics as 'unavailable' when no external volume API is connected.
+
+---
+
+## 10. SearchScope v3: Part D — Deep Technical SEO & Analysis Depth
+
+### Architectural Decisions & Implementations
+1. **Link Graph & Power Iteration PageRank (`src/lib/analyzer/link-graph.ts`):**
+   - Constructs internal directed graph from crawled internal links.
+   - Computes PageRank scores (normalized 0–100) using 20 power iterations with standard damping factor $d = 0.85$.
+   - Calculates BFS click depths from the homepage, detecting deep pages ($\text{depth} \ge 3$).
+   - Flags orphan pages (in-degree 0 except root) and broken/redirecting internal links.
+2. **Indexation Hygiene & Crawl Traps (`src/lib/analyzer/indexation-hygiene.ts`):**
+   - Validates XML sitemap URLs against crawl ledger status (flags non-200, redirected, or noindexed sitemap entries).
+   - Detects faceted navigation crawl traps (URLs with sorting/filtering parameters lacking canonical tags).
+   - Audits out-of-stock product handling (flags 404/410 errors vs. proper schema availability).
+3. **Mobile Parity & Viewport Analysis (`src/lib/analyzer/mobile-parity.ts`):**
+   - Validates responsive viewport meta tags and flags `user-scalable=no` / `maximum-scale=1` accessibility violations.
+   - Compares raw initial HTML vs. hydrated DOM, detecting primary headings only present after JavaScript execution.
+4. **E-Commerce & International Analysis (`src/lib/analyzer/ecommerce-international.ts`):**
+   - **Google Merchant Center (GMC) Readiness:** Validates Product schema against free listing requirements (`offers.price`, `offers.priceCurrency`, `offers.availability`, `image`, `name`, `brand` / `gtin`).
+   - **Hreflang Validation:** Validates ISO 639-1 language codes, enforces self-referential hreflang tags, and verifies reciprocal bidirectional hreflang links.
+   - **64-bit SimHash Near-Duplicate Clustering:** Computes 64-bit SimHash fingerprints using 3-word shingles to cluster near-duplicate content (Hamming distance $\le 7$, corresponding to $\ge 85\%$ textual overlap), identifying content cannibalization across pages.
+5. **Performance & Truth in Metrics (`src/lib/analyzer/performance.ts`):**
+   - Tracks synthetic crawler fetch latency, HTML document weight, DOM element count ($>1,500$), and render-blocking scripts.
+   - Strictly labels crawler latency as synthetic round-trip measurements. Never fabricates real-user Core Web Vitals (CrUX LCP/FID/CLS) without connected field data APIs.
+
+
 
