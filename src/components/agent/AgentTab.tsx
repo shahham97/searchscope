@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Loader2, CheckCircle2, AlertCircle, ArrowRight, Terminal, ShieldCheck } from 'lucide-react';
+import { Cpu, Loader2, CheckCircle2, AlertCircle, ArrowRight, Terminal, ShieldCheck } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -144,32 +144,32 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
       ) : (
         <div className="space-y-6">
           {/* Intro Card */}
-          <Card className="p-6 bg-gradient-to-r from-purple-950/30 via-neutral-900 to-neutral-900 border-purple-800/40">
+          <Card className="p-6 bg-slate-900 border-slate-800 text-slate-100">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="space-y-1.5 max-w-2xl">
                 <div className="flex items-center gap-2">
-                  <Badge variant="informational" className="bg-purple-900/40 text-purple-300 border-purple-700/50">
-                    Autonomous Mode
+                  <Badge variant="neutral" className="bg-slate-800 text-slate-200 border-slate-700">
+                    Autonomous Code & Content Agent
                   </Badge>
-                  <span className="text-xs text-neutral-400">Strict Bring-Your-Own-Key (BYOK)</span>
+                  <span className="text-xs text-slate-400">Strict Bring-Your-Own-Key (BYOK)</span>
                 </div>
                 <h2 className="text-xl font-bold text-white">
-                  SearchScope Autonomous AI Agent
+                  SearchScope Developer & SEO Agent
                 </h2>
-                <p className="text-xs text-neutral-300 leading-relaxed">
-                  Go beyond reporting. SearchScope AI Agent profiles your brand voice and niche, solves content and schema gaps, enforces zero-hallucination guardrails, and outputs dev-ready code patches for your platform.
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Go beyond reporting. SearchScope AI Agent profiles brand voice and niche context, resolves schema gaps, generates platform-native Next.js code diffs, and strictly enforces zero-hallucination guardrails.
                 </p>
               </div>
 
-              <div className="p-3 bg-purple-950/40 border border-purple-800/50 rounded-xl text-center shrink-0">
-                <span className="text-[11px] text-purple-300 block font-semibold">Crawl Analyzed</span>
-                <span className="text-lg font-bold text-white">{report.pages.length} Pages</span>
-                <span className="text-[10px] text-neutral-400 block">{report.findings.length} Findings</span>
+              <div className="p-3 bg-slate-800/80 border border-slate-700 rounded-lg text-center shrink-0">
+                <span className="text-[11px] text-slate-400 block font-semibold">Crawl Analyzed</span>
+                <span className="text-lg font-bold text-white font-mono">{report.pages.length} Pages</span>
+                <span className="text-[10px] text-slate-400 block font-mono">{report.findings.length} Findings</span>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-purple-900/40 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs text-neutral-300">
+            <div className="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs text-slate-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span>
                   Brand Facts: <strong>{brandFacts.tradingName}</strong> (
@@ -181,9 +181,9 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowBrandFactsModal(true)}
-                className="text-xs border-purple-700/60 text-purple-200 hover:bg-purple-950/40"
+                className="text-xs border-slate-700 text-slate-200 hover:bg-slate-800 min-h-[44px]"
               >
-                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-purple-300" />
+                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-slate-300" />
                 Configure Brand Facts & Legal Guardrails
               </Button>
             </div>
@@ -199,15 +199,15 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
 
           {/* Active execution logs */}
           {isLaunching && (
-            <Card className="p-6 bg-neutral-900 border-purple-800/50 space-y-5 animate-pulse-border">
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
+            <Card className="p-6 bg-slate-900 border-slate-750 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div className="flex items-center gap-2.5">
-                  <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-slate-300 animate-spin" />
                   <h4 className="text-sm font-semibold text-white">
                     Agent Pipeline Running autonomously...
                   </h4>
                 </div>
-                <span className="text-xs text-neutral-400 font-mono">
+                <span className="text-xs text-slate-400 font-mono">
                   Target: {report.targetDomain}
                 </span>
               </div>
@@ -227,16 +227,16 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                         isComplete
                           ? 'bg-emerald-950/20 border-emerald-800/50 text-emerald-300'
                           : isCurrent
-                          ? 'bg-purple-950/40 border-purple-500 text-purple-200'
+                          ? 'bg-slate-800 border-slate-500 text-white'
                           : isFailed
                           ? 'bg-red-950/30 border-red-800 text-red-300'
-                          : 'bg-neutral-950/40 border-neutral-800/60 text-neutral-500'
+                          : 'bg-slate-950/40 border-slate-800/60 text-slate-500'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-bold">{s.id}</span>
                         {isComplete && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                        {isCurrent && <Loader2 className="w-3.5 h-3.5 text-purple-400 animate-spin" />}
+                        {isCurrent && <Loader2 className="w-3.5 h-3.5 text-slate-200 animate-spin" />}
                       </div>
                       <span className="font-semibold block text-[11px] truncate">
                         {s.name.replace(/Stage .: /, '')}
@@ -257,7 +257,7 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                 </div>
                 {stageLogs.map((log, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <span className="text-purple-400">[{log.stage}]</span>
+                    <span className="text-slate-400">[{log.stage}]</span>
                     <span>{log.message}</span>
                     {log.durationMs && (
                       <span className="text-neutral-500 text-[10px]">({log.durationMs}ms)</span>

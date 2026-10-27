@@ -323,5 +323,33 @@ Comprehensive, multi-page vector PDF containing:
    - Tracks synthetic crawler fetch latency, HTML document weight, DOM element count ($>1,500$), and render-blocking scripts.
    - Strictly labels crawler latency as synthetic round-trip measurements. Never fabricates real-user Core Web Vitals (CrUX LCP/FID/CLS) without connected field data APIs.
 
+---
+
+## 11. SearchScope v3: Part E — Enterprise UI, Single Shared Layout & Truth in Privacy
+
+### Design System Decisions & Implementations
+1. **Single Shared Layout (`src/app/layout.tsx`):**
+   - Global `SiteHeader` and `SiteFooter` integrated cleanly into the root Next.js App Router layout.
+   - Removed redundant per-page headers from `src/app/page.tsx` and `src/app/bot/page.tsx`.
+2. **Enterprise Calm Aesthetic:**
+   - Strict elimination of sparkles, wands, robots, magic, purple-pink gradients, and emojis.
+   - Professional, calm slate/ink palette (`bg-slate-50`, `bg-slate-900`, `text-slate-900`, `border-slate-200`).
+   - Clean Lucide line icons, Inter font, tabular figures (`font-mono` / `tabular-nums` for counters, durations, scores).
+   - Mobile touch targets $\ge 44$px across all buttons and inputs meeting WCAG 2.2 AA accessibility guidelines.
+3. **Truth in Privacy Hero Section:**
+   - Prominently positioned on the audit launcher: "100% Private Website Audits. Nothing Is Saved."
+   - Transparent disclosure cards detailing:
+     - Zero-Database transient execution model.
+     - Standard edge hosting logs disclosure (ephemeral Vercel network metadata).
+     - Deterministic rule engines (no external LLM data transmission).
+     - Explicit opt-in for BYOK AI agent features.
+   - Automated invariant tests in `tests/privacy.test.ts` verifying no persistent database drivers and zero filesystem writes in API routes.
+4. **Seamless Direct Contact Integration (`GmailContactLink.tsx`):**
+   - Direct Gmail web compose opening in a new tab on desktop.
+   - Native Gmail mobile app deep-linking (`googlegmail://`) with automatic fallback to standard `mailto:`.
+   - Accessible "Copy address" one-click button with visual confirmation.
+   - Documented in `/docs/CONTACT_LINK.md`.
+
+
 
 

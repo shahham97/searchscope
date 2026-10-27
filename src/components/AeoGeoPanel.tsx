@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Bot, CheckCircle2, HelpCircle, FileText, Check, AlertTriangle, ShieldCheck, XCircle } from 'lucide-react';
+import { Layers, Bot, CheckCircle2, HelpCircle, FileText, Check, AlertTriangle, ShieldCheck, XCircle } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { AuditReport } from '../types/audit';
@@ -142,7 +142,7 @@ export const AeoGeoPanel: React.FC<AeoGeoPanelProps> = ({ report }) => {
       {/* Methodology Callout */}
       <Card className="p-5 bg-slate-50 border-slate-200 text-xs text-slate-600 leading-relaxed">
         <h4 className="font-bold text-slate-900 mb-1 flex items-center">
-          <Sparkles className="h-3.5 w-3.5 mr-1.5 text-indigo-600" />
+          <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-slate-700" />
           SearchScope Ethical Standards on AEO & GEO
         </h4>
         <p>

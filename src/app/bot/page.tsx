@@ -1,127 +1,119 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Bot, ShieldCheck, FileCode, Server, Mail } from 'lucide-react';
+import { ArrowLeft, Bot, ShieldCheck, FileCode, Server } from 'lucide-react';
+import { GmailContactLink } from '@/components/layout/GmailContactLink';
 
 export const metadata = {
-  title: 'SearchScopeBot / Auditor Documentation',
+  title: 'SearchScope-Auditor Documentation & Politeness Standards',
   description:
-    'Information regarding the SearchScope-Auditor web crawler, its purpose, politeness standards, IP ranges, and robots.txt directives.',
+    'Technical specifications for the SearchScope-Auditor crawler, politeness throttling, IP ranges, and robots.txt directives.',
 };
 
 export default function BotPage() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 selection:bg-indigo-500 selection:text-white">
-      <header className="border-b border-neutral-800 bg-neutral-900/50 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div className="bg-slate-900 text-slate-100 min-h-[calc(100vh-4rem)]">
+      <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm sticky top-16 z-30">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to SearchScope Audit
+            Back to SearchScope Auditor
           </Link>
-          <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full">
+          <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1 rounded">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             SearchScope-Auditor/1.0
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-4xl mx-auto px-4 py-12 space-y-12">
+      <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
         {/* Hero Section */}
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-800 text-indigo-400 text-xs font-mono">
-            <Bot className="w-3.5 h-3.5" />
-            Crawler Verification & Technical Documentation
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 text-xs font-mono">
+            <Bot className="w-3.5 h-3.5 text-slate-400" />
+            Crawler Verification & Technical Policy
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
             SearchScope-Auditor Documentation
           </h1>
-          <p className="text-neutral-400 text-base sm:text-lg leading-relaxed">
+          <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
             If you have observed requests with the User-Agent{' '}
-            <code className="text-xs font-mono text-indigo-300 bg-neutral-900 px-2 py-0.5 rounded border border-neutral-800">
+            <code className="text-xs font-mono text-slate-200 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
               SearchScope-Auditor/1.0 (+https://searchscope.app/bot)
             </code>
-            , this page outlines what the crawler is, its strict safety guidelines, and how to control or block it.
+            , this documentation details crawler operations, strict safety guidelines, and procedures to configure or block access.
           </p>
         </div>
 
         {/* Overview & Purpose */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 rounded-xl bg-neutral-900/80 border border-neutral-800 space-y-3">
-            <div className="flex items-center gap-2 text-emerald-400 font-semibold">
-              <ShieldCheck className="w-5 h-5" />
+          <div className="p-6 rounded-lg bg-slate-800/80 border border-slate-700 space-y-3">
+            <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+              <ShieldCheck className="w-4 h-4" />
               On-Demand SEO / AEO Auditing
             </div>
-            <p className="text-sm text-neutral-300 leading-relaxed">
-              SearchScope does <strong>not</strong> perform bulk web scraping or persistent site monitoring. A crawl is only executed when an authorized user or webmaster explicitly initiates an on-demand audit of their domain to evaluate search visibility, schema markup, and machine readability.
+            <p className="text-xs text-slate-300 leading-relaxed">
+              SearchScope does <strong>not</strong> perform bulk web scraping or persistent site surveillance. A crawl is only executed when an authorized user or webmaster explicitly launches an on-demand audit to evaluate search visibility, structured data, and machine readability.
             </p>
           </div>
 
-          <div className="p-6 rounded-xl bg-neutral-900/80 border border-neutral-800 space-y-3">
-            <div className="flex items-center gap-2 text-indigo-400 font-semibold">
-              <Server className="w-5 h-5" />
+          <div className="p-6 rounded-lg bg-slate-800/80 border border-slate-700 space-y-3">
+            <div className="flex items-center gap-2 text-slate-200 font-semibold text-sm">
+              <Server className="w-4 h-4" />
               Politeness & Rate Throttling
             </div>
-            <p className="text-sm text-neutral-300 leading-relaxed">
-              Our crawler strictly limits concurrent requests to 1 concurrent connection with a mandatory 150ms–250ms politeness delay between pages. It crawls only publicly reachable HTML pages (depth capped at 25–250 URLs) and never attempts to access administrative endpoints or submit forms.
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Our crawler restricts concurrency to 1 active connection with a mandatory 150ms–250ms delay between pages. It crawls only publicly reachable HTML pages (depth capped at 25–250 URLs) and never attempts to access administrative endpoints or submit forms.
             </p>
           </div>
         </div>
 
         {/* Controlling / Blocking in robots.txt */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 text-xl font-bold text-white">
+          <div className="flex items-center gap-2 text-lg font-bold text-white">
             <FileCode className="w-5 h-5 text-amber-400" />
             <h2>How to Control or Block SearchScope in robots.txt</h2>
           </div>
-          <p className="text-sm text-neutral-400 leading-relaxed">
-            SearchScope-Auditor strictly honors standard <code className="text-neutral-200">robots.txt</code> directives. To block the crawler entirely from your website, add the following snippet to your <code className="text-neutral-200">robots.txt</code> file:
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            SearchScope-Auditor honors standard <code className="text-slate-200 font-mono">robots.txt</code> directives. To block the crawler entirely from your website, add the following snippet to your <code className="text-slate-200 font-mono">robots.txt</code> file:
           </p>
 
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 font-mono text-sm text-neutral-200 space-y-2">
-            <div className="text-neutral-500"># Disallow SearchScope Auditor entirely</div>
+          <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-200 space-y-2">
+            <div className="text-slate-500"># Disallow SearchScope Auditor entirely</div>
             <div className="text-amber-400">User-agent: SearchScope-Auditor</div>
             <div className="text-rose-400">Disallow: /</div>
-            <div className="text-neutral-500 mt-4"># Alternatively, disallow via wildcard</div>
+            <div className="text-slate-500 pt-2"># Alternatively, disallow via wildcard</div>
             <div className="text-amber-400">User-agent: *</div>
             <div className="text-rose-400">Disallow: /private-path/</div>
           </div>
 
-          <p className="text-xs text-neutral-400">
-            If you wish to allow SearchScope to audit your public catalog while blocking private subpaths, specify paths with <code className="text-neutral-300">Disallow: /checkout</code> or <code className="text-neutral-300">Disallow: /admin</code>.
+          <p className="text-xs text-slate-400">
+            If you wish to allow SearchScope to audit your public catalog while blocking private subpaths, specify paths with <code className="text-slate-300 font-mono">Disallow: /checkout</code> or <code className="text-slate-300 font-mono">Disallow: /admin</code>.
           </p>
         </section>
 
         {/* IP Egress & Hosting Architecture */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-white">IP Ranges & Egress Network</h2>
-          <p className="text-sm text-neutral-400 leading-relaxed">
-            SearchScope operates as a serverless application deployed on <strong>Vercel</strong> edge/node infrastructure. Outbound crawl requests originate from Vercel compute edge IP ranges. Outgoing requests always supply the descriptive <code className="text-neutral-300">User-Agent</code> header and include a referral link back to this documentation URL.
+          <h2 className="text-lg font-bold text-white">IP Ranges & Egress Network</h2>
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            SearchScope operates as a serverless application deployed on <strong>Vercel</strong> edge/node infrastructure. Outbound crawl requests originate from Vercel compute edge IP ranges. Outgoing requests always supply the descriptive <code className="text-slate-300 font-mono">User-Agent</code> header and include a referral link back to this documentation URL.
           </p>
-          <div className="p-4 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 font-mono">
+          <div className="p-3.5 rounded bg-slate-950 border border-slate-800 text-xs text-slate-400 font-mono">
             Origin Host: vercel-dns.com / vercel-infra egress nodes
           </div>
         </section>
 
         {/* Contact & Abuse Reporting */}
-        <section className="p-6 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-900/60 border border-neutral-800 space-y-4">
-          <div className="flex items-center gap-2 text-base font-semibold text-white">
-            <Mail className="w-5 h-5 text-indigo-400" />
-            Contact & Webmaster Support
-          </div>
-          <p className="text-sm text-neutral-300 leading-relaxed">
-            If you suspect abnormal traffic or have technical questions regarding crawler operations on your domain, please contact the engineering team. Include your domain name and relevant server access logs.
+        <section className="p-6 rounded-lg bg-slate-800/60 border border-slate-700 space-y-4">
+          <h3 className="text-sm font-semibold text-white">Contact & Webmaster Support</h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            If you have technical questions regarding crawler operations on your domain, please reach our engineering team directly:
           </p>
-          <div className="text-xs font-mono text-indigo-400">
-            Email: <span className="underline">support@searchscope.app</span>
-          </div>
+          <GmailContactLink variant="pill" subject="SearchScope Crawler Webmaster Inquiry" />
         </section>
-      </main>
-
-      <footer className="border-t border-neutral-800 py-8 text-center text-xs text-neutral-400">
-        © {new Date().getFullYear()} SearchScope. Privacy-first deterministic web search intelligence.
-      </footer>
+      </div>
     </div>
   );
 }
