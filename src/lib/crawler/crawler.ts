@@ -4,7 +4,17 @@ import { fetchRobotsTxt, isPathAllowed, RobotsTxtData } from './robots';
 import { discoverSitemapUrls } from './sitemap';
 import { parseHtmlContent } from '../extractor/html-parser';
 import { isLikelySpaShell, renderHeadlessDom } from '../extractor/headless-renderer';
-import { AuditConfig, CrawlStatistics, ExtractedPageData, CrawlDiagnostic, FailureCode } from '../../types/audit';
+import { ResultLedger } from './ledger';
+import { sampleStratifiedCandidates, CrawlCandidate } from './stratified-sampler';
+import { classifyUrlOnly } from '../analyzer/page-classifier';
+import {
+  AuditConfig,
+  CrawlStatistics,
+  ExtractedPageData,
+  CrawlDiagnostic,
+  FailureCode,
+  CrawlLedgerSummary,
+} from '../../types/audit';
 
 export interface CrawlResult {
   pages: ExtractedPageData[];
@@ -14,6 +24,9 @@ export interface CrawlResult {
   crawlFailureReason?: string;
   targetNormalizedUrl: string;
   targetDomain: string;
+  ledger: ResultLedger;
+  ledgerSummary: CrawlLedgerSummary;
+  samplingDistribution?: string;
 }
 
 export async function executeBoundedCrawl(
@@ -42,6 +55,7 @@ export async function executeBoundedCrawl(
   let canonicalHostname = initialParsed.hostname;
 
   const diagnostics: CrawlDiagnostic[] = [];
+  const ledger = new ResultLedger();
 
   // 1. Fetch robots.txt
   onProgress?.({
@@ -72,28 +86,23 @@ export async function executeBoundedCrawl(
   }
 
   // 4. Initialize Queue and Canonical Host Discovery
-  const queue: string[] = [];
-  const discoveredSet = new Set<string>();
+  const queue: Array<{ url: string; depth: number; discoveredFrom?: string }> = [];
   const visitedSet = new Set<string>();
   const visitedNormalizedPages = new Set<string>();
   const pages: ExtractedPageData[] = [];
 
-  let skippedRobotsCount = 0;
-  let skippedNonHtmlCount = 0;
-  let failedCount = 0;
-  let successfulPagesCount = 0;
-
   const normalizedInitial = normalizeUrl(initialUrl, canonicalOrigin) || initialUrl;
-  queue.push(normalizedInitial);
-  discoveredSet.add(normalizedInitial);
+  ledger.registerDiscovery(initialUrl, normalizedInitial, 0, undefined, 'home');
+  queue.push({ url: normalizedInitial, depth: 0 });
 
-  // Seed queue with sitemap URLs (up to maxPages * 2)
+  // Seed queue with sitemap URLs
   for (const sitemapUrl of sitemapResult.discoveredUrls) {
     const norm = normalizeUrl(sitemapUrl, canonicalOrigin);
-    if (norm && isInternalUrl(norm, canonicalHostname, true) && !discoveredSet.has(norm)) {
-      discoveredSet.add(norm);
-      if (queue.length < maxPages * 2) {
-        queue.push(norm);
+    if (norm && isInternalUrl(norm, canonicalHostname, true)) {
+      const pageType = classifyUrlOnly(norm);
+      ledger.registerDiscovery(sitemapUrl, norm, 1, 'sitemap.xml', pageType);
+      if (!queue.some((q) => q.url === norm)) {
+        queue.push({ url: norm, depth: 1, discoveredFrom: 'sitemap.xml' });
       }
     }
   }
@@ -107,7 +116,9 @@ export async function executeBoundedCrawl(
       break;
     }
 
-    const currentUrl = queue.shift()!;
+    const currentItem = queue.shift()!;
+    const currentUrl = currentItem.url;
+    const currentDepth = currentItem.depth;
     const normCurrent = normalizeUrl(currentUrl, canonicalOrigin) || currentUrl;
 
     if (visitedSet.has(currentUrl) || visitedNormalizedPages.has(normCurrent)) {
@@ -121,7 +132,7 @@ export async function executeBoundedCrawl(
       try {
         const parsedPath = new URL(currentUrl).pathname;
         if (!isPathAllowed(parsedPath, robotsData, 'SearchScope-Auditor')) {
-          skippedRobotsCount++;
+          ledger.recordSkippedRobots(currentUrl, normCurrent, currentDepth);
           diagnostics.push({
             url: currentUrl,
             code: 'ROBOTS_BLOCKED',
@@ -133,7 +144,7 @@ export async function executeBoundedCrawl(
           continue;
         }
       } catch {
-        skippedRobotsCount++;
+        ledger.recordSkippedRobots(currentUrl, normCurrent, currentDepth);
         continue;
       }
     }
@@ -141,7 +152,7 @@ export async function executeBoundedCrawl(
     onProgress?.({
       status: `Crawling page ${pages.length + 1} of ${maxPages}...`,
       crawledCount: pages.length,
-      discoveredCount: discoveredSet.size,
+      discoveredCount: ledger.size(),
       currentUrl,
     });
 
@@ -206,6 +217,7 @@ export async function executeBoundedCrawl(
 
         if (visitedNormalizedPages.has(pageData.normalizedUrl) && pageData.normalizedUrl !== normCurrent) {
           // Already have an extracted page for this canonical destination
+          ledger.recordRedirected(currentUrl, normCurrent, pageData.normalizedUrl, currentDepth);
           continue;
         }
         visitedNormalizedPages.add(pageData.normalizedUrl);
@@ -213,7 +225,14 @@ export async function executeBoundedCrawl(
         if (res.failureCode) {
           pageData.failureCode = res.failureCode;
           pageData.failureHint = res.failureHint;
-          failedCount++;
+          ledger.recordFailed(
+            res.url,
+            pageData.normalizedUrl,
+            res.failureCode,
+            res.failureHint || `HTTP ${res.statusCode}`,
+            res.statusCode,
+            currentDepth
+          );
           diagnostics.push({
             url: currentUrl,
             code: res.failureCode,
@@ -224,7 +243,7 @@ export async function executeBoundedCrawl(
             timestamp: new Date().toISOString(),
           });
         } else {
-          successfulPagesCount++;
+          ledger.recordCrawledOk(pageData.normalizedUrl, pageData);
         }
 
         pages.push(pageData);
@@ -234,18 +253,21 @@ export async function executeBoundedCrawl(
           const normLink = link.url;
           if (
             normLink &&
-            !discoveredSet.has(normLink) &&
             isInternalUrl(normLink, canonicalHostname, true)
           ) {
-            discoveredSet.add(normLink);
-            if (queue.length < maxPages * 3) {
-              queue.push(normLink);
+            const pageType = classifyUrlOnly(normLink);
+            ledger.registerDiscovery(normLink, normLink, currentDepth + 1, currentUrl, pageType);
+
+            if (!visitedSet.has(normLink) && !queue.some((q) => q.url === normLink)) {
+              if (queue.length < maxPages * 4) {
+                queue.push({ url: normLink, depth: currentDepth + 1, discoveredFrom: currentUrl });
+              }
             }
           }
         }
       } else {
         // Non-HTML resource visited
-        skippedNonHtmlCount++;
+        ledger.recordSkippedNonHtml(currentUrl, normCurrent, res.contentType, currentDepth);
         diagnostics.push({
           url: currentUrl,
           code: 'CONTENT_TYPE_UNSUPPORTED',
@@ -257,10 +279,18 @@ export async function executeBoundedCrawl(
         });
       }
     } catch (err: any) {
-      failedCount++;
       const failureCode: FailureCode = err.failureCode || 'CONNECTION_REFUSED';
       const failureHint: string = err.failureHint || err.message || 'Request failed to complete';
       const durationMs = err.durationMs || 0;
+
+      ledger.recordFailed(
+        currentUrl,
+        normCurrent,
+        failureCode,
+        failureHint,
+        err.statusCode || 0,
+        currentDepth
+      );
 
       diagnostics.push({
         url: currentUrl,
@@ -273,7 +303,7 @@ export async function executeBoundedCrawl(
 
       pages.push({
         url: currentUrl,
-        normalizedUrl: currentUrl,
+        normalizedUrl: normCurrent,
         statusCode: 0,
         statusText: failureCode,
         fetchDurationMs: durationMs,
@@ -315,31 +345,53 @@ export async function executeBoundedCrawl(
     await new Promise((r) => setTimeout(r, 150));
   }
 
+  // 6. Stratified sampling / queue reconciliation for remaining discovered URLs
+  const remainingCandidates: CrawlCandidate[] = [];
+  for (const entry of ledger.getAllEntries()) {
+    if (entry.state === 'not_crawled_limit' && !visitedSet.has(entry.url) && !visitedNormalizedPages.has(entry.normalizedUrl)) {
+      remainingCandidates.push({
+        url: entry.url,
+        normalizedUrl: entry.normalizedUrl,
+        depth: entry.depth,
+        discoveredFrom: entry.discoveredFrom,
+        pageType: entry.pageType || classifyUrlOnly(entry.url),
+      });
+    }
+  }
+
+  let samplingDistribution: string | undefined;
+  if (remainingCandidates.length > 0) {
+    const sampleResult = sampleStratifiedCandidates(remainingCandidates, maxPages);
+    samplingDistribution = sampleResult.distributionSummary;
+
+    // All unselected remain as 'not_crawled_limit'
+    for (const unselected of sampleResult.unselected) {
+      ledger.recordNotCrawledLimit(unselected.url, unselected.normalizedUrl, unselected.depth, unselected.pageType);
+    }
+  }
+
+  // Final reconcile of ledger
+  const ledgerSummary = ledger.reconcile();
+
   const crawlDurationMs = Date.now() - startTime;
-  const isCrawlFailed = successfulPagesCount === 0 && pages.length > 0;
+  const isCrawlFailed = ledgerSummary.crawledOk === 0 && pages.length > 0;
   const crawlFailureReason = isCrawlFailed
     ? `All ${pages.length} attempted page fetches failed. See Crawl Diagnostics for details (${diagnostics[0]?.hint || 'Target server unreachable'}).`
     : undefined;
 
-  // Account for discovered URLs that were not reached due to maxPages limit or execution budget
-  const uncrawledUrls: string[] = [];
-  for (const url of discoveredSet) {
-    if (!visitedSet.has(url)) {
-      uncrawledUrls.push(url);
-    }
-  }
-  const notCrawledLimitCount = uncrawledUrls.length;
-  const totalPagesSkipped = skippedRobotsCount + skippedNonHtmlCount;
+  const uncrawledUrls = ledger
+    .getEntriesByState('not_crawled_limit')
+    .map((e) => e.url);
 
   const crawlStats: CrawlStatistics = {
-    totalPagesDiscovered: discoveredSet.size,
-    totalPagesCrawled: pages.length,
-    totalPagesSkipped,
-    totalPagesFailed: failedCount,
-    successfulPagesCount,
-    skippedRobotsCount,
-    skippedNonHtmlCount,
-    notCrawledLimitCount,
+    totalPagesDiscovered: ledgerSummary.discovered,
+    totalPagesCrawled: ledgerSummary.crawledOk + ledgerSummary.failed,
+    totalPagesSkipped: ledgerSummary.skippedRobots + ledgerSummary.skippedNonHtml,
+    totalPagesFailed: ledgerSummary.failed,
+    successfulPagesCount: ledgerSummary.crawledOk,
+    skippedRobotsCount: ledgerSummary.skippedRobots,
+    skippedNonHtmlCount: ledgerSummary.skippedNonHtml,
+    notCrawledLimitCount: ledgerSummary.notCrawledLimit,
     uncrawledUrls,
     crawlDurationMs,
     robotsTxtPresent: robotsData.present,
@@ -358,5 +410,8 @@ export async function executeBoundedCrawl(
     crawlFailureReason,
     targetNormalizedUrl: canonicalOrigin,
     targetDomain: canonicalHostname,
+    ledger,
+    ledgerSummary,
+    samplingDistribution,
   };
 }

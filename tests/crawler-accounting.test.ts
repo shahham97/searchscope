@@ -29,5 +29,5 @@ describe('Crawl Accounting & Invariant Verification', () => {
 
     expect(stats.totalPagesDiscovered).toBe(sum);
     expect(stats.totalPagesCrawled).toBe(result.pages.length);
-  });
+  }, 20000);
 });

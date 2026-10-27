@@ -237,3 +237,35 @@ Comprehensive, multi-page vector PDF containing:
 5. **Multi-Format Deliverables:**
    Outputs include `UPDATE_PLAN.md`, `AGENT_TASKS.md`, `update-plan.json` (schema-validated), `update-plan.csv`, and client-side ZIP packaging via `JSZip`.
 
+---
+
+## 7. SearchScope v3: Part A — Data Integrity & Result Ledger Architecture
+
+### Root Cause Analysis: The "342 URLs crawled, only 31 shown" Defect
+1. **Monolithic Serverless Execution & Simulated Client Ticks:**
+   - The crawl runner attempted to process all discovered URLs inside a single 50-second serverless execution window. With politeness delays (150ms) plus TLS, HTTP round trips, and DOM parsing, the engine could only finish ~31 pages before exhausting its time budget.
+   - The frontend ran an artificial `setInterval` ticker (`progressInterval`) that blindly assumed progress up to `maxPages`, creating a severe divergence between simulated progress counters and actual collected results.
+   - Responses containing heavy raw HTML strings threatened Vercel's ~4.5 MB response payload limit.
+
+### Core Architectural Fixes
+1. **Result Ledger (`src/lib/crawler/ledger.ts`):**
+   - Single source of truth for all URLs throughout the audit lifecycle.
+   - Every discovered URL has exactly one terminal state: `crawled_ok`, `failed(code, hint)`, `skipped_robots`, `skipped_non_html`, `not_crawled_limit`, `redirected(target)`.
+   - Strictly enforces five mathematical invariants:
+     - Invariant 1: `discovered = crawled_ok + failed + skipped_robots + skipped_non_html + not_crawled_limit + redirected`.
+     - Invariant 2: Rows in URL Explorer "All" view strictly equal `discovered`; rows in "Successful" view strictly equal `crawled_ok`.
+     - Invariant 3: Total pages analyzed across every rule engine strictly equals `crawled_ok`.
+     - Invariant 4: `urls.csv` and PDF technical inventory match the ledger `discovered` count exactly.
+     - Invariant 5: Sum of category findings strictly equals total audit findings.
+2. **Chunked Batch Crawling (`/api/audit/init`, `/api/audit/batch`, `/api/audit/analyze`):**
+   - Client orchestrator dispatches bounded chunks ($\le 5$ URLs per batch).
+   - Server returns parsed structured data without `rawHtml`, keeping batch payloads $< 1$ MB and execution time $< 15$s.
+   - Automatic exponential retry (up to 3 attempts); if a batch ultimately fails, its URLs are recorded as `failed('BATCH_LOST')` in the ledger—never silently dropped.
+3. **Stratified Sampling (`src/lib/crawler/stratified-sampler.ts`):**
+   - When discovered URLs exceed crawl capacity limits, stratified sampling replaces arbitrary BFS cutoff.
+   - Guarantees fair representation across page types (`home`, `collection`, `product`, `article`, `about`, `contact`, `policy`, `utility`) and click depths (depths 0, 1, 2, 3+).
+   - Generates transparent distribution summaries for URL Explorer and reports.
+4. **Stress Testing:**
+   - Comprehensive 500-URL stress tests in `tests/crawler-ledger.test.ts` verifying 100% accounting balance and zero URL loss under normal, 404, 500, redirect, timeout, and robots-blocked conditions.
+
+

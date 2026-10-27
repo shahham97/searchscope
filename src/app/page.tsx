@@ -28,6 +28,7 @@ import { ExportCenter } from '@/components/ExportCenter';
 import { CrawlDiagnostics } from '@/components/CrawlDiagnostics';
 import { PrivacyModal } from '@/components/PrivacyModal';
 import { AgentTab } from '@/components/agent/AgentTab';
+import { orchestrateClientAudit } from '@/lib/crawler/client-orchestrator';
 import { Button } from '@/components/ui/Button';
 import { AuditConfig, AuditReport } from '@/types/audit';
 import { generateAuditPdf } from '@/lib/export/pdf-generator';
@@ -70,36 +71,42 @@ export default function SearchScopePage() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Simulate progress ticks while server processes
-    const progressInterval = setInterval(() => {
-      setCrawlProgress((prev) => {
-        if (prev.crawledCount >= prev.maxPages - 1) return prev;
-        const nextCount = prev.crawledCount + 1;
-        return {
-          ...prev,
-          crawledCount: nextCount,
-          discoveredCount: Math.max(prev.discoveredCount, nextCount * 2),
-          status: `Crawling & analyzing page ${nextCount} of ${prev.maxPages}...`,
-        };
-      });
-    }, 1200);
-
     try {
-      const response = await fetch('/api/audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: targetUrl, config }),
-        signal: controller.signal,
-      });
-
-      clearInterval(progressInterval);
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || `Server responded with HTTP ${response.status}`);
+      let auditData: AuditReport;
+      try {
+        auditData = await orchestrateClientAudit(
+          targetUrl,
+          config,
+          (progress) => {
+            setCrawlProgress({
+              crawledCount: progress.crawledCount,
+              discoveredCount: progress.discoveredCount,
+              maxPages: config.maxPages || (config.auditDepth === 'quick' ? 25 : config.auditDepth === 'deep' ? 250 : 100),
+              status: progress.status,
+              currentUrl: progress.currentUrl,
+            });
+          },
+          controller.signal
+        );
+      } catch (clientErr: any) {
+        if (clientErr?.message?.includes('cancelled')) {
+          throw clientErr;
+        }
+        // Fallback to monolithic API route if chunking fails
+        console.warn('Chunked crawl encountered an issue, falling back to direct route:', clientErr);
+        const fallbackRes = await fetch('/api/audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: targetUrl, config }),
+          signal: controller.signal,
+        });
+        if (!fallbackRes.ok) {
+          const data = await fallbackRes.json().catch(() => ({}));
+          throw new Error(data.error || `Server responded with HTTP ${fallbackRes.status}`);
+        }
+        auditData = await fallbackRes.json();
       }
 
-      const auditData: AuditReport = await response.json();
       setReport(auditData);
 
       if (auditData.isCrawlFailed) {
@@ -108,7 +115,6 @@ export default function SearchScopePage() {
         setActiveTab('overview');
       }
     } catch (err: unknown) {
-      clearInterval(progressInterval);
       if (err instanceof Error && err.name === 'AbortError') {
         setErrorMessage('Audit was cancelled by the user.');
       } else {
@@ -334,7 +340,13 @@ export default function SearchScopePage() {
             )}
 
             {activeTab === 'urls' && (
-              <UrlExplorer pages={report.pages} crawlStats={report.crawlStats} />
+              <UrlExplorer
+                pages={report.pages}
+                crawlStats={report.crawlStats}
+                ledgerEntries={report.ledgerEntries}
+                dataIntegrity={report.dataIntegrity}
+                samplingDistribution={report.crawlCoverage?.summary}
+              />
             )}
 
             {activeTab === 'aeo_geo' && <AeoGeoPanel report={report} />}

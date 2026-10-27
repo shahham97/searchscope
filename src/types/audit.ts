@@ -34,7 +34,56 @@ export type FailureCode =
   | 'HTTP_5XX'
   | 'REDIRECT_LOOP'
   | 'CONTENT_TYPE_UNSUPPORTED'
-  | 'BODY_TOO_LARGE';
+  | 'BODY_TOO_LARGE'
+  | 'BATCH_LOST';
+
+export type TerminalState =
+  | 'crawled_ok'
+  | 'failed'
+  | 'skipped_robots'
+  | 'skipped_non_html'
+  | 'not_crawled_limit'
+  | 'redirected';
+
+export interface LedgerEntry {
+  url: string;
+  normalizedUrl: string;
+  state: TerminalState;
+  statusCode?: number;
+  failureCode?: FailureCode;
+  failureHint?: string;
+  redirectTarget?: string;
+  pageData?: ExtractedPageData;
+  depth: number;
+  pageType?: PageType;
+  discoveredFrom?: string;
+  timestamp: string;
+}
+
+export interface CrawlLedgerSummary {
+  discovered: number;
+  crawledOk: number;
+  failed: number;
+  skippedRobots: number;
+  skippedNonHtml: number;
+  notCrawledLimit: number;
+  redirected: number;
+  isReconciled: boolean;
+  integrityWarnings: string[];
+}
+
+export interface DataIntegrityReport {
+  isValid: boolean;
+  ledgerSummary: CrawlLedgerSummary;
+  invariants: {
+    discoveredEqualsSum: boolean;
+    allRowsEqualDiscovered: boolean;
+    successfulRowsEqualCrawledOk: boolean;
+    analyzedPagesEqualCrawledOk: boolean;
+    findingsCategorySumEqualsTotal: boolean;
+  };
+  warnings: string[];
+}
 
 export interface CrawlDiagnostic {
   url: string;
@@ -262,7 +311,7 @@ export interface CrawlStatistics {
 
 export interface AuditConfig {
   targetUrl: string;
-  auditDepth: 'quick' | 'standard' | 'deep';
+  auditDepth: 'quick' | 'standard' | 'deep' | 'custom';
   maxPages: number;
   includeContentAnalysis: boolean;
   includeAeoGeo: boolean;
@@ -322,6 +371,8 @@ export interface AuditReport {
 
   categoryScores: CategoryScore[];
   crawlStats: CrawlStatistics;
+  dataIntegrity?: DataIntegrityReport;
+  ledgerEntries?: LedgerEntry[];
 
   pages: ExtractedPageData[];
   findings: Finding[];

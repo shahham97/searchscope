@@ -214,6 +214,20 @@ export async function runCompleteAudit(
     diagnostics,
     categoryScores,
     crawlStats,
+    dataIntegrity: crawlResult.ledger.toIntegrityReport(
+      uniqueFindings.length,
+      categoryScores.reduce(
+        (acc, c) =>
+          acc +
+          c.findingsCount.critical +
+          c.findingsCount.high +
+          c.findingsCount.medium +
+          c.findingsCount.low +
+          c.findingsCount.informational,
+        0
+      )
+    ),
+    ledgerEntries: crawlResult.ledger.getAllEntries(),
     pages,
     findings: uniqueFindings,
     keywordCandidates: candidateKeywords,

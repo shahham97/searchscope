@@ -442,14 +442,48 @@ export function generateAuditPdf(report: AuditReport): void {
     'Comprehensive record of status codes, fetch durations, body word counts, and schema counts.'
   );
 
-  const urlRows = report.pages.map((p) => [
-    p.failureCode || (p.statusCode === 200 ? '200 OK' : `HTTP ${p.statusCode}`),
-    p.url, // FULL URL wrapped
-    p.title || (p.failureHint ? `Failure: ${p.failureHint}` : '(No Title Declared)'),
-    p.wordCount.toString(),
-    `${p.fetchDurationMs}ms`,
-    p.structuredData.length.toString(),
-  ]);
+  const inventoryEntries = report.ledgerEntries && report.ledgerEntries.length > 0
+    ? report.ledgerEntries
+    : null;
+
+  const urlRows = inventoryEntries
+    ? inventoryEntries.map((entry) => {
+        const p = entry.pageData;
+        const statusLabel =
+          entry.state === 'crawled_ok'
+            ? entry.statusCode === 200
+              ? '200 OK'
+              : `HTTP ${entry.statusCode}`
+            : entry.state === 'skipped_robots'
+            ? 'Robots Blocked'
+            : entry.state === 'skipped_non_html'
+            ? 'Non-HTML'
+            : entry.state === 'not_crawled_limit'
+            ? 'Uncrawled Limit'
+            : entry.state === 'redirected'
+            ? 'Redirect'
+            : entry.failureCode || `Failed (${entry.statusCode || 0})`;
+        const titleOrHint =
+          p?.title ||
+          entry.failureHint ||
+          (entry.state === 'not_crawled_limit' ? '(Discovered - Limit)' : '(No Title Declared)');
+        return [
+          statusLabel,
+          entry.url,
+          titleOrHint,
+          (p?.wordCount || 0).toString(),
+          p?.fetchDurationMs ? `${p.fetchDurationMs}ms` : '-',
+          (p?.structuredData?.length || 0).toString(),
+        ];
+      })
+    : report.pages.map((p) => [
+        p.failureCode || (p.statusCode === 200 ? '200 OK' : `HTTP ${p.statusCode}`),
+        p.url, // FULL URL wrapped
+        p.title || (p.failureHint ? `Failure: ${p.failureHint}` : '(No Title Declared)'),
+        p.wordCount.toString(),
+        `${p.fetchDurationMs}ms`,
+        p.structuredData.length.toString(),
+      ]);
 
   autoTable(doc, {
     startY: 32,

@@ -35,7 +35,7 @@ export const BOT_USER_AGENT =
   'SearchScope-Auditor/1.0 (+https://searchscope.app/bot; privacy-first website auditor)';
 
 export const DEFAULT_TIMEOUT_MS = 10000;
-export const MAX_BODY_BYTES = 5 * 1024 * 1024; // 5 MB limit
+export const MAX_BODY_BYTES = 10 * 1024 * 1024; // 10 MB limit for rich modern hydration payloads
 export const MAX_REDIRECTS = 10;
 
 /**

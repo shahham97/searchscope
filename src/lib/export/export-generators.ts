@@ -160,20 +160,51 @@ export function generateCsvFiles(report: AuditReport): Record<string, string> {
   ]);
   const findingsCsv = [findingsHeaders.join(','), ...findingsRows.map((r) => r.join(','))].join('\n');
 
-  // urls.csv
-  const urlsHeaders = ['URL', 'StatusCode', 'Title', 'WordCount', 'FetchMs', 'IsHtml', 'Canonical', 'SchemasCount', 'InternalLinks', 'ExternalLinks'];
-  const urlsRows = report.pages.map((p) => [
-    `"${p.url}"`,
-    p.statusCode,
-    `"${(p.title || '').replace(/"/g, '""')}"`,
-    p.wordCount,
-    p.fetchDurationMs,
-    p.isHtml,
-    `"${p.canonicalUrl || ''}"`,
-    p.structuredData.length,
-    p.internalLinks.length,
-    p.externalLinks.length,
-  ]);
+  // urls.csv - Matches Result Ledger exactly (Invariant 4)
+  const urlsHeaders = [
+    'URL',
+    'State',
+    'StatusCode',
+    'PageType',
+    'Title',
+    'WordCount',
+    'FetchMs',
+    'IsHtml',
+    'Canonical',
+    'SchemasCount',
+    'FailureHint',
+  ];
+
+  const urlsRows = report.ledgerEntries && report.ledgerEntries.length > 0
+    ? report.ledgerEntries.map((e) => {
+        const p = e.pageData;
+        return [
+          `"${e.url}"`,
+          `"${e.state}"`,
+          e.statusCode || 0,
+          `"${e.pageType || p?.pageType || 'utility'}"`,
+          `"${(p?.title || '').replace(/"/g, '""')}"`,
+          p?.wordCount || 0,
+          p?.fetchDurationMs || 0,
+          p?.isHtml ?? false,
+          `"${p?.canonicalUrl || ''}"`,
+          p?.structuredData?.length || 0,
+          `"${(e.failureHint || '').replace(/"/g, '""')}"`,
+        ];
+      })
+    : report.pages.map((p) => [
+        `"${p.url}"`,
+        p.failureCode ? 'failed' : 'crawled_ok',
+        p.statusCode,
+        `"${p.pageType || 'utility'}"`,
+        `"${(p.title || '').replace(/"/g, '""')}"`,
+        p.wordCount,
+        p.fetchDurationMs,
+        p.isHtml,
+        `"${p.canonicalUrl || ''}"`,
+        p.structuredData.length,
+        `"${(p.failureHint || '').replace(/"/g, '""')}"`,
+      ]);
   const urlsCsv = [urlsHeaders.join(','), ...urlsRows.map((r) => r.join(','))].join('\n');
 
   // keywords.csv
