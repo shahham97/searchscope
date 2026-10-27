@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Sliders, CheckCircle2, Shield, Globe, Cpu, Layers, Server, Lock, Zap } from 'lucide-react';
+import { Search, Sliders, CheckCircle2, Shield, Globe, Cpu, Layers, Server, Lock, Zap, Mail } from 'lucide-react';
 import { Card } from './ui/Card';
 import { AuditConfig } from '../types/audit';
 import { CyberSeoHeroVisual, CyberFeatureSectionVisual } from './ui/CyberSeoVisuals';
+import { GmailContactLink } from './layout/GmailContactLink';
 
 interface AuditConfigFormProps {
   onStartAudit: (targetUrl: string, config: AuditConfig) => void;
@@ -130,128 +131,119 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
                   <button
                     type="button"
                     onClick={() => setDepth('quick')}
-                    className={`p-3 text-left rounded-xl border transition-all min-h-[44px] ${
+                    className={`p-3 rounded-xl border text-left transition-all ${
                       depth === 'quick'
-                        ? 'border-cerulean bg-jet-850 shadow-glow-cerulean text-white'
-                        : 'border-jet-800 hover:border-jet-700 bg-jet-950/70 text-slate-400'
+                        ? 'border-cerulean bg-jet-850 text-white shadow-glow-cerulean'
+                        : 'border-jet-800 bg-jet-950/80 text-slate-400 hover:border-jet-700 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-orbitron font-bold text-xs">Quick Audit</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-jet-800 text-cerulean">25 pages</span>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-orbitron font-bold text-xs uppercase">Quick Audit</span>
+                      <span className="font-mono text-[10px] text-cerulean">25 URLs</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-sans mt-1">Core pages & navigation checks.</p>
+                    <p className="text-[11px] text-slate-400 font-sans leading-tight">
+                      Rapid crawl of homepage & core navigational templates.
+                    </p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setDepth('standard')}
-                    className={`p-3 text-left rounded-xl border transition-all min-h-[44px] ${
+                    className={`p-3 rounded-xl border text-left transition-all ${
                       depth === 'standard'
-                        ? 'border-cerulean bg-jet-850 shadow-glow-cerulean text-white'
-                        : 'border-jet-800 hover:border-jet-700 bg-jet-950/70 text-slate-400'
+                        ? 'border-cerulean bg-jet-850 text-white shadow-glow-cerulean'
+                        : 'border-jet-800 bg-jet-950/80 text-slate-400 hover:border-jet-700 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-orbitron font-bold text-xs">Standard</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-jet-800 text-cerulean">100 pages</span>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-orbitron font-bold text-xs uppercase">Standard</span>
+                      <span className="font-mono text-[10px] text-cerulean">100 URLs</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-sans mt-1">Catalog & content depth audit.</p>
+                    <p className="text-[11px] text-slate-400 font-sans leading-tight">
+                      Balanced crawl discovering products, articles, & schemas.
+                    </p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setDepth('deep')}
-                    className={`p-3 text-left rounded-xl border transition-all min-h-[44px] ${
+                    className={`p-3 rounded-xl border text-left transition-all ${
                       depth === 'deep'
-                        ? 'border-neon bg-jet-850 shadow-glow-rose text-white'
-                        : 'border-jet-800 hover:border-jet-700 bg-jet-950/70 text-slate-400'
+                        ? 'border-neon bg-jet-850 text-white shadow-glow-rose'
+                        : 'border-jet-800 bg-jet-950/80 text-slate-400 hover:border-jet-700 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-orbitron font-bold text-xs">Deep Crawl</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-jet-800 text-neon">200 pages</span>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-orbitron font-bold text-xs uppercase text-neon">Deep Scope</span>
+                      <span className="font-mono text-[10px] text-neon">200 URLs</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-sans mt-1">Stratified sampling across 8 types.</p>
+                    <p className="text-[11px] text-slate-400 font-sans leading-tight">
+                      Full site graph sampling, orphan detection, & AEO intent mapping.
+                    </p>
                   </button>
                 </div>
               </div>
 
-              {/* Module toggles & Advanced Settings */}
+              {/* Advanced Diagnostic Settings Toggle */}
               <div>
                 <button
                   type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="text-xs font-rajdhani font-bold uppercase tracking-wider text-cerulean hover:text-white flex items-center space-x-1.5 py-1 min-h-[36px]"
+                  className="inline-flex items-center text-xs font-rajdhani font-bold uppercase tracking-wider text-cerulean hover:text-white transition-colors"
                 >
-                  <Sliders className="h-3.5 w-3.5" />
-                  <span>{showAdvanced ? 'Hide Engine Modules' : 'Customize Engine Modules'}</span>
+                  <Sliders className="h-3.5 w-3.5 mr-1.5" />
+                  {showAdvanced ? 'Hide Advanced Engines' : 'Configure Advanced Engines'}
                 </button>
 
                 {showAdvanced && (
                   <div className="mt-3 p-4 rounded-xl bg-jet-950 border border-jet-800 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <label className="flex items-center space-x-2.5 cursor-pointer min-h-[36px]">
-                      <input
-                        type="checkbox"
-                        checked={includeStructuredData}
-                        onChange={(e) => setIncludeStructuredData(e.target.checked)}
-                        className="rounded border-jet-700 text-cerulean focus:ring-cerulean h-4 w-4 bg-jet-900"
-                      />
-                      <span className="text-slate-200 font-sans">Schema.org JSON-LD & GMC</span>
-                    </label>
-
-                    <label className="flex items-center space-x-2.5 cursor-pointer min-h-[36px]">
-                      <input
-                        type="checkbox"
-                        checked={includeAeoGeo}
-                        onChange={(e) => setIncludeAeoGeo(e.target.checked)}
-                        className="rounded border-jet-700 text-neon focus:ring-neon h-4 w-4 bg-jet-900"
-                      />
-                      <span className="text-slate-200 font-sans">AEO & GEO Readiness Check</span>
-                    </label>
-
-                    <label className="flex items-center space-x-2.5 cursor-pointer min-h-[36px]">
+                    <label className="flex items-center space-x-2.5 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={includeContent}
                         onChange={(e) => setIncludeContent(e.target.checked)}
-                        className="rounded border-jet-700 text-cerulean focus:ring-cerulean h-4 w-4 bg-jet-900"
+                        className="rounded border-jet-700 text-cerulean bg-jet-900 focus:ring-cerulean"
                       />
-                      <span className="text-slate-200 font-sans">Content Depth & SimHash (64-bit)</span>
+                      <span className="text-slate-300">Content Depth & Flesch-Kincaid</span>
                     </label>
 
-                    <label className="flex items-center space-x-2.5 cursor-pointer min-h-[36px]">
+                    <label className="flex items-center space-x-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeAeoGeo}
+                        onChange={(e) => setIncludeAeoGeo(e.target.checked)}
+                        className="rounded border-jet-700 text-cerulean bg-jet-900 focus:ring-cerulean"
+                      />
+                      <span className="text-slate-300">AEO Q&A & GEO Machine Signals</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeStructuredData}
+                        onChange={(e) => setIncludeStructuredData(e.target.checked)}
+                        className="rounded border-jet-700 text-cerulean bg-jet-900 focus:ring-cerulean"
+                      />
+                      <span className="text-slate-300">Schema.org JSON-LD Verification</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2.5 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={checkBrokenLinks}
                         onChange={(e) => setCheckBrokenLinks(e.target.checked)}
-                        className="rounded border-jet-700 text-cerulean focus:ring-cerulean h-4 w-4 bg-jet-900"
+                        className="rounded border-jet-700 text-cerulean bg-jet-900 focus:ring-cerulean"
                       />
-                      <span className="text-slate-200 font-sans">Internal Link Graph & PageRank</span>
+                      <span className="text-slate-300">Internal Link Graph & PageRank</span>
                     </label>
                   </div>
                 )}
-              </div>
-
-              {/* Privacy Badges */}
-              <div className="pt-3 border-t border-jet-800 flex flex-wrap items-center justify-between text-xs font-rajdhani text-slate-400 gap-y-2">
-                <div className="flex items-center space-x-4">
-                  <span className="flex items-center text-emerald-400 font-semibold">
-                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                    Zero Account Required
-                  </span>
-                  <span className="flex items-center text-cerulean font-semibold">
-                    <Shield className="h-3.5 w-3.5 mr-1" />
-                    Zero Database Persistence
-                  </span>
-                </div>
-                <span className="text-slate-500 font-mono text-[11px]">SSRF & DNS PINNING SAFE</span>
               </div>
             </form>
           </div>
         </div>
 
-        {/* Right Column: High-Tech Cyber Crawler Visual */}
+        {/* Right Column: High-Tech Cyber Crawler Visual with Interactive Parallax */}
         <div className="lg:col-span-5 flex items-center justify-center">
           <CyberSeoHeroVisual />
         </div>
@@ -298,6 +290,20 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
             Optional developer AI Agent mode uses client memory exclusively; credentials are never transmitted to any persistent store.
           </p>
         </div>
+      </div>
+
+      {/* Direct Developer Contact Strip */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-jet-900/90 border border-jet-800 shadow-cyber-card flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center space-x-3 text-xs">
+          <div className="h-9 w-9 rounded-xl bg-jet-850 border border-cerulean/40 flex items-center justify-center text-cerulean shrink-0">
+            <Mail className="h-4 w-4" />
+          </div>
+          <div>
+            <h4 className="font-orbitron font-bold text-white text-xs">Developer Direct Inquiries & Custom Crawl Requests</h4>
+            <p className="text-slate-400 font-sans text-[11px]">Direct developer support for webmasters, enterprise crawling, or algorithm audit questions:</p>
+          </div>
+        </div>
+        <GmailContactLink email="developerforhirre@gmail.com" variant="pill" />
       </div>
 
       {/* Cyber Feature Section Visuals */}

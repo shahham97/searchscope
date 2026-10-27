@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Loader2, XCircle, Globe, AlertTriangle, FileText, FastForward, Activity } from 'lucide-react';
+import { LiveCrawlParallaxVisual } from './ui/CyberSeoVisuals';
 
 interface LiveCrawlStatusProps {
   status: string;
@@ -27,7 +28,10 @@ export const LiveCrawlStatus: React.FC<LiveCrawlStatusProps> = ({
   const percentage = Math.min(100, Math.round((crawledCount / maxPages) * 100));
 
   return (
-    <div className="max-w-3xl mx-auto py-16 px-4">
+    <div className="max-w-4xl mx-auto py-12 px-4">
+      {/* 3D Parallax Live Radar Telemetry */}
+      <LiveCrawlParallaxVisual currentUrl={currentUrl} percentage={percentage} />
+
       <div className="p-8 rounded-3xl bg-jet-900/95 border border-cerulean/50 shadow-glow-cerulean relative overflow-hidden backdrop-blur-xl">
         {/* Glow corner ambient */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-cerulean/15 rounded-full blur-3xl pointer-events-none" />

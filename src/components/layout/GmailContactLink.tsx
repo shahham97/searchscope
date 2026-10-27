@@ -11,8 +11,8 @@ interface GmailContactLinkProps {
 }
 
 export const GmailContactLink: React.FC<GmailContactLinkProps> = ({
-  email = 'hello@searchscope.app',
-  subject = 'SearchScope Inquiry',
+  email = 'developerforhirre@gmail.com',
+  subject = 'SearchScope Technical Inquiry',
   className = '',
   variant = 'footer',
 }) => {
@@ -46,10 +46,10 @@ export const GmailContactLink: React.FC<GmailContactLinkProps> = ({
 
   if (variant === 'pill') {
     return (
-      <div className={`relative inline-flex items-center space-x-1 ${className}`}>
+      <div className={`relative inline-flex items-center space-x-1.5 ${className}`}>
         <button
           onClick={handleClick}
-          title="Open in Gmail"
+          title="Open compose in Gmail"
           className="inline-flex items-center space-x-2 px-3.5 py-2 text-xs font-rajdhani font-bold uppercase tracking-wider text-white bg-jet-900 hover:bg-jet-850 border border-cerulean/40 hover:border-cerulean rounded-lg shadow-sm hover:shadow-glow-cerulean transition-all min-h-[44px]"
         >
           <Mail className="h-4 w-4 text-cerulean" />
@@ -72,10 +72,10 @@ export const GmailContactLink: React.FC<GmailContactLinkProps> = ({
       <button
         onClick={handleClick}
         className="inline-flex items-center space-x-2 text-xs font-rajdhani font-semibold tracking-wider text-slate-300 hover:text-white hover:text-glow-cerulean transition-all py-2 px-1 min-h-[44px]"
-        title="Open message in Gmail"
+        title="Open compose in Gmail"
       >
         <Mail className="h-4 w-4 text-cerulean" />
-        <span>Contact ({email})</span>
+        <span>Contact: <strong className="text-cerulean font-mono">{email}</strong></span>
       </button>
       <button
         onClick={handleCopy}

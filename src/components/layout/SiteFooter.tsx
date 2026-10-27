@@ -64,13 +64,13 @@ export const SiteFooter: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#privacy-disclosure"
+                <Link
+                  href="/bot#rules"
                   className="text-slate-400 hover:text-white hover:text-glow-cerulean transition-colors min-h-[44px] inline-flex items-center"
                 >
                   <ShieldCheck className="h-3.5 w-3.5 mr-2 text-emerald-400" />
                   SSRF Protection & Zero-Storage Threat Model
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -81,9 +81,9 @@ export const SiteFooter: React.FC = () => {
               Direct Contact
             </h4>
             <p className="text-xs text-slate-400 leading-relaxed font-sans">
-              Have technical questions regarding our crawler behavior or algorithm rules? Reach our core team:
+              Have technical questions regarding our crawler behavior or algorithm rules? Reach our core developer directly:
             </p>
-            <GmailContactLink variant="footer" className="text-slate-200" />
+            <GmailContactLink email="developerforhirre@gmail.com" variant="footer" className="text-slate-200" />
           </div>
         </div>
 
@@ -92,14 +92,14 @@ export const SiteFooter: React.FC = () => {
           <div className="text-center md:text-left font-rajdhani font-medium tracking-wide">
             <span>&copy; {new Date().getFullYear()} SearchScope. Built for transparent, unmanipulated search intelligence.</span>
             <span className="block sm:inline sm:ml-2 text-slate-400">
-              Ephemeral execution on edge compute nodes. Standard HTTP infrastructure logs (IP, timestamp, path) are retained transiently.
+              Ephemeral execution on edge compute nodes. Direct contact: <a href="mailto:developerforhirre@gmail.com" className="text-cerulean underline">developerforhirre@gmail.com</a>
             </span>
           </div>
 
           <div className="flex items-center space-x-3">
             <span className="inline-flex items-center text-xs font-rajdhani font-bold text-emerald-400 bg-jet-900 px-3 py-1 rounded border border-emerald-500/20 shadow-sm">
               <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-emerald-400" />
-              100% PRIVATE & EPHEMERAL
+              100% Client Ephemeral
             </span>
           </div>
         </div>

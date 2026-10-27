@@ -1,7 +1,87 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Cpu, Search, Globe, Shield, Terminal, Zap, Layers, Network } from 'lucide-react';
+import { Cpu, Search, Globe, Shield, Terminal, Zap, Layers, Network, Activity, Radio, Sparkles } from 'lucide-react';
+
+/**
+ * Interactive full-page Cyber Parallax Backdrop with multi-depth particles,
+ * laser grid perspective shift, and ambient Cerulean / Neon Rose light beams.
+ */
+export const CyberParallaxBackground: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const { innerWidth, innerHeight } = window;
+      const x = (e.clientX / innerWidth - 0.5) * 30;
+      const y = (e.clientY / innerHeight - 0.5) * 30;
+      setMouseOffset({ x, y });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  return (
+    <div className="relative min-h-full w-full overflow-hidden">
+      {/* Deep Space Background Layer */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {/* Cyber perspective grid */}
+        <div
+          className="absolute inset-0 bg-cyber-grid opacity-25 transition-transform duration-300 ease-out"
+          style={{
+            transform: `translate(${mouseOffset.x * 0.4}px, ${mouseOffset.y * 0.4}px) scale(1.02)`,
+          }}
+        />
+
+        {/* Ambient Floating Glow Orb 1 - Cerulean Blue */}
+        <div
+          className="absolute -top-32 -left-32 w-[550px] h-[550px] bg-cerulean/15 rounded-full blur-[140px] transition-transform duration-500 ease-out"
+          style={{
+            transform: `translate(${-mouseOffset.x * 1.8}px, ${-mouseOffset.y * 1.8}px)`,
+          }}
+        />
+
+        {/* Ambient Floating Glow Orb 2 - Neon Rose */}
+        <div
+          className="absolute top-1/3 -right-32 w-[600px] h-[600px] bg-neon/15 rounded-full blur-[160px] transition-transform duration-500 ease-out"
+          style={{
+            transform: `translate(${mouseOffset.x * 1.8}px, ${mouseOffset.y * 1.8}px)`,
+          }}
+        />
+
+        {/* Ambient Center Orb - Deep Indigo */}
+        <div
+          className="absolute bottom-0 left-1/3 w-[500px] h-[500px] bg-cerulean/10 rounded-full blur-[150px] transition-transform duration-700 ease-out"
+          style={{
+            transform: `translate(${mouseOffset.x * 0.9}px, ${mouseOffset.y * 0.9}px)`,
+          }}
+        />
+
+        {/* Floating Cyber Data Particles */}
+        <div
+          className="absolute top-20 left-[15%] w-2 h-2 rounded-full bg-cerulean shadow-[0_0_10px_#00A8FF] transition-transform duration-300"
+          style={{ transform: `translate(${mouseOffset.x * 1.2}px, ${mouseOffset.y * 1.2}px)` }}
+        />
+        <div
+          className="absolute top-48 right-[20%] w-2.5 h-2.5 rounded-full bg-neon shadow-[0_0_12px_#FF007F] transition-transform duration-300"
+          style={{ transform: `translate(${-mouseOffset.x * 1.5}px, ${-mouseOffset.y * 1.5}px)` }}
+        />
+        <div
+          className="absolute top-3/4 left-[10%] w-1.5 h-1.5 rounded-full bg-cerulean shadow-[0_0_8px_#00A8FF] transition-transform duration-200"
+          style={{ transform: `translate(${mouseOffset.x * 2}px, ${mouseOffset.y * 2}px)` }}
+        />
+        <div
+          className="absolute top-2/3 right-[12%] w-2 h-2 rounded-full bg-neon shadow-[0_0_10px_#FF007F] transition-transform duration-200"
+          style={{ transform: `translate(${-mouseOffset.x * 2}px, ${-mouseOffset.y * 2}px)` }}
+        />
+      </div>
+
+      {/* Main Content with Foreground z-index */}
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+};
 
 export const CyberSeoHeroVisual: React.FC = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -55,7 +135,6 @@ export const CyberSeoHeroVisual: React.FC = () => {
         }}
       >
         <defs>
-          {/* Gradients */}
           <linearGradient id="cyberCerulean" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#70D6FF" />
             <stop offset="50%" stopColor="#00A8FF" />
@@ -100,28 +179,24 @@ export const CyberSeoHeroVisual: React.FC = () => {
         </g>
 
         {/* Floating Peripheral SEO Nodes */}
-        {/* Node 1: Technical Schema */}
         <g transform="translate(120, 120)">
           <circle r="22" fill="#090B12" stroke="#00A8FF" strokeWidth="2" filter="url(#neonGlowCerulean)" />
           <circle r="8" fill="#00A8FF" />
           <text x="28" y="5" fill="#70D6FF" fontSize="12" fontFamily="Rajdhani" fontWeight="bold">SCHEMA.ORG</text>
         </g>
 
-        {/* Node 2: AEO Answers */}
         <g transform="translate(380, 120)">
           <circle r="22" fill="#090B12" stroke="#FF007F" strokeWidth="2" filter="url(#neonGlowRose)" />
           <circle r="8" fill="#FF007F" />
           <text x="-95" y="5" fill="#FF5EAA" fontSize="12" fontFamily="Rajdhani" fontWeight="bold">AEO SYNTHESIS</text>
         </g>
 
-        {/* Node 3: PageRank Authority */}
         <g transform="translate(100, 340)">
           <circle r="20" fill="#090B12" stroke="#00A8FF" strokeWidth="2" filter="url(#neonGlowCerulean)" />
           <circle r="7" fill="#00A8FF" />
           <text x="26" y="5" fill="#70D6FF" fontSize="12" fontFamily="Rajdhani" fontWeight="bold">PAGERANK GRAPH</text>
         </g>
 
-        {/* Node 4: GEO Citations */}
         <g transform="translate(390, 350)">
           <circle r="20" fill="#090B12" stroke="#FF007F" strokeWidth="2" filter="url(#neonGlowRose)" />
           <circle r="7" fill="#FF007F" />
@@ -129,7 +204,6 @@ export const CyberSeoHeroVisual: React.FC = () => {
         </g>
 
         {/* Robotic Core Spider / Central Processing Head */}
-        {/* Hexagonal Armor Chassis */}
         <polygon
           points="250,165 325,208 325,292 250,335 175,292 175,208"
           fill="url(#jetChrome)"
@@ -138,7 +212,6 @@ export const CyberSeoHeroVisual: React.FC = () => {
           filter="url(#neonGlowCerulean)"
         />
 
-        {/* Inner Glowing Hexagon Core */}
         <polygon
           points="250,185 305,217 305,283 250,315 195,283 195,217"
           fill="#07080D"
@@ -165,6 +238,76 @@ export const CyberSeoHeroVisual: React.FC = () => {
           SCANNING DOM · SSRF PROTECTED · 100% PRIVATE
         </text>
       </svg>
+    </div>
+  );
+};
+
+/**
+ * High-tech Parallax Radar Visual displayed during active crawl
+ */
+export const LiveCrawlParallaxVisual: React.FC<{ currentUrl: string; percentage: number }> = ({
+  currentUrl,
+  percentage,
+}) => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const { innerWidth, innerHeight } = window;
+      const x = (e.clientX / innerWidth - 0.5) * 24;
+      const y = (e.clientY / innerHeight - 0.5) * 24;
+      setMousePos({ x, y });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  return (
+    <div className="relative w-full max-w-sm mx-auto aspect-square flex items-center justify-center select-none overflow-hidden rounded-3xl bg-gradient-to-b from-jet-900 to-jet-950 border border-cerulean/40 shadow-glow-cerulean mb-8">
+      {/* Background radial radar sweep */}
+      <div
+        className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,168,255,0.15)_0,transparent_70%)] transition-transform duration-300"
+        style={{ transform: `translate(${mousePos.x * 0.8}px, ${mousePos.y * 0.8}px)` }}
+      />
+
+      {/* Orbiting Laser Radar */}
+      <div
+        className="relative w-64 h-64 transition-transform duration-300 ease-out"
+        style={{
+          transform: `perspective(800px) rotateY(${mousePos.x}deg) rotateX(${-mousePos.y}deg)`,
+        }}
+      >
+        {/* Radar Ring 1 */}
+        <div className="absolute inset-0 rounded-full border border-cerulean/30 animate-[spin_8s_linear_infinite]" />
+        {/* Radar Ring 2 */}
+        <div className="absolute inset-6 rounded-full border border-dashed border-neon/40 animate-[spin_12s_linear_infinite_reverse]" />
+        {/* Radar Ring 3 */}
+        <div className="absolute inset-12 rounded-full border border-cerulean/50" />
+
+        {/* Sweep Scanner Beam */}
+        <div className="absolute top-1/2 left-1/2 w-32 h-[2px] bg-gradient-to-r from-cerulean to-transparent origin-left animate-[spin_3s_linear_infinite] shadow-[0_0_8px_#00A8FF]" />
+
+        {/* Central Core */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-2xl bg-jet-950 border-2 border-cerulean flex items-center justify-center shadow-glow-cerulean">
+          <Radio className="w-8 h-8 text-cerulean animate-pulse" />
+        </div>
+
+        {/* Peripheral Telemetry Nodes */}
+        <div className="absolute top-4 left-8 px-2 py-0.5 rounded bg-jet-900 border border-cerulean/50 text-[10px] font-mono text-cerulean">
+          HTTP // 200
+        </div>
+        <div className="absolute bottom-6 right-6 px-2 py-0.5 rounded bg-jet-900 border border-neon/50 text-[10px] font-mono text-neon">
+          DOM // SCAN
+        </div>
+        <div className="absolute top-1/2 -right-4 px-2 py-0.5 rounded bg-jet-900 border border-emerald-500/50 text-[10px] font-mono text-emerald-400">
+          TLS // OK
+        </div>
+      </div>
+
+      <div className="absolute bottom-3 inset-x-0 text-center font-orbitron text-[10px] tracking-widest text-slate-400">
+        PARALLAX CRAWL TELEMETRY
+      </div>
     </div>
   );
 };

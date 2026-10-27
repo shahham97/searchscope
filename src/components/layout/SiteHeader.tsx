@@ -11,8 +11,8 @@ export const SiteHeader: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-jet-950/85 backdrop-blur-xl border-b border-jet-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-jet-950/90 backdrop-blur-xl border-b border-jet-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.8)] pt-3 pb-2 sm:pt-3.5 sm:pb-2.5 transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center space-x-8">
           <Link href="/" className="flex items-center space-x-3.5 group min-h-[44px]">
@@ -61,37 +61,38 @@ export const SiteHeader: React.FC = () => {
           </nav>
         </div>
 
-        {/* Right Actions */}
-        <div className="hidden md:flex items-center space-x-4">
-          <div className="flex items-center space-x-2 text-xs font-rajdhani font-semibold tracking-wider text-emerald-400 bg-jet-900/90 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+        {/* Right side Actions & Direct Contact */}
+        <div className="hidden lg:flex items-center space-x-4">
+          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-jet-900 border border-jet-700 text-xs font-rajdhani text-slate-300">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span>100% PRIVATE · ZERO SAVED DATA</span>
+            <span className="font-bold uppercase tracking-wider text-[11px]">100% Private</span>
+            <span className="text-slate-500 font-mono text-[10px]">· Zero DB</span>
           </div>
 
-          <GmailContactLink variant="footer" className="text-slate-300" />
+          <GmailContactLink email="developerforhirre@gmail.com" variant="pill" />
         </div>
 
         {/* Mobile menu button */}
-        <div className="flex items-center md:hidden">
+        <div className="flex lg:hidden items-center space-x-2">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-            className="p-2.5 rounded-lg text-slate-300 hover:text-white bg-jet-900 border border-jet-800 hover:border-cerulean/50 min-h-[44px] min-w-[44px] flex items-center justify-center transition-all"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-jet-900 min-h-[44px] min-w-[44px] flex items-center justify-center border border-jet-800"
+            aria-label="Toggle Navigation"
           >
-            {isMobileMenuOpen ? <X className="h-5 w-5 text-neon" /> : <Menu className="h-5 w-5 text-cerulean" />}
+            {isMobileMenuOpen ? <X className="h-6 w-6 text-neon" /> : <Menu className="h-6 w-6 text-cerulean" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile navigation drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-jet-800 bg-jet-950/95 px-4 pt-3 pb-5 space-y-3 shadow-2xl">
-          <nav className="flex flex-col space-y-2">
+        <div className="lg:hidden border-t border-jet-850 bg-jet-950/98 px-4 pt-3 pb-6 space-y-4">
+          <div className="flex flex-col space-y-1.5 font-rajdhani font-bold uppercase tracking-wider text-sm">
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-3.5 py-2.5 rounded-lg text-sm font-rajdhani font-bold uppercase tracking-widest min-h-[44px] flex items-center ${
-                pathname === '/' ? 'bg-jet-850 text-white border border-cerulean/50 shadow-glow-cerulean' : 'text-slate-300 hover:bg-jet-900'
+              className={`px-3 py-2.5 rounded-lg flex items-center ${
+                pathname === '/' ? 'text-white bg-jet-900 text-glow-cerulean' : 'text-slate-400 hover:text-white'
               }`}
             >
               Intelligence Auditor
@@ -99,21 +100,21 @@ export const SiteHeader: React.FC = () => {
             <Link
               href="/bot"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`px-3.5 py-2.5 rounded-lg text-sm font-rajdhani font-bold uppercase tracking-widest min-h-[44px] flex items-center ${
-                pathname === '/bot' ? 'bg-jet-850 text-white border border-cerulean/50 shadow-glow-cerulean' : 'text-slate-300 hover:bg-jet-900'
+              className={`px-3 py-2.5 rounded-lg flex items-center ${
+                pathname === '/bot' ? 'text-white bg-jet-900 text-glow-cerulean' : 'text-slate-400 hover:text-white'
               }`}
             >
               <Bot className="h-4 w-4 mr-2 text-cerulean" />
               Bot Transparency
             </Link>
-          </nav>
+          </div>
 
-          <div className="pt-2 border-t border-jet-800 flex flex-col space-y-3">
-            <div className="flex items-center space-x-2 text-xs font-rajdhani text-emerald-400 bg-jet-900 px-3 py-2 rounded-lg border border-emerald-500/30">
-              <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-              <span>100% PRIVATE · NO DATABASE · TRANSIENT MEMORY</span>
+          <div className="pt-2 border-t border-jet-850 flex flex-col space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-rajdhani text-slate-400 px-1">
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <span>Zero-Storage Security Architecture</span>
             </div>
-            <GmailContactLink variant="pill" />
+            <GmailContactLink email="developerforhirre@gmail.com" variant="pill" className="w-full justify-center" />
           </div>
         </div>
       )}
