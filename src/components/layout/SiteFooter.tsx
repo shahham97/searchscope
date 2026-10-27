@@ -7,25 +7,25 @@ import { GmailContactLink } from './GmailContactLink';
 
 export const SiteFooter: React.FC = () => {
   return (
-    <footer className="bg-jet-950 text-slate-300 border-t border-jet-800/80 pt-16 pb-12 relative overflow-hidden">
+    <footer className="bg-jet-950 text-slate-300 border-t border-jet-800/80 pt-10 sm:pt-16 pb-8 sm:pb-12 relative overflow-hidden">
       {/* Ambient background glow accents */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cerulean/5 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-neon/5 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-jet-800">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-10 pb-8 sm:pb-12 border-b border-jet-800">
           {/* Brand & Mission */}
           <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cerulean to-neon p-[1px] shadow-glow-cerulean">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cerulean to-neon p-[1px] shadow-glow-cerulean shrink-0">
                 <div className="h-full w-full bg-jet-900 rounded-lg flex items-center justify-center">
                   <Cpu className="h-4 w-4 text-cerulean" />
                 </div>
               </div>
-              <span className="font-orbitron font-extrabold text-white tracking-widest text-lg">
+              <span className="font-orbitron font-extrabold text-white tracking-widest text-base sm:text-lg">
                 SEARCH<span className="text-cerulean">SCOPE</span>
               </span>
-              <span className="font-rajdhani text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded bg-jet-900 text-neon border border-neon/30">
+              <span className="hidden sm:inline-block font-rajdhani text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded bg-jet-900 text-neon border border-neon/30">
                 CYBER SEARCH INTELLIGENCE
               </span>
             </div>

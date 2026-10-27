@@ -46,20 +46,23 @@ export const GmailContactLink: React.FC<GmailContactLinkProps> = ({
 
   if (variant === 'pill') {
     return (
-      <div className={`relative inline-flex items-center space-x-1.5 ${className}`}>
+      <div className={`relative inline-flex items-center space-x-1.5 max-w-full ${className}`}>
         <button
           onClick={handleClick}
-          title="Open compose in Gmail"
-          className="inline-flex items-center space-x-2 px-3.5 py-2 text-xs font-rajdhani font-bold uppercase tracking-wider text-white bg-jet-900 hover:bg-jet-850 border border-cerulean/40 hover:border-cerulean rounded-lg shadow-sm hover:shadow-glow-cerulean transition-all min-h-[44px]"
+          title={`Open compose in Gmail (${email})`}
+          className="inline-flex items-center space-x-2 px-3 py-2 text-xs font-rajdhani font-bold uppercase tracking-wider text-white bg-jet-900 hover:bg-jet-850 border border-cerulean/40 hover:border-cerulean rounded-lg shadow-sm hover:shadow-glow-cerulean transition-all min-h-[44px] max-w-[calc(100%-48px)] overflow-hidden"
         >
-          <Mail className="h-4 w-4 text-cerulean" />
-          <span>Contact ({email})</span>
-          <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+          <Mail className="h-4 w-4 text-cerulean shrink-0" />
+          <span className="truncate max-w-[130px] sm:max-w-[200px] md:max-w-none">
+            {email}
+          </span>
+          <ExternalLink className="h-3.5 w-3.5 text-slate-400 shrink-0 hidden sm:inline" />
         </button>
         <button
           onClick={handleCopy}
           title="Copy email address"
-          className="p-2 text-slate-300 hover:text-white bg-jet-900 hover:bg-jet-850 border border-jet-700 hover:border-neon rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center hover:shadow-glow-rose"
+          className="p-2 text-slate-300 hover:text-white bg-jet-900 hover:bg-jet-850 border border-jet-700 hover:border-neon rounded-lg transition-all min-h-[44px] min-w-[44px] shrink-0 flex items-center justify-center hover:shadow-glow-rose"
+          aria-label="Copy email address"
         >
           {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
         </button>
@@ -68,20 +71,22 @@ export const GmailContactLink: React.FC<GmailContactLinkProps> = ({
   }
 
   return (
-    <div className={`inline-flex items-center space-x-2 ${className}`}>
+    <div className={`inline-flex items-center space-x-2 max-w-full overflow-hidden ${className}`}>
       <button
         onClick={handleClick}
-        className="inline-flex items-center space-x-2 text-xs font-rajdhani font-semibold tracking-wider text-slate-300 hover:text-white hover:text-glow-cerulean transition-all py-2 px-1 min-h-[44px]"
-        title="Open compose in Gmail"
+        className="inline-flex items-center space-x-2 text-xs font-rajdhani font-semibold tracking-wider text-slate-300 hover:text-white hover:text-glow-cerulean transition-all py-2 px-1 min-h-[44px] max-w-[calc(100%-44px)] overflow-hidden text-left"
+        title={`Open compose in Gmail (${email})`}
       >
-        <Mail className="h-4 w-4 text-cerulean" />
-        <span>Contact: <strong className="text-cerulean font-mono">{email}</strong></span>
+        <Mail className="h-4 w-4 text-cerulean shrink-0" />
+        <span className="truncate">
+          Contact: <strong className="text-cerulean font-mono">{email}</strong>
+        </span>
       </button>
       <button
         onClick={handleCopy}
         aria-label="Copy contact email"
         title="Copy email address"
-        className="p-1.5 text-slate-400 hover:text-neon rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className="p-1.5 text-slate-400 hover:text-neon rounded-lg transition-colors min-h-[44px] min-w-[44px] shrink-0 flex items-center justify-center"
       >
         {copied ? (
           <span className="flex items-center text-xs font-rajdhani font-bold text-emerald-400">

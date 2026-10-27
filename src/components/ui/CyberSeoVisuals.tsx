@@ -273,7 +273,7 @@ export const LiveCrawlParallaxVisual: React.FC<{ currentUrl: string; percentage:
 
       {/* Orbiting Laser Radar */}
       <div
-        className="relative w-64 h-64 transition-transform duration-300 ease-out"
+        className="relative w-56 h-56 sm:w-64 sm:h-64 transition-transform duration-300 ease-out"
         style={{
           transform: `perspective(800px) rotateY(${mousePos.x}deg) rotateX(${-mousePos.y}deg)`,
         }}
@@ -286,21 +286,21 @@ export const LiveCrawlParallaxVisual: React.FC<{ currentUrl: string; percentage:
         <div className="absolute inset-12 rounded-full border border-cerulean/50" />
 
         {/* Sweep Scanner Beam */}
-        <div className="absolute top-1/2 left-1/2 w-32 h-[2px] bg-gradient-to-r from-cerulean to-transparent origin-left animate-[spin_3s_linear_infinite] shadow-[0_0_8px_#00A8FF]" />
+        <div className="absolute top-1/2 left-1/2 w-28 sm:w-32 h-[2px] bg-gradient-to-r from-cerulean to-transparent origin-left animate-[spin_3s_linear_infinite] shadow-[0_0_8px_#00A8FF]" />
 
         {/* Central Core */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-2xl bg-jet-950 border-2 border-cerulean flex items-center justify-center shadow-glow-cerulean">
-          <Radio className="w-8 h-8 text-cerulean animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-jet-950 border-2 border-cerulean flex items-center justify-center shadow-glow-cerulean">
+          <Radio className="w-7 h-7 sm:w-8 sm:h-8 text-cerulean animate-pulse" />
         </div>
 
         {/* Peripheral Telemetry Nodes */}
-        <div className="absolute top-4 left-8 px-2 py-0.5 rounded bg-jet-900 border border-cerulean/50 text-[10px] font-mono text-cerulean">
+        <div className="absolute top-4 left-4 sm:left-8 px-2 py-0.5 rounded bg-jet-900 border border-cerulean/50 text-[10px] font-mono text-cerulean">
           HTTP // 200
         </div>
-        <div className="absolute bottom-6 right-6 px-2 py-0.5 rounded bg-jet-900 border border-neon/50 text-[10px] font-mono text-neon">
+        <div className="absolute bottom-6 right-4 sm:right-6 px-2 py-0.5 rounded bg-jet-900 border border-neon/50 text-[10px] font-mono text-neon">
           DOM // SCAN
         </div>
-        <div className="absolute top-1/2 -right-4 px-2 py-0.5 rounded bg-jet-900 border border-emerald-500/50 text-[10px] font-mono text-emerald-400">
+        <div className="absolute top-1/2 right-1 sm:right-2 px-2 py-0.5 rounded bg-jet-900 border border-emerald-500/50 text-[10px] font-mono text-emerald-400">
           TLS // OK
         </div>
       </div>

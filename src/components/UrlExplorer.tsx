@@ -172,19 +172,19 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
     <div className="space-y-6">
       {/* Sampling and Integrity Banner */}
       {samplingDistribution && (
-        <div className="bg-jet-900 border border-cerulean/30 text-cerulean-300 px-4 py-3 rounded-xl text-xs flex items-center justify-between shadow-glow-cerulean">
+        <div className="bg-jet-900 border border-cerulean/30 text-cerulean-300 px-4 py-3 rounded-xl text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-glow-cerulean">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-cerulean shrink-0" />
             <span className="font-medium text-white">{samplingDistribution}</span>
           </div>
-          <span className="text-[11px] font-mono text-cerulean bg-cerulean/10 border border-cerulean/30 px-2.5 py-0.5 rounded">
+          <span className="text-[11px] font-mono text-cerulean bg-cerulean/10 border border-cerulean/30 px-2.5 py-0.5 rounded shrink-0">
             Stratified Sampling
           </span>
         </div>
       )}
 
       {dataIntegrity?.isValid && (
-        <div className="bg-jet-900 border border-emerald-500/30 text-emerald-300 px-4 py-2.5 rounded-xl text-xs flex items-center justify-between">
+        <div className="bg-jet-900 border border-emerald-500/30 text-emerald-300 px-4 py-2.5 rounded-xl text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
@@ -192,7 +192,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
               Crawled, Skipped, and Findings.
             </span>
           </div>
-          <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded">
+          <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded break-all shrink-0">
             {totalDiscovered} Discovered = {successfulEntries.length} OK + {failedEntries.length} Fail +{' '}
             {excludedEntries.length} Policy + {uncrawledEntries.length} Limit
           </span>
@@ -200,12 +200,12 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
       )}
 
       {/* Filter Tabs & Search Header */}
-      <Card className="p-4 bg-jet-900 border-jet-800">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2 border-b border-jet-800 pb-3">
+      <Card className="p-3.5 sm:p-4 bg-jet-900 border-jet-800">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap -mx-1 px-1 sm:mx-0 sm:px-0 custom-scrollbar border-b border-jet-800 pb-3">
             <button
               onClick={() => setFilterTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
                 filterTab === 'all'
                   ? 'bg-cerulean text-jet-950 shadow-glow-cerulean font-bold'
                   : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
@@ -215,7 +215,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             </button>
             <button
               onClick={() => setFilterTab('success')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
                 filterTab === 'success'
                   ? 'bg-emerald-500 text-jet-950 font-bold'
                   : 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60'
@@ -225,7 +225,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             </button>
             <button
               onClick={() => setFilterTab('failed')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
                 filterTab === 'failed'
                   ? 'bg-neon text-white font-bold shadow-glow-rose'
                   : 'bg-rose-950/40 text-neon border border-neon/30 hover:bg-rose-900/60'
@@ -236,7 +236,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             {excludedEntries.length > 0 && (
               <button
                 onClick={() => setFilterTab('excluded')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
                   filterTab === 'excluded'
                     ? 'bg-cerulean-600 text-white font-bold'
                     : 'bg-jet-800 text-slate-300 hover:bg-jet-700'
@@ -248,7 +248,7 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             {uncrawledEntries.length > 0 && (
               <button
                 onClick={() => setFilterTab('uncrawled')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
                   filterTab === 'uncrawled'
                     ? 'bg-amber-500 text-jet-950 font-bold'
                     : 'bg-amber-950/40 text-amber-300 border border-amber-500/30 hover:bg-amber-900/60'
@@ -259,8 +259,8 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-72">
                 <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
                 <input
@@ -268,20 +268,20 @@ export const UrlExplorer: React.FC<UrlExplorerProps> = ({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search URLs, page titles, or errors..."
-                  className="text-xs bg-jet-950 border border-jet-700 rounded-lg pl-9 pr-3 py-2 w-full text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean"
+                  className="text-xs bg-jet-950 border border-jet-700 rounded-lg pl-9 pr-3 py-2 w-full text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean min-h-[40px]"
                 />
               </div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="text-xs border border-jet-700 rounded-lg px-2.5 py-2 bg-jet-950 text-slate-200 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean"
+                className="text-xs border border-jet-700 rounded-lg px-2.5 py-2 bg-jet-950 text-slate-200 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean min-h-[40px]"
               >
                 <option value="default">Default Order</option>
                 <option value="health_asc">Worst Health First</option>
                 <option value="health_desc">Best Health First</option>
               </select>
             </div>
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="text-xs text-slate-400 font-mono text-center sm:text-right">
               Showing {sortedEntries.length} of {activeEntries.length} items
             </span>
           </div>

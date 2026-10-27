@@ -70,7 +70,7 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
               and intermediate edge networks inherently maintain operational HTTP access logs according to standard infrastructure reliability and security policies.
               Audited target websites will also observe our descriptive crawler user-agent:
               <br />
-              <code className="text-[11px] font-mono text-cerulean bg-jet-900 border border-cerulean/30 px-2 py-0.5 rounded mt-1.5 inline-block">
+              <code className="text-[11px] font-mono text-cerulean bg-jet-900 border border-cerulean/30 px-2 py-0.5 rounded mt-1.5 inline-block break-all">
                 SearchScope-Auditor/1.0 (+https://searchscope.app/bot)
               </code>
             </p>

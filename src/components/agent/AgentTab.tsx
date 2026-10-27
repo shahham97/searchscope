@@ -144,17 +144,17 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
       ) : (
         <div className="space-y-6">
           {/* Intro Card */}
-          <Card className="p-6 bg-jet-950 border-jet-800 text-slate-100 shadow-glow-rose relative overflow-hidden group">
+          <Card className="p-4 sm:p-6 bg-jet-950 border-jet-800 text-slate-100 shadow-glow-rose relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-80 h-80 bg-neon/5 rounded-full blur-3xl pointer-events-none" />
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
-              <div className="space-y-1.5 max-w-2xl">
-                <div className="flex items-center gap-2">
+              <div className="space-y-1.5 max-w-2xl min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="critical">
                     Autonomous Code & Content Agent
                   </Badge>
-                  <span className="text-xs text-cerulean font-mono">Strict Bring-Your-Own-Key (BYOK)</span>
+                  <span className="text-[11px] sm:text-xs text-cerulean font-mono">Strict Bring-Your-Own-Key (BYOK)</span>
                 </div>
-                <h2 className="text-xl font-bold text-white font-orbitron tracking-wide">
+                <h2 className="text-lg sm:text-xl font-bold text-white font-orbitron tracking-wide">
                   SearchScope Developer & SEO Agent
                 </h2>
                 <p className="text-xs text-slate-300 leading-relaxed">
@@ -164,15 +164,15 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
 
               <div className="p-3.5 bg-jet-900 border border-jet-800 rounded-xl text-center shrink-0">
                 <span className="text-[11px] text-slate-400 block font-semibold font-rajdhani">Crawl Analyzed</span>
-                <span className="text-lg font-bold text-white font-mono">{report.pages.length} Pages</span>
+                <span className="text-base sm:text-lg font-bold text-white font-mono">{report.pages.length} Pages</span>
                 <span className="text-[10px] text-cerulean block font-mono">{report.findings.length} Findings</span>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-jet-800 flex flex-wrap items-center justify-between gap-3 relative z-10">
+            <div className="mt-4 pt-3 border-t border-jet-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10">
               <div className="flex items-center gap-2 text-xs text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="break-words">
                   Brand Facts: <strong className="text-white">{brandFacts.tradingName}</strong> (
                   {brandFacts.countryOfOrigin.isOriginVerified ? (
                     <span className="text-emerald-400 font-mono">Origin Verified ✓</span>
@@ -186,7 +186,7 @@ export const AgentTab: React.FC<AgentTabProps> = ({ report }) => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowBrandFactsModal(true)}
-                className="text-xs border-jet-700 bg-jet-900 text-slate-200 hover:text-white hover:border-cerulean/50 min-h-[44px]"
+                className="w-full sm:w-auto text-xs border-jet-700 bg-jet-900 text-slate-200 hover:text-white hover:border-cerulean/50 min-h-[44px]"
               >
                 <ShieldCheck className="w-3.5 h-3.5 mr-1 text-cerulean" />
                 Configure Brand Facts & Legal Guardrails

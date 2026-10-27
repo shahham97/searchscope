@@ -22,20 +22,20 @@ export const AeoGeoPanel: React.FC<AeoGeoPanelProps> = ({ report }) => {
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* AEO Card */}
-        <Card className="p-6 bg-jet-900 border-jet-800 shadow-xl relative overflow-hidden group">
+        <Card className="p-4 sm:p-6 bg-jet-900 border-jet-800 shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-cerulean/5 rounded-full blur-2xl pointer-events-none group-hover:bg-cerulean/10 transition-colors" />
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-lg bg-cerulean/10 border border-cerulean/30 flex items-center justify-center text-cerulean shadow-glow-cerulean">
+              <div className="h-10 w-10 rounded-lg bg-cerulean/10 border border-cerulean/30 flex items-center justify-center text-cerulean shadow-glow-cerulean shrink-0">
                 <HelpCircle className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white font-orbitron">Answer Engine Optimization (AEO)</h3>
+                <h3 className="text-sm sm:text-base font-bold text-white font-orbitron">Answer Engine Optimization (AEO)</h3>
                 <p className="text-xs text-slate-400">Readiness for conversational Q&A and featured snippets</p>
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-3xl font-black text-cerulean font-orbitron text-glow-cerulean">{aeoScore}/100</span>
+            <div className="text-left sm:text-right shrink-0">
+              <span className="text-2xl sm:text-3xl font-black text-cerulean font-orbitron text-glow-cerulean">{aeoScore}/100</span>
             </div>
           </div>
 
@@ -62,20 +62,20 @@ export const AeoGeoPanel: React.FC<AeoGeoPanelProps> = ({ report }) => {
         </Card>
 
         {/* GEO Card */}
-        <Card className="p-6 bg-jet-900 border-jet-800 shadow-xl relative overflow-hidden group">
+        <Card className="p-4 sm:p-6 bg-jet-900 border-jet-800 shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-neon/5 rounded-full blur-2xl pointer-events-none group-hover:bg-neon/10 transition-colors" />
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-lg bg-rose-950/60 border border-neon/40 flex items-center justify-center text-neon shadow-glow-rose">
+              <div className="h-10 w-10 rounded-lg bg-rose-950/60 border border-neon/40 flex items-center justify-center text-neon shadow-glow-rose shrink-0">
                 <Bot className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white font-orbitron">Generative Engine Optimization (GEO)</h3>
+                <h3 className="text-sm sm:text-base font-bold text-white font-orbitron">Generative Engine Optimization (GEO)</h3>
                 <p className="text-xs text-slate-400">Machine-interpretability for LLM synthesis and citations</p>
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-3xl font-black text-neon font-orbitron text-glow-rose">{geoScore}/100</span>
+            <div className="text-left sm:text-right shrink-0">
+              <span className="text-2xl sm:text-3xl font-black text-neon font-orbitron text-glow-rose">{geoScore}/100</span>
             </div>
           </div>
 

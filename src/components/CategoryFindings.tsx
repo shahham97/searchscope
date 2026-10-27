@@ -113,10 +113,10 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
   return (
     <div className="space-y-6">
       {/* Filters Toolbar */}
-      <div className="p-5 bg-jet-900/90 border border-jet-800 rounded-2xl shadow-cyber-card backdrop-blur-md">
-        <div className="flex flex-col lg:flex-row gap-4 justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-rajdhani font-bold uppercase tracking-widest text-cerulean mr-1 flex items-center">
+      <div className="p-4 sm:p-5 bg-jet-900/90 border border-jet-800 rounded-2xl shadow-cyber-card backdrop-blur-md">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 justify-between">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap -mx-1 px-1 sm:mx-0 sm:px-0 custom-scrollbar">
+            <span className="text-xs font-rajdhani font-bold uppercase tracking-widest text-cerulean mr-1 flex items-center shrink-0">
               <Filter className="h-3.5 w-3.5 mr-1 text-cerulean" /> Dimension:
             </span>
             {categories.map((c) => (
@@ -124,7 +124,7 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
                 key={c.key}
                 type="button"
                 onClick={() => setSelectedCategory(c.key)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-rajdhani font-bold uppercase tracking-wider transition-all min-h-[36px] ${
+                className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-lg font-rajdhani font-bold uppercase tracking-wider transition-all min-h-[36px] shrink-0 ${
                   selectedCategory === c.key
                     ? 'bg-jet-850 text-white border border-cerulean shadow-glow-cerulean'
                     : 'bg-jet-950 text-slate-400 hover:text-white hover:bg-jet-800 border border-jet-800'
@@ -135,12 +135,12 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2.5 shrink-0">
+          <div className="flex flex-col sm:flex-row gap-2.5 shrink-0 w-full sm:w-auto">
             {/* Severity Filter */}
             <select
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value)}
-              className="text-xs font-rajdhani font-bold uppercase tracking-wider border border-jet-800 rounded-lg px-3 py-2 bg-jet-950 text-slate-200 focus:outline-none focus:border-cerulean min-h-[44px]"
+              className="text-xs font-rajdhani font-bold uppercase tracking-wider border border-jet-800 rounded-lg px-3 py-2 bg-jet-950 text-slate-200 focus:outline-none focus:border-cerulean min-h-[44px] w-full sm:w-auto"
             >
               {severities.map((s) => (
                 <option key={s.key} value={s.key} className="bg-jet-950 text-white">
@@ -150,7 +150,7 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
             </select>
 
             {/* URL/Keyword Search */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search className="h-3.5 w-3.5 absolute left-3 top-3.5 text-slate-400" />
               <input
                 type="text"
@@ -174,7 +174,7 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
 
       {/* Findings List */}
       {filteredFindings.length === 0 ? (
-        <div className="p-12 text-center bg-jet-900 border border-jet-800 rounded-2xl shadow-cyber-card">
+        <div className="p-8 sm:p-12 text-center bg-jet-900 border border-jet-800 rounded-2xl shadow-cyber-card">
           <Check className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
           <h3 className="text-base font-orbitron font-bold text-white tracking-wide">No issues found matching criteria</h3>
           <p className="text-xs text-slate-400 mt-1 font-sans">All analyzed pages passed the selected dimension checks.</p>
@@ -185,7 +185,7 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
             return (
               <div
                 key={`${finding.id}-${idx}`}
-                className="p-6 bg-jet-900/95 border border-jet-800/90 hover:border-cerulean/50 transition-all rounded-2xl shadow-cyber-card space-y-3.5"
+                className="p-4 sm:p-6 bg-jet-900/95 border border-jet-800/90 hover:border-cerulean/50 transition-all rounded-2xl shadow-cyber-card space-y-3.5 overflow-hidden"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
@@ -214,7 +214,7 @@ export const CategoryFindings: React.FC<CategoryFindingsProps> = ({
                   {finding.title}
                 </h3>
 
-                <p className="text-xs text-slate-300 font-mono bg-jet-950 px-3 py-2 rounded-lg border border-jet-800 truncate">
+                <p className="text-xs text-slate-300 font-mono bg-jet-950 px-3 py-2 rounded-lg border border-jet-800 break-all">
                   <strong className="text-cerulean">Affected URL:</strong> {finding.affectedUrl || finding.affectedUrls?.[0] || 'Domain Level'}
                 </p>
 

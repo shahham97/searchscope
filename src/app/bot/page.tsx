@@ -20,7 +20,7 @@ export default function BotPage() {
   return (
     <div className="bg-slate-900 text-slate-100 min-h-[calc(100vh-4rem)]">
       <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm sticky top-16 z-30">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors min-h-[44px]"
@@ -29,17 +29,17 @@ export default function BotPage() {
             Back to SearchScope Auditor
           </Link>
           <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1 rounded">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             SearchScope-Auditor/1.0
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-8 sm:space-y-12">
         {/* Hero Section */}
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 text-xs font-mono">
-            <Bot className="w-3.5 h-3.5 text-slate-400" />
+            <Bot className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             Crawler Verification & Technical Policy
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
@@ -47,7 +47,7 @@ export default function BotPage() {
           </h1>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
             If you have observed requests with the User-Agent{' '}
-            <code className="text-xs font-mono text-slate-200 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+            <code className="text-xs font-mono text-slate-200 bg-slate-800 px-2 py-0.5 rounded border border-slate-700 break-all">
               SearchScope-Auditor/1.0 (+https://searchscope.app/bot)
             </code>
             , this documentation details crawler operations, strict safety guidelines, and procedures to configure or block access.

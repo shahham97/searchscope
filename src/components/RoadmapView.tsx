@@ -43,17 +43,17 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap }) => {
 
         return (
           <div key={phase} className="space-y-4">
-            <div className="flex items-center space-x-3 border-b border-jet-800 pb-3">
-              <span className="h-7 w-7 rounded-lg bg-cerulean text-jet-950 text-xs font-bold font-mono flex items-center justify-center shadow-glow-cerulean">
+            <div className="flex flex-wrap items-center gap-2.5 border-b border-jet-800 pb-3">
+              <span className="h-7 w-7 rounded-lg bg-cerulean text-jet-950 text-xs font-bold font-mono flex items-center justify-center shadow-glow-cerulean shrink-0">
                 0{phaseIndex}
               </span>
-              <h3 className="text-base font-bold text-white font-orbitron tracking-wide">{phaseLabels[phase]}</h3>
+              <h3 className="text-sm sm:text-base font-bold text-white font-orbitron tracking-wide">{phaseLabels[phase]}</h3>
               <Badge variant="informational">{items.length} Task{items.length !== 1 ? 's' : ''}</Badge>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               {items.map((item) => (
-                <Card key={item.id} className="p-5 bg-jet-900 border-jet-800 shadow-xl relative overflow-hidden group">
+                <Card key={item.id} className="p-4 sm:p-5 bg-jet-900 border-jet-800 shadow-xl relative overflow-hidden group">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div className="flex items-center space-x-2">
                       <Badge variant={item.impact === 'critical' ? 'critical' : item.impact === 'high' ? 'high' : 'medium'}>
@@ -69,7 +69,7 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ roadmap }) => {
                   <h4 className="text-base font-bold text-white font-rajdhani tracking-wide mb-1.5">{item.title}</h4>
                   <p className="text-xs text-slate-300 mb-3 leading-relaxed">{item.description}</p>
 
-                  <div className="text-[11px] font-mono text-slate-400 bg-jet-950 p-2.5 rounded-lg border border-jet-800 mb-3 truncate">
+                  <div className="text-[11px] font-mono text-slate-400 bg-jet-950 p-2.5 rounded-lg border border-jet-800 mb-3 break-all">
                     <strong className="text-cerulean">Target:</strong> {item.affectedUrls.join(', ')}
                   </div>
 

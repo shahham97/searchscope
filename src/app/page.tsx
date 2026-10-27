@@ -259,29 +259,29 @@ export default function SearchScopePage() {
         {/* State 3: Audit Results Shell */}
         {report && !isLoading && (
           <AuditErrorBoundary onReset={() => setActiveTab('overview')} fallbackTitle="Audit Render Intercepted">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 w-full">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 w-full">
               {/* Active Audit Action Bar */}
               <div className="bg-jet-900/90 border border-jet-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-cyber-card backdrop-blur-md">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-3">
-                    <span className="font-orbitron font-extrabold text-white text-xl tracking-wide">
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-orbitron font-extrabold text-white text-lg sm:text-xl tracking-wide break-all">
                       {report.targetDomain}
                     </span>
-                    <span className="px-2.5 py-0.5 rounded text-xs font-mono bg-jet-850 text-cerulean border border-cerulean/30">
+                    <span className="px-2.5 py-0.5 rounded text-[11px] sm:text-xs font-mono bg-jet-850 text-cerulean border border-cerulean/30 break-all">
                       {report.targetNormalizedUrl}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 font-rajdhani font-medium tracking-wide">
+                  <p className="text-[11px] sm:text-xs text-slate-400 font-rajdhani font-medium tracking-wide">
                     AUDITED {report.auditDate} · {report.pages.length} PAGES ANALYZED · {report.findings.length} TOTAL FINDINGS
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto shrink-0">
                   <button
                     type="button"
                     onClick={handleDownloadPdf}
                     disabled={isGeneratingPdf}
-                    className="px-4 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider bg-cerulean hover:bg-cerulean-glow text-jet-950 flex items-center justify-center shadow-glow-cerulean transition-all min-h-[44px]"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider bg-cerulean hover:bg-cerulean-glow text-jet-950 flex items-center justify-center shadow-glow-cerulean transition-all min-h-[44px]"
                   >
                     <FileDown className="h-4 w-4 mr-1.5" />
                     {isGeneratingPdf ? 'Compiling PDF...' : 'Download PDF'}
@@ -290,7 +290,7 @@ export default function SearchScopePage() {
                   <button
                     type="button"
                     onClick={handleClearAudit}
-                    className="px-3.5 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider bg-jet-850 hover:bg-jet-800 text-slate-300 hover:text-neon border border-jet-700 hover:border-neon flex items-center justify-center transition-all min-h-[44px]"
+                    className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider bg-jet-850 hover:bg-jet-800 text-slate-300 hover:text-neon border border-jet-700 hover:border-neon flex items-center justify-center transition-all min-h-[44px]"
                   >
                     <RotateCcw className="h-4 w-4 mr-1.5 text-slate-400 group-hover:text-neon" />
                     New Audit
@@ -299,7 +299,7 @@ export default function SearchScopePage() {
               </div>
 
               {/* Navigation Tabs */}
-              <div className="border-b border-jet-800 overflow-x-auto custom-scrollbar">
+              <div className="border-b border-jet-800 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 custom-scrollbar">
                 <nav className="flex space-x-1 sm:space-x-3" aria-label="Tabs">
                   <button
                     type="button"

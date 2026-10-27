@@ -54,11 +54,11 @@ export const CrawlDiagnostics: React.FC<CrawlDiagnosticsProps> = ({
     <div className="space-y-6">
       {/* Crawl Failure Banner if crawl failed */}
       {isCrawlFailed && (
-        <Card className="p-6 bg-rose-950/40 border border-neon/40 shadow-glow-rose">
-          <div className="flex items-start space-x-3.5">
+        <Card className="p-4 sm:p-6 bg-rose-950/40 border border-neon/40 shadow-glow-rose">
+          <div className="flex items-start space-x-3 sm:space-x-3.5">
             <XCircle className="h-6 w-6 text-neon shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-base font-bold text-white font-orbitron tracking-wide">
+              <h3 className="text-sm sm:text-base font-bold text-white font-orbitron tracking-wide">
                 Crawl Failed: Incomplete Audit
               </h3>
               <p className="text-xs text-rose-300 mt-1 leading-relaxed">
@@ -77,10 +77,10 @@ export const CrawlDiagnostics: React.FC<CrawlDiagnosticsProps> = ({
 
       {/* Diagnostics Table */}
       <Card className="overflow-hidden bg-jet-900 border-jet-800 shadow-xl">
-        <div className="p-4 border-b border-jet-800 flex items-center justify-between bg-jet-950/80">
+        <div className="p-3.5 sm:p-4 border-b border-jet-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-jet-950/80">
           <div className="flex items-center space-x-2.5">
-            <Server className="h-4 w-4 text-cerulean" />
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-orbitron">
+            <Server className="h-4 w-4 text-cerulean shrink-0" />
+            <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-orbitron">
               Network & Crawl Diagnostics ({diagnostics.length} Events)
             </h3>
           </div>

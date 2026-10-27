@@ -60,17 +60,17 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-14">
+    <div className="max-w-7xl mx-auto py-6 sm:py-10 px-3.5 sm:px-6 lg:px-8 space-y-10 sm:space-y-14">
       {/* Hero Section with Robotic Visual Side-by-Side */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
         {/* Left Column: Headlines & Launcher Form */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-jet-900 border border-cerulean/40 text-cerulean text-xs font-rajdhani font-bold uppercase tracking-widest shadow-glow-cerulean">
-            <Zap className="h-3.5 w-3.5 text-neon" />
-            <span>AUTONOMOUS CYBER SEARCH INTELLIGENCE</span>
+        <div className="lg:col-span-7 space-y-5 sm:space-y-6">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-jet-900 border border-cerulean/40 text-cerulean text-[10px] sm:text-xs font-rajdhani font-bold uppercase tracking-wider sm:tracking-widest shadow-glow-cerulean">
+            <Zap className="h-3.5 w-3.5 text-neon shrink-0" />
+            <span className="truncate">AUTONOMOUS CYBER SEARCH INTELLIGENCE</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-orbitron font-extrabold text-white tracking-tight leading-none">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-orbitron font-extrabold text-white tracking-tight leading-none">
             DEEP SEO <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cerulean via-cerulean-light to-neon text-glow-cerulean">
               AEO & GEO
@@ -79,13 +79,13 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
             AUDITOR
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-300 font-sans leading-relaxed max-w-xl">
+          <p className="text-xs sm:text-base text-slate-300 font-sans leading-relaxed max-w-xl">
             Autonomous multi-engine crawlability auditor. Deeply inspects PageRank authority, Google Merchant Center schema, 64-bit SimHash duplicates, and answer-engine machine readability with <strong className="text-white">100% private, transient memory execution</strong>.
           </p>
 
           {/* Main Audit Launcher Card */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-jet-900/95 border border-jet-800 shadow-cyber-card relative overflow-hidden">
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-jet-900/95 border border-jet-800 shadow-cyber-card relative overflow-hidden">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div>
                 <label htmlFor="domain-input" className="block text-xs font-rajdhani font-bold uppercase tracking-widest text-slate-300 mb-2">
                   Target Website Domain or URL
@@ -111,7 +111,7 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="rounded-xl sm:rounded-l-none px-7 py-3.5 font-orbitron font-bold text-xs uppercase tracking-widest shrink-0 bg-gradient-to-r from-cerulean to-neon hover:from-cerulean-glow hover:to-neon-glow text-jet-950 min-h-[48px] shadow-glow-cerulean hover:shadow-glow-rose transition-all duration-300 flex items-center justify-center cursor-pointer"
+                    className="w-full sm:w-auto rounded-xl sm:rounded-l-none px-7 py-3.5 font-orbitron font-bold text-xs uppercase tracking-widest shrink-0 bg-gradient-to-r from-cerulean to-neon hover:from-cerulean-glow hover:to-neon-glow text-jet-950 min-h-[48px] shadow-glow-cerulean hover:shadow-glow-rose transition-all duration-300 flex items-center justify-center cursor-pointer"
                   >
                     <Search className="h-4 w-4 mr-2 text-jet-950" />
                     {isLoading ? 'Scanning...' : 'Launch Audit'}
@@ -293,9 +293,9 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
       </div>
 
       {/* Direct Developer Contact Strip */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-jet-900/90 border border-jet-800 shadow-cyber-card flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center space-x-3 text-xs">
-          <div className="h-9 w-9 rounded-xl bg-jet-850 border border-cerulean/40 flex items-center justify-center text-cerulean shrink-0">
+      <div className="p-4 sm:p-5 rounded-2xl bg-jet-900/90 border border-jet-800 shadow-cyber-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center space-x-3 text-xs">
+          <div className="h-9 w-9 rounded-xl bg-jet-850 border border-cerulean/40 flex items-center justify-center text-cerulean shrink-0 mt-0.5 sm:mt-0">
             <Mail className="h-4 w-4" />
           </div>
           <div>
@@ -303,13 +303,15 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
             <p className="text-slate-400 font-sans text-[11px]">Direct developer support for webmasters, enterprise crawling, or algorithm audit questions:</p>
           </div>
         </div>
-        <GmailContactLink email="developerforhirre@gmail.com" variant="pill" />
+        <div className="w-full sm:w-auto flex justify-start sm:justify-end">
+          <GmailContactLink email="developerforhirre@gmail.com" variant="pill" />
+        </div>
       </div>
 
       {/* Cyber Feature Section Visuals */}
-      <div className="pt-6">
+      <div className="pt-4 sm:pt-6">
         <div className="text-center space-y-2 mb-6">
-          <h2 className="text-2xl sm:text-3xl font-orbitron font-extrabold text-white tracking-wide">
+          <h2 className="text-xl sm:text-3xl font-orbitron font-extrabold text-white tracking-wide">
             ENTERPRISE SEARCH INTELLIGENCE ENGINE
           </h2>
           <p className="text-xs font-rajdhani font-semibold uppercase tracking-widest text-slate-400">

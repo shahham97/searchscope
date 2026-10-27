@@ -175,11 +175,11 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
   return (
     <div className="space-y-6">
       {/* Search Intelligence Subtabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-jet-800 pb-3">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-jet-800 pb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap -mx-1 px-1 sm:mx-0 sm:px-0 custom-scrollbar">
           <button
             onClick={() => setActiveSubTab('phrases')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
               activeSubTab === 'phrases'
                 ? 'bg-cerulean text-jet-950 font-bold shadow-glow-cerulean'
                 : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
@@ -190,7 +190,7 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
           {keywordMap && (
             <button
               onClick={() => setActiveSubTab('map')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
                 activeSubTab === 'map'
                   ? 'bg-cerulean text-jet-950 font-bold shadow-glow-cerulean'
                   : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
@@ -201,7 +201,7 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
           )}
           <button
             onClick={() => setActiveSubTab('cannibalization')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
               activeSubTab === 'cannibalization'
                 ? 'bg-neon text-white font-bold shadow-glow-rose'
                 : 'bg-rose-950/40 text-neon border border-neon/30 hover:bg-rose-900/60'
@@ -211,7 +211,7 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
           </button>
           <button
             onClick={() => setActiveSubTab('demand')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-rajdhani tracking-wider transition-all shrink-0 ${
               activeSubTab === 'demand'
                 ? 'bg-emerald-500 text-jet-950 font-bold'
                 : 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60'
@@ -221,12 +221,12 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={exportCsv}
-            className="text-xs border-cerulean/40 text-cerulean hover:bg-cerulean/20 hover:text-white"
+            className="w-full sm:w-auto text-xs border-cerulean/40 text-cerulean hover:bg-cerulean/20 hover:text-white min-h-[36px]"
           >
             <Download className="w-3.5 h-3.5 mr-1" /> Export CSV
           </Button>
@@ -237,14 +237,14 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
       {activeSubTab === 'phrases' && (
         <div className="space-y-6">
           {/* Intent & Search Toolbar */}
-          <Card className="p-4 bg-jet-900 border-jet-800">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-1.5">
+          <Card className="p-3.5 sm:p-4 bg-jet-900 border-jet-800">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 -mx-1 px-1 lg:mx-0 lg:px-0 custom-scrollbar">
                 {intents.map((i) => (
                   <button
                     key={i.key}
                     onClick={() => setSelectedIntent(i.key)}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-medium font-rajdhani tracking-wider transition-colors ${
+                    className={`text-xs px-2.5 py-1 rounded-lg font-medium font-rajdhani tracking-wider transition-colors shrink-0 ${
                       selectedIntent === i.key
                         ? 'bg-cerulean text-jet-950 font-bold shadow-glow-cerulean'
                         : 'bg-jet-800 text-slate-300 hover:bg-jet-700 hover:text-white'
@@ -255,7 +255,7 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                 ))}
               </div>
 
-              <div className="flex items-center gap-3 w-full lg:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
                 <div className="relative flex-1 sm:w-64">
                   <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
                   <input
@@ -263,10 +263,10 @@ export const SearchIntelPanel: React.FC<SearchIntelPanelProps> = ({
                     value={queryFilter}
                     onChange={(e) => setQueryFilter(e.target.value)}
                     placeholder="Filter extracted phrases..."
-                    className="text-xs bg-jet-950 border border-jet-700 rounded-lg pl-9 pr-3 py-1.5 w-full text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean"
+                    className="text-xs bg-jet-950 border border-jet-700 rounded-lg pl-9 pr-3 py-2 w-full text-white placeholder:text-slate-500 focus:outline-none focus:border-cerulean focus:ring-1 focus:ring-cerulean min-h-[40px]"
                   />
                 </div>
-                <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer whitespace-nowrap">
+                <label className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-slate-300 cursor-pointer whitespace-nowrap min-h-[40px]">
                   <input
                     type="checkbox"
                     checked={onlyGaps}
