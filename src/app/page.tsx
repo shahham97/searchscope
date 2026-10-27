@@ -281,7 +281,7 @@ export default function SearchScopePage() {
                     type="button"
                     onClick={handleDownloadPdf}
                     disabled={isGeneratingPdf}
-                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider bg-cerulean hover:bg-cerulean-glow text-jet-950 flex items-center justify-center shadow-glow-cerulean transition-all min-h-[44px]"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-retro font-bold uppercase tracking-wider bg-retro-orange hover:bg-retro-orange-hover text-white flex items-center justify-center shadow-retro-orange transition-all min-h-[44px]"
                   >
                     <FileDown className="h-4 w-4 mr-1.5" />
                     {isGeneratingPdf ? 'Compiling PDF...' : 'Download PDF'}
@@ -290,9 +290,9 @@ export default function SearchScopePage() {
                   <button
                     type="button"
                     onClick={handleClearAudit}
-                    className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider bg-jet-850 hover:bg-jet-800 text-slate-300 hover:text-neon border border-jet-700 hover:border-neon flex items-center justify-center transition-all min-h-[44px]"
+                    className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-retro font-bold uppercase tracking-wider bg-jet-850 hover:bg-jet-800 text-slate-300 hover:text-retro-orange border border-jet-700 hover:border-retro-orange flex items-center justify-center transition-all min-h-[44px]"
                   >
-                    <RotateCcw className="h-4 w-4 mr-1.5 text-slate-400 group-hover:text-neon" />
+                    <RotateCcw className="h-4 w-4 mr-1.5 text-slate-400 group-hover:text-retro-orange" />
                     New Audit
                   </button>
                 </div>
@@ -304,48 +304,48 @@ export default function SearchScopePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('overview')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'overview'
-                        ? 'border-cerulean text-white text-glow-cerulean bg-jet-900/60'
+                        ? 'border-retro-orange text-white text-glow-orange bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <BarChart3 className="h-4 w-4 mr-1.5 text-cerulean" />
+                    <BarChart3 className="h-4 w-4 mr-1.5 text-retro-orange" />
                     Overview
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('findings')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'findings'
-                        ? 'border-cerulean text-white text-glow-cerulean bg-jet-900/60'
+                        ? 'border-retro-orange text-white text-glow-orange bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <ListFilter className="h-4 w-4 mr-1.5 text-cerulean" />
-                    Findings <span className="ml-1 font-mono text-[11px] text-cerulean">({report.findings.length})</span>
+                    <ListFilter className="h-4 w-4 mr-1.5 text-retro-orange" />
+                    Findings <span className="ml-1 font-mono text-[11px] text-retro-orange font-bold">({report.findings.length})</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('urls')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'urls'
-                        ? 'border-cerulean text-white text-glow-cerulean bg-jet-900/60'
+                        ? 'border-retro-orange text-white text-glow-orange bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <Globe2 className="h-4 w-4 mr-1.5 text-cerulean" />
-                    URL Explorer <span className="ml-1 font-mono text-[11px] text-cerulean">({report.pages.length})</span>
+                    <Globe2 className="h-4 w-4 mr-1.5 text-retro-orange" />
+                    URL Explorer <span className="ml-1 font-mono text-[11px] text-retro-orange font-bold">({report.pages.length})</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('aeo_geo')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'aeo_geo'
-                        ? 'border-neon text-white text-glow-rose bg-jet-900/60'
+                        ? 'border-retro-teal text-white text-glow-teal bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
@@ -356,65 +356,65 @@ export default function SearchScopePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('search')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'search'
-                        ? 'border-cerulean text-white text-glow-cerulean bg-jet-900/60'
+                        ? 'border-retro-orange text-white text-glow-orange bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <Tag className="h-4 w-4 mr-1.5 text-cerulean" />
-                    Keywords <span className="ml-1 font-mono text-[11px] text-cerulean">({report.keywordCandidates.length})</span>
+                    <Tag className="h-4 w-4 mr-1.5 text-retro-orange" />
+                    Keywords <span className="ml-1 font-mono text-[11px] text-retro-orange font-bold">({report.keywordCandidates.length})</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('roadmap')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'roadmap'
-                        ? 'border-cerulean text-white text-glow-cerulean bg-jet-900/60'
+                        ? 'border-retro-orange text-white text-glow-orange bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <CheckSquare className="h-4 w-4 mr-1.5 text-cerulean" />
-                    Roadmap <span className="ml-1 font-mono text-[11px] text-cerulean">({report.roadMap.length})</span>
+                    <CheckSquare className="h-4 w-4 mr-1.5 text-retro-orange" />
+                    Roadmap <span className="ml-1 font-mono text-[11px] text-retro-orange font-bold">({report.roadMap.length})</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('diagnostics')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'diagnostics'
-                        ? 'border-cerulean text-white text-glow-cerulean bg-jet-900/60'
+                        ? 'border-retro-orange text-white text-glow-orange bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <Server className="h-4 w-4 mr-1.5 text-cerulean" />
+                    <Server className="h-4 w-4 mr-1.5 text-retro-orange" />
                     Diagnostics <span className="ml-1 font-mono text-[11px]">({report.diagnostics?.length || 0})</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('agent')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'agent'
-                        ? 'border-neon text-white text-glow-rose bg-jet-900/60'
-                        : 'border-transparent text-neon/80 hover:text-white hover:bg-jet-900/40'
+                        ? 'border-retro-teal text-white text-glow-teal bg-jet-900/60'
+                        : 'border-transparent text-retro-teal/80 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <Cpu className="h-4 w-4 mr-1.5 text-neon" />
+                    <Cpu className="h-4 w-4 mr-1.5 text-retro-teal" />
                     AI Agent (BYOK)
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab('export')}
-                    className={`pb-3 px-3 border-b-2 font-orbitron font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
+                    className={`pb-3 px-3 border-b-2 font-retro font-bold text-xs uppercase tracking-wider flex items-center whitespace-nowrap transition-all min-h-[44px] ${
                       activeTab === 'export'
-                        ? 'border-cerulean text-white text-glow-cerulean bg-jet-900/60'
+                        ? 'border-retro-orange text-white text-glow-orange bg-jet-900/60'
                         : 'border-transparent text-slate-400 hover:text-white hover:bg-jet-900/40'
                     }`}
                   >
-                    <Archive className="h-4 w-4 mr-1.5 text-cerulean" />
+                    <Archive className="h-4 w-4 mr-1.5 text-retro-orange" />
                     Export Center
                   </button>
                 </nav>

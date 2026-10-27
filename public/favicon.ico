@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Cassette Tape Outer Body -->
+  <rect x="4" y="10" width="56" height="44" rx="6" fill="#FF5A1F" stroke="#181716" stroke-width="2.5" />
+  
+  <!-- Top screw details -->
+  <circle cx="8" cy="14" r="1.5" fill="#FAF6F0" />
+  <circle cx="56" cy="14" r="1.5" fill="#FAF6F0" />
+  <circle cx="8" cy="50" r="1.5" fill="#FAF6F0" />
+  <circle cx="56" cy="50" r="1.5" fill="#FAF6F0" />
+  
+  <!-- Cassette Label Sticker (Vintage Cream) -->
+  <rect x="10" y="16" width="44" height="22" rx="3" fill="#FAF6F0" stroke="#181716" stroke-width="1.5" />
+  
+  <!-- Retro Stripe on Label -->
+  <path d="M10 22 H54" stroke="#FF5A1F" stroke-width="2" />
+  <path d="M10 25 H54" stroke="#1C8A8A" stroke-width="1.2" />
+
+  <!-- Tape Spool Center Window (Charcoal) -->
+  <rect x="16" y="27" width="32" height="18" rx="3" fill="#181716" stroke="#2D2A26" stroke-width="1" />
+  
+  <!-- Left Spool (Tape Reel) -->
+  <circle cx="23" cy="36" r="6" fill="#FAF6F0" stroke="#FF5A1F" stroke-width="1.5" />
+  <circle cx="23" cy="36" r="2.5" fill="#181716" />
+  <!-- Spool teeth -->
+  <path d="M23 31.5 V33.5 M23 38.5 V40.5 M18.5 36 H20.5 M25.5 36 H27.5" stroke="#181716" stroke-width="1" />
+  
+  <!-- Right Spool (Search Scope Lens) -->
+  <circle cx="41" cy="36" r="6" fill="#FAF6F0" stroke="#1C8A8A" stroke-width="1.5" />
+  <circle cx="41" cy="36" r="2.5" fill="#181716" />
+  <!-- Search handle pointing down-right -->
+  <path d="M45.5 40.5 L49 44" stroke="#FF5A1F" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Tape Magnetic Ribbon Bridge -->
+  <rect x="29" y="34.5" width="6" height="3" fill="#8C5338" />
+
+  <!-- Cassette Bottom Trapezoid Cutout -->
+  <path d="M14 54 L19 46 H45 L50 54 Z" fill="#E64A14" stroke="#181716" stroke-width="1.5" />
+  <circle cx="24" cy="50" r="1.5" fill="#181716" />
+  <circle cx="40" cy="50" r="1.5" fill="#181716" />
+</svg>

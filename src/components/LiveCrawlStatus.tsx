@@ -39,40 +39,40 @@ export const LiveCrawlStatus: React.FC<LiveCrawlStatusProps> = ({
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 relative z-10">
           <div className="flex items-center space-x-3 sm:space-x-3.5 min-w-0">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-jet-850 border border-cerulean/60 flex items-center justify-center text-cerulean shadow-[0_0_20px_rgba(0,168,255,0.4)] shrink-0">
-              <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-cerulean" />
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-jet-850 border border-retro-orange/60 flex items-center justify-center text-retro-orange shadow-retro-orange shrink-0">
+              <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-retro-orange" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:text-lg font-orbitron font-extrabold text-white tracking-wide truncate">
-                AUTONOMOUS CRAWL IN PROGRESS
+              <h2 className="text-sm sm:text-lg font-retro font-black text-white tracking-wide truncate">
+                AUTONOMOUS TAPE AUDIT IN PROGRESS
               </h2>
               <p className="text-xs text-slate-300 font-mono truncate max-w-xs sm:max-w-md mt-0.5">
-                <span className="text-cerulean">SCAN //</span> {currentUrl || 'Establishing secure TLS connection...'}
+                <span className="text-retro-orange font-bold">REC TAPE //</span> {currentUrl || 'Establishing secure TLS connection...'}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onCancel}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-rajdhani font-bold uppercase tracking-wider text-neon hover:text-white bg-jet-950 hover:bg-neon/20 border border-neon/50 hover:border-neon transition-all flex items-center justify-center min-h-[44px] shrink-0"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-retro font-bold uppercase tracking-wider text-retro-orange hover:text-white bg-jet-950 hover:bg-retro-orange/20 border border-retro-orange/50 hover:border-retro-orange transition-all flex items-center justify-center min-h-[44px] shrink-0"
           >
             <XCircle className="h-4 w-4 mr-1.5" />
-            Abort Audit
+            Stop Tape
           </button>
         </div>
 
         {/* Progress Bar */}
         <div className="space-y-2 mb-6 sm:mb-8 relative z-10">
-          <div className="flex justify-between items-center text-xs font-rajdhani font-bold uppercase tracking-wider text-slate-300">
-            <span className="text-cerulean flex items-center truncate max-w-[75%]">
-              <Activity className="h-3.5 w-3.5 mr-1.5 animate-pulse text-neon shrink-0" />
+          <div className="flex justify-between items-center text-xs font-retro font-bold uppercase tracking-wider text-slate-300">
+            <span className="text-retro-orange flex items-center truncate max-w-[75%]">
+              <Activity className="h-3.5 w-3.5 mr-1.5 animate-pulse text-retro-orange shrink-0" />
               <span className="truncate">{status}</span>
             </span>
-            <span className="font-orbitron font-bold text-white text-xs sm:text-sm shrink-0">{percentage}%</span>
+            <span className="font-retro font-bold text-white text-xs sm:text-sm shrink-0">{percentage}%</span>
           </div>
           <div className="w-full bg-jet-950 rounded-full h-3 sm:h-3.5 overflow-hidden border border-jet-800 p-0.5">
             <div
-              className="bg-gradient-to-r from-cerulean via-cerulean-light to-neon h-full rounded-full transition-all duration-300 ease-out shadow-glow-cerulean"
+              className="bg-gradient-to-r from-retro-orange via-amber-400 to-retro-teal h-full rounded-full transition-all duration-300 ease-out shadow-retro-orange"
               style={{ width: `${Math.max(5, percentage)}%` }}
             />
           </div>

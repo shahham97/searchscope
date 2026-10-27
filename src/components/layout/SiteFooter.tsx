@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Bot, Cpu, CheckCircle2, Terminal } from 'lucide-react';
+import { ShieldCheck, Bot, Disc3, CheckCircle2 } from 'lucide-react';
 import { GmailContactLink } from './GmailContactLink';
 
 export const SiteFooter: React.FC = () => {
@@ -17,24 +17,24 @@ export const SiteFooter: React.FC = () => {
           {/* Brand & Mission */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cerulean to-neon p-[1px] shadow-glow-cerulean shrink-0">
-                <div className="h-full w-full bg-jet-900 rounded-lg flex items-center justify-center">
-                  <Cpu className="h-4 w-4 text-cerulean" />
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-retro-orange to-retro-teal p-[1px] shadow-retro-orange shrink-0">
+                <div className="h-full w-full bg-[#181716] rounded-lg flex items-center justify-center">
+                  <Disc3 className="h-4 w-4 text-retro-orange animate-spin-slow" />
                 </div>
               </div>
-              <span className="font-orbitron font-extrabold text-white tracking-widest text-base sm:text-lg">
-                SEARCH<span className="text-cerulean">SCOPE</span>
+              <span className="font-retro font-extrabold text-white tracking-widest text-base sm:text-lg">
+                SEARCH<span className="text-retro-orange">SCOPE</span>
               </span>
-              <span className="hidden sm:inline-block font-rajdhani text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded bg-jet-900 text-neon border border-neon/30">
-                CYBER SEARCH INTELLIGENCE
+              <span className="hidden sm:inline-block font-serif italic text-[11px] px-2.5 py-0.5 rounded-full bg-retro-orange/15 text-retro-orange border border-retro-orange/30">
+                Retro Radiance
               </span>
             </div>
 
             <p className="text-xs font-sans text-slate-400 max-w-md leading-relaxed">
-              Autonomous, privacy-first technical search intelligence platform. Inspects deep crawlability, internal link authority, Schema.org entities, and answer-engine generative readiness with deterministic offline algorithms.
+              Autonomous, privacy-first technical search intelligence platform. Celebrating the timeless allure of deep crawlability, internal link authority, Schema.org entities, and answer-engine generative readiness.
             </p>
 
-            <div className="flex items-center space-x-2.5 text-xs font-rajdhani font-semibold text-emerald-400 pt-2">
+            <div className="flex items-center space-x-2.5 text-xs font-sans font-semibold text-emerald-400 pt-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
               <span>Zero-persistence execution. No audit findings or domains are written to any database.</span>
             </div>
@@ -42,31 +42,31 @@ export const SiteFooter: React.FC = () => {
 
           {/* Platform Navigation */}
           <div className="space-y-3">
-            <h4 className="text-xs font-orbitron font-bold text-white uppercase tracking-widest text-glow-cerulean">
+            <h4 className="text-xs font-retro font-bold text-white uppercase tracking-widest text-retro-orange">
               Engine Modules
             </h4>
-            <ul className="space-y-2.5 text-xs font-rajdhani font-medium tracking-wider">
+            <ul className="space-y-2.5 text-xs font-retro font-medium tracking-wider">
               <li>
                 <Link
                   href="/"
-                  className="text-slate-400 hover:text-white hover:text-glow-cerulean transition-colors min-h-[44px] inline-flex items-center"
+                  className="text-slate-400 hover:text-white hover:text-retro-orange transition-colors min-h-[44px] inline-flex items-center"
                 >
-                  SEO / AEO / GEO Auditor
+                  SEO / AEO / GEO Auditor Deck
                 </Link>
               </li>
               <li>
                 <Link
                   href="/bot"
-                  className="text-slate-400 hover:text-white hover:text-glow-cerulean transition-colors min-h-[44px] inline-flex items-center"
+                  className="text-slate-400 hover:text-white hover:text-retro-orange transition-colors min-h-[44px] inline-flex items-center"
                 >
-                  <Bot className="h-3.5 w-3.5 mr-2 text-cerulean" />
+                  <Bot className="h-3.5 w-3.5 mr-2 text-retro-teal" />
                   Crawler Bot Transparency & RFC Rules
                 </Link>
               </li>
               <li>
                 <Link
                   href="/bot#rules"
-                  className="text-slate-400 hover:text-white hover:text-glow-cerulean transition-colors min-h-[44px] inline-flex items-center"
+                  className="text-slate-400 hover:text-white hover:text-retro-orange transition-colors min-h-[44px] inline-flex items-center"
                 >
                   <ShieldCheck className="h-3.5 w-3.5 mr-2 text-emerald-400" />
                   SSRF Protection & Zero-Storage Threat Model

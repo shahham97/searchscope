@@ -39,32 +39,32 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   const getScoreBadgeStyles = (score: number) => {
     if (score >= 85) {
       return {
-        border: 'border-emerald-500/60 shadow-[0_0_25px_rgba(16,185,129,0.35)]',
+        border: 'border-emerald-500/70 shadow-md',
         text: 'text-emerald-400',
-        glow: 'text-glow-emerald',
+        glow: '',
         label: 'OPTIMAL COMPLIANCE',
       };
     }
     if (score >= 70) {
       return {
-        border: 'border-cerulean/70 shadow-glow-cerulean',
-        text: 'text-cerulean',
-        glow: 'text-glow-cerulean',
+        border: 'border-retro-orange/70 shadow-retro-orange',
+        text: 'text-retro-orange',
+        glow: 'text-glow-orange',
         label: 'SOLID ARCHITECTURE',
       };
     }
     if (score >= 50) {
       return {
-        border: 'border-amber-500/70 shadow-[0_0_25px_rgba(245,158,11,0.35)]',
+        border: 'border-amber-500/70 shadow-md',
         text: 'text-amber-400',
         glow: '',
         label: 'MODERATE GAPS',
       };
     }
     return {
-      border: 'border-neon/80 shadow-glow-rose',
-      text: 'text-neon',
-      glow: 'text-glow-rose',
+      border: 'border-rose-500/80 shadow-md',
+      text: 'text-rose-400',
+      glow: '',
       label: 'CRITICAL ATTENTION',
     };
   };
@@ -152,7 +152,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                 type="button"
                 onClick={onDownloadPdf}
                 disabled={isGeneratingPdf}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-rajdhani font-bold text-xs uppercase tracking-wider bg-cerulean hover:bg-cerulean-glow text-jet-950 flex items-center justify-center shadow-glow-cerulean transition-all min-h-[44px]"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-retro font-bold text-xs uppercase tracking-wider bg-retro-orange hover:bg-retro-orange-hover text-white flex items-center justify-center shadow-retro-orange transition-all min-h-[44px]"
               >
                 <FileDown className="h-4 w-4 mr-2" />
                 {isGeneratingPdf ? 'Compiling PDF...' : 'Download PDF'}
@@ -161,9 +161,9 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               <button
                 type="button"
                 onClick={onOpenExportCenter}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-rajdhani font-bold text-xs uppercase tracking-wider bg-jet-850 hover:bg-jet-800 text-white border border-jet-700 hover:border-neon flex items-center justify-center transition-all min-h-[44px]"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-retro font-bold text-xs uppercase tracking-wider bg-jet-850 hover:bg-jet-800 text-white border border-jet-700 hover:border-retro-orange flex items-center justify-center transition-all min-h-[44px]"
               >
-                <Archive className="h-4 w-4 mr-2 text-neon" />
+                <Archive className="h-4 w-4 mr-2 text-retro-teal" />
                 Export Deliverables
               </button>
             </div>

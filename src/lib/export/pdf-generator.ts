@@ -9,15 +9,15 @@ export function generateAuditPdf(report: AuditReport): void {
     format: 'a4',
   });
 
-  // High-contrast, executive cyber-grade typography & color palette
-  const primaryColor: [number, number, number] = [15, 23, 42]; // Slate 900 (ultra-crisp deep ink)
-  const secondaryColor: [number, number, number] = [30, 41, 59]; // Slate 800
-  const accentCerulean: [number, number, number] = [0, 168, 255]; // Cerulean Blue (#00A8FF)
-  const accentRose: [number, number, number] = [255, 0, 127]; // Neon Rose (#FF007F)
-  const textColor: [number, number, number] = [15, 23, 42]; // Deep slate ink for 100% crisp readability
-  const mutedText: [number, number, number] = [71, 85, 105]; // Slate 600
-  const lightBg: [number, number, number] = [248, 250, 252]; // Slate 50
-  const borderLight: [number, number, number] = [203, 213, 225]; // Slate 300
+  // High-contrast, executive retro-grade typography & color palette
+  const primaryColor: [number, number, number] = [24, 23, 22]; // Deep Vintage Charcoal (#181716)
+  const secondaryColor: [number, number, number] = [45, 41, 38]; // Muted Cassette Chassis (#2D2926)
+  const accentCerulean: [number, number, number] = [255, 90, 31]; // Retro Radiance Orange (#FF5A1F)
+  const accentRose: [number, number, number] = [28, 138, 138]; // Vintage Cassette Teal (#1C8A8A)
+  const textColor: [number, number, number] = [24, 23, 22]; // Deep crisp readable ink
+  const mutedText: [number, number, number] = [85, 78, 72]; // Warm neutral ink
+  const lightBg: [number, number, number] = [250, 246, 240]; // Warm Vintage Cream (#FAF6F0)
+  const borderLight: [number, number, number] = [230, 220, 207]; // Warm Sand Border
 
   const drawHeaderBanner = (title: string, subtitle?: string) => {
     // Cerulean top accent stripe

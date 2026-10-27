@@ -65,34 +65,36 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
         {/* Left Column: Headlines & Launcher Form */}
         <div className="lg:col-span-7 space-y-5 sm:space-y-6">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-jet-900 border border-cerulean/40 text-cerulean text-[10px] sm:text-xs font-rajdhani font-bold uppercase tracking-wider sm:tracking-widest shadow-glow-cerulean">
-            <Zap className="h-3.5 w-3.5 text-neon shrink-0" />
-            <span className="truncate">AUTONOMOUS CYBER SEARCH INTELLIGENCE</span>
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-retro-orange/15 border border-retro-orange/40 text-retro-orange text-[10px] sm:text-xs font-retro font-bold uppercase tracking-wider shadow-sm">
+            <Zap className="h-3.5 w-3.5 text-retro-orange shrink-0" />
+            <span className="truncate">RETRO RADIANCE · VINTAGE SEARCH INTELLIGENCE</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-orbitron font-extrabold text-white tracking-tight leading-none">
-            DEEP SEO <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cerulean via-cerulean-light to-neon text-glow-cerulean">
-              AEO & GEO
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-retro font-black text-white tracking-tight leading-none">
+            DISCOVER THE <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-retro-orange via-[#FF7A45] to-amber-400">
+              RETRO SEO
             </span>{' '}
             <br />
-            AUDITOR
+            <span className="font-serif italic font-normal text-retro-cream text-2xl sm:text-4xl lg:text-5xl block mt-2">
+              Radiance & AEO Deck
+            </span>
           </h1>
 
           <p className="text-xs sm:text-base text-slate-300 font-sans leading-relaxed max-w-xl">
-            Autonomous multi-engine crawlability auditor. Deeply inspects PageRank authority, Google Merchant Center schema, 64-bit SimHash duplicates, and answer-engine machine readability with <strong className="text-white">100% private, transient memory execution</strong>.
+            Celebrating the timeless allure of deep, deterministic crawlability. Inspects PageRank authority, Google Merchant Center schema, 64-bit SimHash duplicates, and answer-engine machine readability with <strong className="text-retro-cream">100% private, transient memory execution</strong>.
           </p>
 
           {/* Main Audit Launcher Card */}
-          <div className="p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-jet-900/95 border border-jet-800 shadow-cyber-card relative overflow-hidden">
+          <div className="p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-jet-900/95 border border-jet-800 shadow-retro-card relative overflow-hidden">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div>
-                <label htmlFor="domain-input" className="block text-xs font-rajdhani font-bold uppercase tracking-widest text-slate-300 mb-2">
+                <label htmlFor="domain-input" className="block text-xs font-retro font-bold uppercase tracking-widest text-slate-300 mb-2">
                   Target Website Domain or URL
                 </label>
                 <div className="relative flex flex-col sm:flex-row rounded-xl shadow-inner gap-2 sm:gap-0">
                   <div className="relative flex-1">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-cerulean">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-retro-orange">
                       <Globe className="h-5 w-5" />
                     </div>
                     <input
@@ -104,28 +106,28 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
                         if (validationError) setValidationError(null);
                       }}
                       placeholder="example.com or https://example.com"
-                      className="block w-full rounded-xl sm:rounded-r-none border border-jet-700 pl-12 pr-4 py-3.5 text-sm font-mono text-white bg-jet-950 placeholder:text-slate-500 focus:border-cerulean focus:outline-none focus:ring-1 focus:ring-cerulean min-h-[48px]"
+                      className="block w-full rounded-xl sm:rounded-r-none border border-jet-700 pl-12 pr-4 py-3.5 text-sm font-mono text-white bg-jet-950 placeholder:text-slate-500 focus:border-retro-orange focus:outline-none focus:ring-1 focus:ring-retro-orange min-h-[48px]"
                       disabled={isLoading}
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full sm:w-auto rounded-xl sm:rounded-l-none px-7 py-3.5 font-orbitron font-bold text-xs uppercase tracking-widest shrink-0 bg-gradient-to-r from-cerulean to-neon hover:from-cerulean-glow hover:to-neon-glow text-jet-950 min-h-[48px] shadow-glow-cerulean hover:shadow-glow-rose transition-all duration-300 flex items-center justify-center cursor-pointer"
+                    className="w-full sm:w-auto rounded-xl sm:rounded-l-none px-7 py-3.5 font-retro font-bold text-xs uppercase tracking-widest shrink-0 bg-gradient-to-r from-retro-orange to-[#E64A14] hover:from-retro-orange-hover hover:to-retro-orange text-white min-h-[48px] shadow-retro-orange transition-all duration-300 flex items-center justify-center cursor-pointer"
                   >
-                    <Search className="h-4 w-4 mr-2 text-jet-950" />
-                    {isLoading ? 'Scanning...' : 'Launch Audit'}
+                    <Search className="h-4 w-4 mr-2 text-white" />
+                    {isLoading ? 'Scanning Tape...' : 'Explore Now'}
                   </button>
                 </div>
                 {validationError && (
-                  <p className="mt-2 text-xs font-rajdhani font-semibold text-neon">{validationError}</p>
+                  <p className="mt-2 text-xs font-retro font-semibold text-retro-orange">{validationError}</p>
                 )}
               </div>
 
               {/* Audit Scope Presets */}
               <div>
-                <label className="block text-xs font-rajdhani font-bold uppercase tracking-widest text-slate-400 mb-2">
-                  Audit Scope & Crawl Depth
+                <label className="block text-xs font-retro font-bold uppercase tracking-widest text-slate-400 mb-2">
+                  Audit Scope & Tape Length
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
@@ -133,13 +135,13 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
                     onClick={() => setDepth('quick')}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       depth === 'quick'
-                        ? 'border-cerulean bg-jet-850 text-white shadow-glow-cerulean'
+                        ? 'border-retro-orange bg-jet-850 text-white shadow-retro-orange'
                         : 'border-jet-800 bg-jet-950/80 text-slate-400 hover:border-jet-700 hover:text-white'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-orbitron font-bold text-xs uppercase">Quick Audit</span>
-                      <span className="font-mono text-[10px] text-cerulean">25 URLs</span>
+                      <span className="font-retro font-bold text-xs uppercase">Quick Side-A</span>
+                      <span className="font-mono text-[10px] text-retro-orange font-bold">25 URLs</span>
                     </div>
                     <p className="text-[11px] text-slate-400 font-sans leading-tight">
                       Rapid crawl of homepage & core navigational templates.
@@ -151,13 +153,13 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
                     onClick={() => setDepth('standard')}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       depth === 'standard'
-                        ? 'border-cerulean bg-jet-850 text-white shadow-glow-cerulean'
+                        ? 'border-retro-orange bg-jet-850 text-white shadow-retro-orange'
                         : 'border-jet-800 bg-jet-950/80 text-slate-400 hover:border-jet-700 hover:text-white'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-orbitron font-bold text-xs uppercase">Standard</span>
-                      <span className="font-mono text-[10px] text-cerulean">100 URLs</span>
+                      <span className="font-retro font-bold text-xs uppercase">Standard Hi-Fi</span>
+                      <span className="font-mono text-[10px] text-retro-orange font-bold">100 URLs</span>
                     </div>
                     <p className="text-[11px] text-slate-400 font-sans leading-tight">
                       Balanced crawl discovering products, articles, & schemas.
@@ -169,13 +171,13 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
                     onClick={() => setDepth('deep')}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       depth === 'deep'
-                        ? 'border-neon bg-jet-850 text-white shadow-glow-rose'
+                        ? 'border-retro-teal bg-jet-850 text-white shadow-glow-rose'
                         : 'border-jet-800 bg-jet-950/80 text-slate-400 hover:border-jet-700 hover:text-white'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-orbitron font-bold text-xs uppercase text-neon">Deep Scope</span>
-                      <span className="font-mono text-[10px] text-neon">200 URLs</span>
+                      <span className="font-retro font-bold text-xs uppercase text-retro-teal">Master Scope</span>
+                      <span className="font-mono text-[10px] text-retro-teal font-bold">200 URLs</span>
                     </div>
                     <p className="text-[11px] text-slate-400 font-sans leading-tight">
                       Full site graph sampling, orphan detection, & AEO intent mapping.
@@ -308,14 +310,14 @@ export const AuditConfigForm: React.FC<AuditConfigFormProps> = ({ onStartAudit, 
         </div>
       </div>
 
-      {/* Cyber Feature Section Visuals */}
+      {/* Retro Feature Section Visuals */}
       <div className="pt-4 sm:pt-6">
         <div className="text-center space-y-2 mb-6">
-          <h2 className="text-xl sm:text-3xl font-orbitron font-extrabold text-white tracking-wide">
-            ENTERPRISE SEARCH INTELLIGENCE ENGINE
+          <h2 className="text-xl sm:text-3xl font-retro font-black text-white tracking-wide">
+            RETRO RADIANCE: TIMELESS SEARCH INTELLIGENCE
           </h2>
-          <p className="text-xs font-rajdhani font-semibold uppercase tracking-widest text-slate-400">
-            Powered by algorithmic link graphs, Schema entity models, and 64-bit content fingerprints
+          <p className="text-xs sm:text-sm font-serif italic text-retro-orange">
+            Celebrating the Timeless Allure of Algorithmic Link Graphs, Schema Models & Hi-Fi Auditing
           </p>
         </div>
         <CyberFeatureSectionVisual />
