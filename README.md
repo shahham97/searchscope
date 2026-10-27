@@ -1,57 +1,45 @@
-# SearchScope
+# SearchScope v3
 
 > **Production-Grade Website SEO, AEO, GEO & Search Intelligence Auditor**
 
-SearchScope is an independent, privacy-conscious search intelligence and technical audit platform built with Next.js, TypeScript, and Tailwind CSS. It is architected for deployment on Vercel without databases, persistent storage, paid SEO subscriptions, or third-party AI API keys.
+SearchScope is an independent, privacy-conscious search intelligence and technical audit platform built with Next.js 15, TypeScript, and Tailwind CSS. It is architected for deployment on Vercel without databases, persistent storage, paid SEO subscriptions, or third-party AI API keys.
 
 ---
 
-## 1. Core Capabilities & Audit Modules
+## 1. Core Architecture & Capabilities
 
-### Technical SEO & Crawlability
-- **HTTP Response Codes:** Detection of 4xx client errors, 5xx server exceptions, and redirect chains.
-- **Protocol Security:** HTTPS enforcement, mixed content detection, and insecure HTTP warnings.
-- **Robots.txt & Sitemap Discovery:** Automated discovery and safe XML parsing of standard sitemaps and sitemap indexes; compliance verification against disallow/allow rules.
-- **Canonical Consistency:** Absolute vs. relative canonical evaluation, missing canonical tags, self-referencing integrity.
-- **Soft-404 Candidate Detection:** Evaluates page content and headers to spot 200 OK responses with missing-content titles and body text.
-- **Broken Internal Links:** Validates all crawled internal hyperlink destinations.
+### Data Integrity & Result Ledger (Part A)
+- **Result Ledger Single Source of Truth:** Tracks every discovered URL through exact terminal states (`crawled_ok`, `failed(code, hint)`, `skipped_robots`, `skipped_non_html`, `not_crawled_limit`, `redirected`).
+- **Accounting Balance Invariant:** Mathematically guarantees `discovered = crawled_ok + failed + skipped_robots + skipped_non_html + not_crawled_limit + redirected`.
+- **Chunked Batch Crawling:** Client-orchestrated serverless crawling ($\le 5$ URLs per batch, $<1$MB payload) with exponential backoff retry.
+- **Stratified Candidate Sampling:** Representative sampling across 8 page types (`home`, `collection`, `product`, `article`, `about`, `contact`, `policy`, `utility`) and click depths 0, 1, 2, 3+ when queue exceeds limits.
 
-### On-Page SEO
-- **Title Tags:** Length bounds (recommended 50–60 chars, flagged <25 or >65 chars), missing titles, duplicate titles across crawled pages.
-- **Meta Descriptions:** Length bounds (120–155 chars), missing descriptions, duplicate descriptions across pages.
-- **Heading Architecture:** Primary H1 enforcement, multiple H1 warnings, skipped heading level detection (e.g. H1 followed directly by H3 without H2).
-- **Image Optimization & Accessibility:** Missing or empty image `alt` attributes, image dimension checks (`width` and `height`) to prevent Cumulative Layout Shift (CLS).
-- **Internationalization & Social Meta:** `<html lang="...">` verification, Open Graph (`og:title`, `og:image`, `og:description`) audit.
+### Calibrated Pass-Rate Scoring (Part B)
+- **Axiomatic Scoring Model:** Evaluates compliance pass rates across 28 check families.
+- **Monotonicity:** Formally guarantees adding finding $F$ never increases the score ($\text{Score}(P \cup \{F\}) \le \text{Score}(P)$).
+- **Critical Blocker Severity Gates:** Any critical blocker caps category score $\le 40$.
+- **Correlated Defect Grouping:** Systemic issues (e.g. missing H1 across 50 pages) are logarithmically damped to prevent a single defect from zeroing out an entire category.
 
-### Structured Data (Schema.org JSON-LD)
-- **Safe Parsing:** Native JSON-LD extraction and syntax validation.
-- **Entity Identification:** Validates `@context`, `@type`, and recommended attributes for:
-  - `Organization`
-  - `WebSite`
-  - `BreadcrumbList`
-  - `Article` & `BlogPosting`
-  - `Product` & `Offer`
-  - `FAQPage`
-  - `LocalBusiness`
-- **Homepage Brand Entity:** Flags missing Organization or WebSite schema on the root homepage.
+### Phrase-First Search Intelligence (Part C)
+- **2–5-Gram Phrase Extraction with NPMI Filter:** Retains meaningful multi-word phrases ("alcohol free perfume") while filtering uninformative single tokens.
+- **Multi-Signal Intent Classification:** Classifies Informational, Commercial, Transactional, Navigational, and Local search intents with calibrated confidence and transparent reasoning.
+- **Hierarchical Keyword Map:** Structures keywords by head entities and modifiers to reveal content gaps.
+- **Keyword Cannibalization Matrix:** Identifies competing internal pages targeting identical queries and provides consolidation recommendations.
+- **Search Demand Signals:** Integrates live Google Autocomplete search demand client-side and supports CSV volume imports.
 
-### Answer Engine Optimization (AEO)
-- **Conversational Subheadings:** Detects whether subheadings (H2/H3) are framed as natural user questions ("What", "How", "Why").
-- **Direct Definitions:** Analyzes opening copy for concise, definitional statements suitable for Google AI Overviews and answer engine direct extracts.
-- **Structured Data Formats:** Inspects pages for HTML tables (`<table>`) and sequential lists (`<ul>`, `<ol>`) prioritized by answer engines.
-- **FAQ Sections:** Evaluates presence of structured Q&A content and Schema.org `FAQPage` markup.
+### Deep Technical SEO (Part D)
+- **Internal Link Graph & PageRank:** Computes 0–100 PageRank authority using power iteration, click depth distribution, orphan pages, and redirect loops.
+- **Indexation Hygiene:** Audits XML sitemaps for non-200 URLs, redirects, noindex conflicts, out-of-stock product 404s, and faceted navigation crawl traps.
+- **Mobile Parity & Viewport:** Validates responsive viewport meta tags, flags `user-scalable=no` accessibility violations, and detects H1 headings injected solely via client JavaScript.
+- **E-Commerce & International:** Validates Google Merchant Center Product schema attributes (`price`, `availability`, `brand/gtin`), checks bidirectional hreflang tags and ISO 639-1 language codes.
+- **64-bit SimHash Document Deduplication:** Uses 3-word shingles to cluster near-duplicate pages (Hamming distance $\le 7$ corresponding to $\ge 85\%$ textual overlap).
+- **Truth in Performance:** Measures synthetic crawler round-trip fetch latency. Explicitly discloses that Real-User Core Web Vitals (CrUX LCP/FID/CLS) require 28-day field data and are never fabricated.
 
-### Generative Engine Optimization (GEO)
-- **`llms.txt` Standard Inspection:** Evaluates whether an `/llms.txt` file is published at the domain root (with clear caveats that this is an emerging proposal, not a mandatory Google ranking requirement).
-- **Semantic HTML & Landmark Structure:** Validates semantic document hierarchy for LLM crawler parsing.
-- **Entity Consistency:** Assesses whether visible entity names align with Schema.org JSON-LD definitions.
-- **Attribution & Transparency:** Flags long-form content lacking author bylines or institutional credentials.
-
-### Search Intelligence & Candidate Keywords
-- **N-Gram Structural Extraction:** Extracts 1-gram, 2-gram, and 3-gram candidate terms from `<title>`, headings, and body copy.
-- **Intent Classification:** Categorizes candidates into Informational, Commercial, Transactional, Navigational, and Local search intents.
-- **Zero Fabricated Metrics:** Explicitly avoids fabricating artificial search volume, CPC, or ranking difficulty numbers.
-- **Data Provenance:** Discloses data origin and marks unconfigured live SERP scrapers truthfully as `unavailable`.
+### Enterprise UI & Truth in Privacy (Part E)
+- **Single Shared Layout:** Global `SiteHeader` and `SiteFooter` in Next.js App Router root layout.
+- **Calm Neutral Design System:** Zero sparkles, wands, robots, magic, purple-pink gradients, or emojis.
+- **Truth in Privacy Hero:** Authoritative disclosure of zero database storage, host edge logs, and offline deterministic heuristics.
+- **Seamless Direct Contact:** Desktop Gmail compose new tab, mobile Gmail app deep linking with mailto fallback, and one-click copy with $\ge 44$px touch targets.
 
 ---
 
@@ -68,19 +56,19 @@ SearchScope accepts user-provided domains and URLs. It implements a multi-layere
    - Blocks Cloud Metadata endpoints (`169.254.169.254`, `metadata.google`).
    - Blocks IPv6-mapped IPv4 private addresses (`::ffff:127.0.0.1`).
    - Blocks carrier-grade NAT (`100.64.0.0/10`).
-3. **DNS Rebinding & Redirect Defense:** Re-validates destination IP and hostname on each redirect hop before issuing HTTP requests. Cross-domain redirects are rejected.
+3. **DNS Rebinding & Redirect Defense:** Re-validates destination IP and hostname on each redirect hop with custom DNS pinning in `undici.Agent`. Apex $\leftrightarrow$ WWW equivalence allowed without breaking scope.
 4. **Safe Parsers:** HTML and XML parsers disable external entity processing (XXE safe).
-5. **Bounded Resource Ceiling:** Request timeouts (8s), per-page byte limits (2.5MB), and maximum execution budget (45s) prevent serverless function hangs and memory bloat.
+5. **Bounded Resource Ceiling:** Request timeouts (8s), per-page byte limits (10MB body ceiling), and batch timeouts prevent serverless function hangs and memory bloat.
 
 ---
 
-## 3. Privacy & Ephemeral State Model
+## 3. Privacy & Zero-Persistence Model
 
-- **No Database:** No Postgres, MySQL, TiDB, Redis, or MongoDB.
+- **No Database:** No Postgres, MySQL, TiDB, Redis, Supabase, or MongoDB.
 - **No User Accounts:** No sign-up, login, cookies, or session tracking.
 - **Browser-Only Active Memory:** Audit results exist only in browser memory and transient execution state. Refreshing or closing the tab completely clears all audit data.
-- **No Third-Party AI Data Transmission:** Crawled page contents are never sent to OpenAI, Anthropic, or external inference APIs.
-- **Infrastructure Logging Disclosure:** Standard operational access logs (IP addresses, timestamps, request URLs) may be retained by hosting providers (Vercel) and the target website's own servers according to their respective logging policies.
+- **No Third-Party AI Data Transmission:** Crawled page contents are never sent to external LLM APIs by default.
+- **Infrastructure Logging Disclosure:** Standard operational access logs (IP addresses, timestamps, request URLs) are retained ephemerally by hosting providers (Vercel) for platform reliability.
 
 ---
 
@@ -99,49 +87,12 @@ npm install
 
 ### Running Tests
 ```bash
-npm run test
+npm test
 ```
-
-### Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+All 25 test suites (127+ tests) run completely offline without database or API dependencies.
 
 ### Production Build
 ```bash
 npm run build
-npm run start
+npm start
 ```
-
----
-
-## 5. Vercel Deployment Instructions
-
-SearchScope is optimized for the **Vercel Hobby** and **Pro** tiers with zero external database configuration:
-
-1. Push your repository to GitHub, GitLab, or Bitbucket.
-2. In the Vercel Dashboard, click **Add New Project** and select the SearchScope repository.
-3. Configure settings:
-   - **Framework Preset:** Next.js
-   - **Root Directory:** `./`
-   - **Build Command:** `next build`
-   - **Output Directory:** `.next`
-   - **Node.js Version:** 18.x or 20.x
-4. **Environment Variables:** None required! The application is fully deterministic and operates with zero API keys or external database URLs.
-5. Click **Deploy**.
-
----
-
-## 6. PDF Report Generation
-
-SearchScope generates professional, client-ready vector PDF audit reports directly in the client browser using `jspdf` and `jspdf-autotable`:
-
-- **Cover Page:** Domain title, audit timestamp, overall score, crawler user agent.
-- **Executive Summary:** Dimension scores, weight distribution, critical/high/medium/low issue counts.
-- **Prioritized Roadmap:** Action items ordered by impact and effort, including copy-ready HTML and JSON-LD snippets.
-- **Findings Table:** Full evidence breakdown, affected URLs, and verification instructions.
-- **URL Explorer:** Crawled URLs, response codes, word counts, response times, and schema counts.
-- **Candidate Keywords:** Structural n-gram terms categorized by search intent.
-- **Methodology & Limitations:** Transparent disclaimers and privacy architecture.
-- **Sanitized Filename:** E.g., `searchscope-example_com-audit-2026-10-21.pdf`.

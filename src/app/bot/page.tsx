@@ -4,9 +4,16 @@ import { ArrowLeft, Bot, ShieldCheck, FileCode, Server } from 'lucide-react';
 import { GmailContactLink } from '@/components/layout/GmailContactLink';
 
 export const metadata = {
-  title: 'SearchScope-Auditor Documentation & Politeness Standards',
+  title: 'SearchScope-Auditor Documentation',
   description:
     'Technical specifications for the SearchScope-Auditor crawler, politeness throttling, IP ranges, and robots.txt directives.',
+  openGraph: {
+    title: 'SearchScope-Auditor Documentation',
+    description:
+      'Technical specifications for the SearchScope-Auditor crawler, politeness throttling, IP ranges, and robots.txt directives.',
+    url: 'https://searchscope.app/bot',
+    images: [{ url: 'https://searchscope.app/og.png' }],
+  },
 };
 
 export default function BotPage() {
