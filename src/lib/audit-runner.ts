@@ -13,7 +13,12 @@ import { analyzeWeakAndAmbiguousLinks } from './analyzer/weak-links';
 import { analyzeSchemaDomParity } from './analyzer/schema-parity';
 import { analyzeSocialMetadata } from './analyzer/social-metadata';
 import { analyzeContentClaimsAndRisks } from './analyzer/claim-risk-detector';
-import { extractCandidateKeywords, buildSearchObservations } from './analyzer/search-intelligence';
+import {
+  extractCandidateKeywords,
+  buildSearchObservations,
+  buildKeywordMap,
+  detectKeywordCannibalization,
+} from './analyzer/search-intelligence';
 import { calculateAuditScores, calculatePageHealthScore } from './analyzer/scoring';
 import { buildPrioritizedRoadmap } from './analyzer/roadmap';
 import { AuditConfig, AuditReport, Finding, ClaimItem } from '../types/audit';
@@ -139,6 +144,16 @@ export async function runCompleteAudit(
     }
   }
 
+  // Candidate Keywords & Search Intelligence
+  const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];
+  const keywordMap = !isCrawlFailed ? buildKeywordMap(candidateKeywords, pages) : undefined;
+  const { issues: cannibalizationIssues, findings: cannibalizationFindings } =
+    !isCrawlFailed
+      ? detectKeywordCannibalization(pages, candidateKeywords)
+      : { issues: [], findings: [] };
+
+  allFindings.push(...cannibalizationFindings);
+
   // Deduplicate findings by finding ID to prevent duplicate React keys or double scoring
   const uniqueFindingsMap = new Map<string, Finding>();
   for (const f of allFindings) {
@@ -157,9 +172,6 @@ export async function runCompleteAudit(
     );
     page.pageHealthScore = calculatePageHealthScore(page, pageFindings);
   }
-
-  // Candidate Keywords
-  const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];
 
   // Search Observations
   const { observations, competitors } = buildSearchObservations(
@@ -241,6 +253,8 @@ export async function runCompleteAudit(
     pages,
     findings: uniqueFindings,
     keywordCandidates: candidateKeywords,
+    keywordMap,
+    cannibalizationIssues,
     searchObservations: observations,
     competitors,
     roadMap,

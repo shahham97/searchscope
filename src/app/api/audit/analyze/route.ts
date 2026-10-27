@@ -15,7 +15,12 @@ import { analyzeWeakAndAmbiguousLinks } from '@/lib/analyzer/weak-links';
 import { analyzeSchemaDomParity } from '@/lib/analyzer/schema-parity';
 import { analyzeSocialMetadata } from '@/lib/analyzer/social-metadata';
 import { analyzeContentClaimsAndRisks } from '@/lib/analyzer/claim-risk-detector';
-import { extractCandidateKeywords, buildSearchObservations } from '@/lib/analyzer/search-intelligence';
+import {
+  extractCandidateKeywords,
+  buildSearchObservations,
+  buildKeywordMap,
+  detectKeywordCannibalization,
+} from '@/lib/analyzer/search-intelligence';
 import { calculateAuditScores, calculatePageHealthScore } from '@/lib/analyzer/scoring';
 import { buildPrioritizedRoadmap } from '@/lib/analyzer/roadmap';
 import { AuditConfig, AuditReport, ClaimItem, Finding } from '@/types/audit';
@@ -99,6 +104,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Candidate Keywords & Search Intelligence
+    const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];
+    const keywordMap = !isCrawlFailed ? buildKeywordMap(candidateKeywords, pages) : undefined;
+    const { issues: cannibalizationIssues, findings: cannibalizationFindings } =
+      !isCrawlFailed
+        ? detectKeywordCannibalization(pages, candidateKeywords)
+        : { issues: [], findings: [] };
+
+    allFindings.push(...cannibalizationFindings);
+
     // Deduplicate findings by finding ID
     const uniqueFindingsMap = new Map<string, Finding>();
     for (const f of allFindings) {
@@ -118,7 +133,6 @@ export async function POST(req: NextRequest) {
       page.pageHealthScore = calculatePageHealthScore(page, pageFindings);
     }
 
-    const candidateKeywords = !isCrawlFailed ? extractCandidateKeywords(pages) : [];
     const { observations, competitors } = buildSearchObservations(
       canonicalHostname,
       candidateKeywords,
@@ -222,6 +236,8 @@ export async function POST(req: NextRequest) {
       pages,
       findings: uniqueFindings,
       keywordCandidates: candidateKeywords,
+      keywordMap,
+      cannibalizationIssues,
       searchObservations: observations,
       competitors,
       roadMap,

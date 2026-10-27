@@ -240,6 +240,12 @@ export interface ExtractedPageData {
 export interface KeywordCandidate {
   keyword: string;
   intent: 'informational' | 'commercial' | 'transactional' | 'navigational' | 'local';
+  intentConfidence?: 'high' | 'medium' | 'low';
+  intentReasoning?: string;
+  gramLength?: number;
+  isBrandOrEntity?: boolean;
+  searchVolume?: number | 'unavailable';
+  searchDemandSource?: string;
   sourceUrls: string[];
   occurrenceCount: number;
   inTitleCount: number;
@@ -252,6 +258,34 @@ export interface KeywordCandidate {
   pageFrequencyRatio?: string;
   inBodyOnly?: boolean; // Flagged keyword gap
   tfIdfScore?: number;
+}
+
+export interface CannibalizationIssue {
+  keyword: string;
+  primaryUrl: string;
+  competingUrls: string[];
+  reason: string;
+  severity: Severity;
+  recommendation: 'canonicalize' | 'merge' | 'differentiate';
+}
+
+export interface KeywordMapModifier {
+  modifier: string;
+  longTailPresent: string[];
+  suggestedGaps: string[];
+}
+
+export interface KeywordMapNode {
+  headTerm: string;
+  occurrenceCount: number;
+  pageCount: number;
+  modifiers: KeywordMapModifier[];
+}
+
+export interface KeywordMap {
+  headTerms: KeywordMapNode[];
+  allModifiers: string[];
+  totalPhrasesTracked: number;
 }
 
 export interface PublicSearchObservation {
@@ -380,6 +414,8 @@ export interface AuditReport {
   pages: ExtractedPageData[];
   findings: Finding[];
   keywordCandidates: KeywordCandidate[];
+  keywordMap?: KeywordMap;
+  cannibalizationIssues?: CannibalizationIssue[];
   searchObservations: PublicSearchObservation[];
   competitors: CompetitorComparison[];
 

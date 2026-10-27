@@ -360,8 +360,11 @@ export async function generateFullZip(report: AuditReport): Promise<Blob> {
   zip.file('brand-facts.json', JSON.stringify(brandFacts, null, 2));
   zip.file('FACTS_NEEDED.md', generateFactsNeededMarkdown(report, brandFacts));
 
-  // 3. audit-full.json
+  // 3. audit-full.json & keyword-map.json
   zip.file('audit-full.json', JSON.stringify(report, null, 2));
+  if (report.keywordMap) {
+    zip.file('keyword-map.json', JSON.stringify(report.keywordMap, null, 2));
+  }
 
   // 4. report.html
   zip.file('report.html', generateStandaloneHtml(report));

@@ -355,6 +355,8 @@ export default function SearchScopePage() {
               <SearchIntelPanel
                 candidates={report.keywordCandidates}
                 observations={report.searchObservations}
+                keywordMap={report.keywordMap}
+                cannibalizationIssues={report.cannibalizationIssues}
               />
             )}
 
