@@ -184,7 +184,10 @@ export async function orchestrateClientAudit(
       for (const res of batchData.results) {
         if (res.state === 'crawled_ok' && res.pageData) {
           ledger.recordCrawledOk(res.normalizedUrl, res.pageData);
-          collectedPages.push(res.pageData);
+          if (!visitedUrls.has(res.pageData.normalizedUrl)) {
+            visitedUrls.add(res.pageData.normalizedUrl);
+            collectedPages.push(res.pageData);
+          }
         } else if (res.state === 'failed') {
           ledger.recordFailed(
             res.url,
@@ -194,7 +197,8 @@ export async function orchestrateClientAudit(
             res.statusCode,
             res.depth
           );
-          if (res.pageData) {
+          if (res.pageData && !visitedUrls.has(res.pageData.normalizedUrl)) {
+            visitedUrls.add(res.pageData.normalizedUrl);
             collectedPages.push(res.pageData);
           }
         } else if (res.state === 'skipped_robots') {
@@ -203,8 +207,17 @@ export async function orchestrateClientAudit(
           ledger.recordSkippedNonHtml(res.url, res.normalizedUrl, res.contentType || '', res.depth);
         } else if (res.state === 'redirected') {
           ledger.recordRedirected(res.url, res.normalizedUrl, res.redirectTarget || '', res.depth);
-          if (res.pageData) {
-            collectedPages.push(res.pageData);
+          // Register landing page as crawled_ok if valid page data was returned
+          if (res.pageData && res.redirectTarget) {
+            const targetNorm = res.pageData.normalizedUrl || res.redirectTarget;
+            const existingLanding = ledger.getEntry(targetNorm);
+            if (!existingLanding || existingLanding.state !== 'crawled_ok') {
+              ledger.recordCrawledOk(targetNorm, res.pageData);
+            }
+            if (!visitedUrls.has(targetNorm)) {
+              visitedUrls.add(targetNorm);
+              collectedPages.push(res.pageData);
+            }
           }
         }
       }

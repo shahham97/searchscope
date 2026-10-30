@@ -41,31 +41,49 @@ export async function POST(req: NextRequest) {
 
     const targetNormalizedUrl = validation.normalizedUrl;
     const initialParsed = new URL(targetNormalizedUrl);
-    const canonicalOrigin = initialParsed.origin;
-    const canonicalHostname = initialParsed.hostname;
+    let canonicalOrigin = initialParsed.origin;
+    let canonicalHostname = initialParsed.hostname;
+    let effectiveTargetUrl = targetNormalizedUrl;
 
-    // 2. Fetch robots.txt
-    const robotsData = await fetchRobotsTxt(canonicalOrigin);
-
-    // 3. Discover sitemaps
-    const sitemapResult = await discoverSitemapUrls(canonicalOrigin, robotsData.sitemaps, maxPages);
-
-    // 4. Check for llms.txt
-    let llmsTxtPresent = false;
+    // Follow root redirect to resolve true canonical origin & landing URL
     try {
-      const llmsRes = await safeFetch(`${canonicalOrigin}/llms.txt`, {
-        timeoutMs: 4000,
-        maxBytes: 200000,
+      const probeRes = await safeFetch(targetNormalizedUrl, {
+        timeoutMs: 6000,
+        allowedHostname: canonicalHostname,
+        allowSubdomains: true,
         userAgentType,
       });
-      if (llmsRes.statusCode === 200 && llmsRes.body.trim().length > 0) {
-        llmsTxtPresent = true;
+      if (probeRes.url) {
+        const probedParsed = new URL(probeRes.url);
+        canonicalOrigin = probedParsed.origin;
+        canonicalHostname = probedParsed.hostname;
+        effectiveTargetUrl = probeRes.url;
       }
     } catch {
-      llmsTxtPresent = false;
+      // If probe fails (e.g. rate limit), fallback to initial parsed values
     }
 
-    // 5. Build seed list
+    // 2. Fetch robots.txt using resolved canonical origin
+    const robotsData = await fetchRobotsTxt(canonicalOrigin);
+
+    // 3. Concurrently discover sitemaps and check for llms.txt
+    const [sitemapResult, llmsTxtPresent] = await Promise.all([
+      discoverSitemapUrls(canonicalOrigin, robotsData.sitemaps, maxPages),
+      (async () => {
+        try {
+          const llmsRes = await safeFetch(`${canonicalOrigin}/llms.txt`, {
+            timeoutMs: 3500,
+            maxBytes: 200000,
+            userAgentType,
+          });
+          return llmsRes.statusCode === 200 && llmsRes.body.trim().length > 0;
+        } catch {
+          return false;
+        }
+      })(),
+    ]);
+
+    // 4. Build seed list
     const initialSeeds: Array<{
       url: string;
       normalizedUrl: string;
@@ -74,15 +92,17 @@ export async function POST(req: NextRequest) {
       pageType: string;
     }> = [];
 
-    const homeNorm = normalizeUrl(targetNormalizedUrl, canonicalOrigin) || targetNormalizedUrl;
+    const homeNorm = normalizeUrl(effectiveTargetUrl, canonicalOrigin) || effectiveTargetUrl;
     initialSeeds.push({
-      url: targetNormalizedUrl,
+      url: effectiveTargetUrl,
       normalizedUrl: homeNorm,
       depth: 0,
       pageType: 'home',
     });
 
     const seenUrls = new Set<string>([homeNorm]);
+    const originalNorm = normalizeUrl(targetNormalizedUrl, canonicalOrigin) || targetNormalizedUrl;
+    seenUrls.add(originalNorm);
 
     for (const sitemapUrl of sitemapResult.discoveredUrls) {
       const norm = normalizeUrl(sitemapUrl, canonicalOrigin);

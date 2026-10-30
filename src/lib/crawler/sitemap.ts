@@ -62,9 +62,11 @@ export async function discoverSitemapUrls(
   maxUrls: number = 200
 ): Promise<SitemapDiscoveryResult> {
   const sitemapsToTry = new Set<string>(declaredSitemaps);
-  // Common fallback locations
-  sitemapsToTry.add(`${origin.replace(/\/+$/, '')}/sitemap.xml`);
-  sitemapsToTry.add(`${origin.replace(/\/+$/, '')}/sitemap_index.xml`);
+  // Add common fallback locations only if no sitemaps were declared
+  if (declaredSitemaps.length === 0) {
+    sitemapsToTry.add(`${origin.replace(/\/+$/, '')}/sitemap.xml`);
+    sitemapsToTry.add(`${origin.replace(/\/+$/, '')}/sitemap_index.xml`);
+  }
 
   const visitedSitemaps = new Set<string>();
   const discoveredUrls = new Set<string>();
@@ -79,7 +81,7 @@ export async function discoverSitemapUrls(
     visitedSitemaps.add(sitemapUrl);
 
     try {
-      const res = await safeFetch(sitemapUrl, { timeoutMs: 5000, maxBytes: 1.5 * 1024 * 1024 });
+      const res = await safeFetch(sitemapUrl, { timeoutMs: 4000, maxBytes: 1.5 * 1024 * 1024 });
       if (res.statusCode >= 200 && res.statusCode < 300 && res.body.trim()) {
         sitemapsFound.push(sitemapUrl);
         const { urls, nestedSitemaps } = parseSitemapXml(res.body);
@@ -101,6 +103,35 @@ export async function discoverSitemapUrls(
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Failed to fetch sitemap ${sitemapUrl}: ${msg}`);
+    }
+  }
+
+  // If declared sitemaps failed or yielded zero URLs, fallback to probe default locations
+  if (discoveredUrls.size === 0 && declaredSitemaps.length > 0) {
+    const fallbacks = [
+      `${origin.replace(/\/+$/, '')}/sitemap.xml`,
+      `${origin.replace(/\/+$/, '')}/sitemap_index.xml`,
+    ];
+    for (const fb of fallbacks) {
+      if (!visitedSitemaps.has(fb) && discoveredUrls.size < maxUrls) {
+        visitedSitemaps.add(fb);
+        try {
+          const res = await safeFetch(fb, { timeoutMs: 4000, maxBytes: 1.5 * 1024 * 1024 });
+          if (res.statusCode >= 200 && res.statusCode < 300 && res.body.trim()) {
+            sitemapsFound.push(fb);
+            const { urls } = parseSitemapXml(res.body);
+            for (const u of urls) {
+              const normalized = normalizeUrl(u, origin);
+              if (normalized) {
+                discoveredUrls.add(normalized);
+                if (discoveredUrls.size >= maxUrls) break;
+              }
+            }
+          }
+        } catch {
+          // ignore fallback failures
+        }
+      }
     }
   }
 

@@ -72,7 +72,12 @@ export async function POST(req: NextRequest) {
     const ledgerSummary = ledger.reconcile();
     const uncrawledUrls = ledger.getEntriesByState('not_crawled_limit').map((e) => e.url);
 
-    const isCrawlFailed = ledgerSummary.crawledOk === 0 && pages.length > 0;
+    // Filter truly successful pages (HTTP 2xx-3xx with content and without fatal failure codes)
+    const successfulPages = pages.filter(
+      (p: any) => p.statusCode >= 200 && p.statusCode < 400 && !p.failureCode
+    );
+
+    const isCrawlFailed = successfulPages.length === 0;
     const crawlFailureReason = isCrawlFailed
       ? `All ${pages.length} attempted page fetches failed. See Crawl Diagnostics for details.`
       : undefined;
@@ -184,8 +189,9 @@ export async function POST(req: NextRequest) {
 
     const dataIntegrity = ledger.toIntegrityReport(uniqueFindings.length, categoryFindingsSum);
 
-    const crawledCount = ledgerSummary.crawledOk + ledgerSummary.failed;
-    const discoveredCount = ledgerSummary.discovered;
+    const rawCrawledCount = ledgerSummary.crawledOk + ledgerSummary.failed;
+    const crawledCount = Math.max(rawCrawledCount, pages.length);
+    const discoveredCount = Math.max(ledgerSummary.discovered, crawledCount);
     const coveragePercentage =
       discoveredCount > 0 ? Math.round((crawledCount / discoveredCount) * 100) : 100;
 
@@ -194,7 +200,7 @@ export async function POST(req: NextRequest) {
       totalPagesCrawled: crawledCount,
       totalPagesSkipped: ledgerSummary.skippedRobots + ledgerSummary.skippedNonHtml,
       totalPagesFailed: ledgerSummary.failed,
-      successfulPagesCount: ledgerSummary.crawledOk,
+      successfulPagesCount: Math.max(ledgerSummary.crawledOk, successfulPages.length),
       skippedRobotsCount: ledgerSummary.skippedRobots,
       skippedNonHtmlCount: ledgerSummary.skippedNonHtml,
       notCrawledLimitCount: ledgerSummary.notCrawledLimit,

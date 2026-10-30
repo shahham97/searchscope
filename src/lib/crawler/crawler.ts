@@ -215,10 +215,12 @@ export async function executeBoundedCrawl(
         if (renderedH1s) pageData.renderedH1s = renderedH1s;
         if (isH1OnlyInJs !== undefined) pageData.isH1OnlyInJs = isH1OnlyInJs;
 
-        if (visitedNormalizedPages.has(pageData.normalizedUrl) && pageData.normalizedUrl !== normCurrent) {
-          // Already have an extracted page for this canonical destination
+        if (pageData.normalizedUrl !== normCurrent) {
           ledger.recordRedirected(currentUrl, normCurrent, pageData.normalizedUrl, currentDepth);
-          continue;
+          if (visitedNormalizedPages.has(pageData.normalizedUrl)) {
+            // Already have an extracted page for this canonical destination
+            continue;
+          }
         }
         visitedNormalizedPages.add(pageData.normalizedUrl);
 
@@ -374,7 +376,10 @@ export async function executeBoundedCrawl(
   const ledgerSummary = ledger.reconcile();
 
   const crawlDurationMs = Date.now() - startTime;
-  const isCrawlFailed = ledgerSummary.crawledOk === 0 && pages.length > 0;
+  const successfulPages = pages.filter(
+    (p) => p.statusCode >= 200 && p.statusCode < 400 && !p.failureCode
+  );
+  const isCrawlFailed = successfulPages.length === 0;
   const crawlFailureReason = isCrawlFailed
     ? `All ${pages.length} attempted page fetches failed. See Crawl Diagnostics for details (${diagnostics[0]?.hint || 'Target server unreachable'}).`
     : undefined;
@@ -383,12 +388,16 @@ export async function executeBoundedCrawl(
     .getEntriesByState('not_crawled_limit')
     .map((e) => e.url);
 
+  const rawCrawledCount = ledgerSummary.crawledOk + ledgerSummary.failed;
+  const crawledCount = Math.max(rawCrawledCount, pages.length);
+  const discoveredCount = Math.max(ledgerSummary.discovered, crawledCount);
+
   const crawlStats: CrawlStatistics = {
-    totalPagesDiscovered: ledgerSummary.discovered,
-    totalPagesCrawled: ledgerSummary.crawledOk + ledgerSummary.failed,
+    totalPagesDiscovered: discoveredCount,
+    totalPagesCrawled: crawledCount,
     totalPagesSkipped: ledgerSummary.skippedRobots + ledgerSummary.skippedNonHtml,
     totalPagesFailed: ledgerSummary.failed,
-    successfulPagesCount: ledgerSummary.crawledOk,
+    successfulPagesCount: Math.max(ledgerSummary.crawledOk, successfulPages.length),
     skippedRobotsCount: ledgerSummary.skippedRobots,
     skippedNonHtmlCount: ledgerSummary.skippedNonHtml,
     notCrawledLimitCount: ledgerSummary.notCrawledLimit,

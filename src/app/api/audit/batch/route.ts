@@ -76,190 +76,195 @@ export async function POST(req: NextRequest) {
     const discoveredLinks: DiscoveredLink[] = [];
     const diagnostics: CrawlDiagnostic[] = [];
 
-    // Process items in this batch
-    for (const item of items) {
-      const currentUrl = item.url;
-      const currentDepth = item.depth;
-      const normCurrent = normalizeUrl(currentUrl, canonicalOrigin) || currentUrl;
+    // Process items in this batch concurrently for high performance within serverless timeouts
+    await Promise.all(
+      items.map(async (item) => {
+        const currentUrl = item.url;
+        const currentDepth = item.depth;
+        const normCurrent = normalizeUrl(currentUrl, canonicalOrigin) || currentUrl;
 
-      // 1. Robots.txt check
-      if (respectRobotsTxt && robotsData) {
+        // 1. Robots.txt check
+        if (respectRobotsTxt && robotsData) {
+          try {
+            const parsedPath = new URL(currentUrl).pathname;
+            if (!isPathAllowed(parsedPath, robotsData as RobotsTxtData, 'SearchScope-Auditor')) {
+              results.push({
+                url: currentUrl,
+                normalizedUrl: normCurrent,
+                depth: currentDepth,
+                state: 'skipped_robots',
+                statusCode: 0,
+                failureCode: 'ROBOTS_BLOCKED',
+                failureHint: 'URL disallowed by robots.txt directive',
+              });
+              diagnostics.push({
+                url: currentUrl,
+                code: 'ROBOTS_BLOCKED',
+                message: 'URL disallowed by robots.txt directive',
+                hint: 'Robots.txt blocks search engine crawlers from indexing this path.',
+                stage: 'policy',
+                timestamp: new Date().toISOString(),
+              });
+              return;
+            }
+          } catch {
+            // If parse fails, proceed cautiously
+          }
+        }
+
+        // 2. Fetch page
         try {
-          const parsedPath = new URL(currentUrl).pathname;
-          if (!isPathAllowed(parsedPath, robotsData as RobotsTxtData, 'SearchScope-Auditor')) {
+          const res = await safeFetch(currentUrl, {
+            timeoutMs: 8000,
+            allowedHostname: canonicalHostname,
+            allowSubdomains: true,
+            userAgentType,
+          });
+
+          const isHtml = res.contentType.toLowerCase().includes('text/html');
+
+          if (!isHtml) {
             results.push({
               url: currentUrl,
               normalizedUrl: normCurrent,
               depth: currentDepth,
-              state: 'skipped_robots',
-              statusCode: 0,
-              failureCode: 'ROBOTS_BLOCKED',
-              failureHint: 'URL disallowed by robots.txt directive',
+              state: 'skipped_non_html',
+              statusCode: res.statusCode,
+              failureCode: 'CONTENT_TYPE_UNSUPPORTED',
+              failureHint: `Non-HTML content type: ${res.contentType}`,
+              contentType: res.contentType,
             });
             diagnostics.push({
               url: currentUrl,
-              code: 'ROBOTS_BLOCKED',
-              message: 'URL disallowed by robots.txt directive',
-              hint: 'Robots.txt blocks search engine crawlers from indexing this path.',
-              stage: 'policy',
+              code: 'CONTENT_TYPE_UNSUPPORTED',
+              statusCode: res.statusCode,
+              message: `Non-HTML content type: ${res.contentType}`,
+              hint: 'Resource is an image, PDF, or binary feed not suitable for HTML audit.',
+              stage: 'response',
               timestamp: new Date().toISOString(),
             });
-            continue;
+            return;
           }
-        } catch {
-          // If parse fails, proceed cautiously
-        }
-      }
 
-      // 2. Fetch page
-      try {
-        const res = await safeFetch(currentUrl, {
-          timeoutMs: 8000,
-          allowedHostname: canonicalHostname,
-          allowSubdomains: true,
-          userAgentType,
-        });
+          // Render SPA if enabled
+          let finalHtml = res.body;
+          let isJsRendered = false;
+          let rawVsRenderedDiff;
+          let rawH1s: string[] | undefined;
+          let renderedH1s: string[] | undefined;
+          let isH1OnlyInJs: boolean | undefined;
 
-        const isHtml = res.contentType.toLowerCase().includes('text/html');
-
-        if (!isHtml) {
-          results.push({
-            url: currentUrl,
-            normalizedUrl: normCurrent,
-            depth: currentDepth,
-            state: 'skipped_non_html',
-            statusCode: res.statusCode,
-            failureCode: 'CONTENT_TYPE_UNSUPPORTED',
-            failureHint: `Non-HTML content type: ${res.contentType}`,
-            contentType: res.contentType,
-          });
-          diagnostics.push({
-            url: currentUrl,
-            code: 'CONTENT_TYPE_UNSUPPORTED',
-            statusCode: res.statusCode,
-            message: `Non-HTML content type: ${res.contentType}`,
-            hint: 'Resource is an image, PDF, or binary feed not suitable for HTML audit.',
-            stage: 'response',
-            timestamp: new Date().toISOString(),
-          });
-          continue;
-        }
-
-        // Render SPA if enabled
-        let finalHtml = res.body;
-        let isJsRendered = false;
-        let rawVsRenderedDiff;
-        let rawH1s: string[] | undefined;
-        let renderedH1s: string[] | undefined;
-        let isH1OnlyInJs: boolean | undefined;
-
-        if (enableHeadlessRendering && isLikelySpaShell(res.body, 100)) {
-          const renderResult = await renderHeadlessDom(res.url, res.body);
-          if (renderResult.isJsRendered) {
-            finalHtml = renderResult.renderedHtml;
-            isJsRendered = true;
-            rawVsRenderedDiff = renderResult.rawVsRenderedDiff;
-            rawH1s = renderResult.rawH1s;
-            renderedH1s = renderResult.renderedH1s;
-            isH1OnlyInJs = renderResult.isH1OnlyInJs;
+          if (enableHeadlessRendering && isLikelySpaShell(res.body, 100)) {
+            const renderResult = await renderHeadlessDom(res.url, res.body);
+            if (renderResult.isJsRendered) {
+              finalHtml = renderResult.renderedHtml;
+              isJsRendered = true;
+              rawVsRenderedDiff = renderResult.rawVsRenderedDiff;
+              rawH1s = renderResult.rawH1s;
+              renderedH1s = renderResult.renderedH1s;
+              isH1OnlyInJs = renderResult.isH1OnlyInJs;
+            }
           }
-        }
 
-        const pageData = parseHtmlContent(
-          res.url,
-          finalHtml,
-          res.headers,
-          res.durationMs,
-          res.statusCode,
-          res.statusText
-        );
-        pageData.llmsTxtDetected = llmsTxtPresent;
-        pageData.isJsRendered = isJsRendered;
-        pageData.rawVsRenderedDiff = rawVsRenderedDiff;
-        pageData.redirectChain = res.redirectChain;
-        if (rawH1s) pageData.rawH1s = rawH1s;
-        if (renderedH1s) pageData.renderedH1s = renderedH1s;
-        if (isH1OnlyInJs !== undefined) pageData.isH1OnlyInJs = isH1OnlyInJs;
+          const pageData = parseHtmlContent(
+            res.url,
+            finalHtml,
+            res.headers,
+            res.durationMs,
+            res.statusCode,
+            res.statusText
+          );
+          pageData.llmsTxtDetected = llmsTxtPresent;
+          pageData.isJsRendered = isJsRendered;
+          pageData.rawVsRenderedDiff = rawVsRenderedDiff;
+          pageData.redirectChain = res.redirectChain;
+          if (rawH1s) pageData.rawH1s = rawH1s;
+          if (renderedH1s) pageData.renderedH1s = renderedH1s;
+          if (isH1OnlyInJs !== undefined) pageData.isH1OnlyInJs = isH1OnlyInJs;
 
-        // Check if destination was redirected
-        if (pageData.normalizedUrl !== normCurrent && res.url !== currentUrl) {
-          results.push({
-            url: currentUrl,
-            normalizedUrl: normCurrent,
-            depth: currentDepth,
-            state: 'redirected',
-            statusCode: res.statusCode,
-            redirectTarget: pageData.normalizedUrl,
-            pageData,
-          });
-        } else if (res.failureCode) {
-          results.push({
-            url: res.url,
-            normalizedUrl: pageData.normalizedUrl,
-            depth: currentDepth,
-            state: 'failed',
-            statusCode: res.statusCode,
-            failureCode: res.failureCode,
-            failureHint: res.failureHint,
-            pageData,
-          });
-          diagnostics.push({
-            url: currentUrl,
-            code: res.failureCode,
-            statusCode: res.statusCode,
-            message: `HTTP ${res.statusCode}: ${res.statusText}`,
-            hint: res.failureHint || 'Request returned an error status code.',
-            stage: 'response',
-            timestamp: new Date().toISOString(),
-          });
-        } else {
-          results.push({
-            url: res.url,
-            normalizedUrl: pageData.normalizedUrl,
-            depth: currentDepth,
-            state: 'crawled_ok',
-            statusCode: res.statusCode,
-            pageData,
-          });
-        }
+          const isRedirected =
+            (pageData.normalizedUrl !== normCurrent && res.url !== currentUrl) ||
+            (res.redirectChain && res.redirectChain.length > 0);
 
-        // Extract newly discovered internal links
-        for (const link of pageData.internalLinks) {
-          const normLink = link.url;
-          if (normLink && isInternalUrl(normLink, canonicalHostname, true)) {
-            discoveredLinks.push({
-              url: link.url,
-              normalizedUrl: normLink,
-              depth: currentDepth + 1,
-              discoveredFrom: currentUrl,
-              pageType: classifyUrlOnly(normLink),
+          if (res.failureCode) {
+            results.push({
+              url: res.url,
+              normalizedUrl: pageData.normalizedUrl,
+              depth: currentDepth,
+              state: 'failed',
+              statusCode: res.statusCode,
+              failureCode: res.failureCode,
+              failureHint: res.failureHint,
+              pageData,
+            });
+            diagnostics.push({
+              url: currentUrl,
+              code: res.failureCode,
+              statusCode: res.statusCode,
+              message: `HTTP ${res.statusCode}: ${res.statusText}`,
+              hint: res.failureHint || 'Request returned an error status code.',
+              stage: 'response',
+              timestamp: new Date().toISOString(),
+            });
+          } else if (isRedirected) {
+            results.push({
+              url: currentUrl,
+              normalizedUrl: normCurrent,
+              depth: currentDepth,
+              state: 'redirected',
+              statusCode: res.statusCode,
+              redirectTarget: pageData.normalizedUrl,
+              pageData,
+            });
+          } else {
+            results.push({
+              url: res.url,
+              normalizedUrl: pageData.normalizedUrl,
+              depth: currentDepth,
+              state: 'crawled_ok',
+              statusCode: res.statusCode,
+              pageData,
             });
           }
+
+          // Extract newly discovered internal links
+          for (const link of pageData.internalLinks) {
+            const normLink = link.url;
+            if (normLink && isInternalUrl(normLink, canonicalHostname, true)) {
+              discoveredLinks.push({
+                url: link.url,
+                normalizedUrl: normLink,
+                depth: currentDepth + 1,
+                discoveredFrom: currentUrl,
+                pageType: classifyUrlOnly(normLink),
+              });
+            }
+          }
+        } catch (err: any) {
+          const failureCode: FailureCode = err.failureCode || 'CONNECTION_REFUSED';
+          const failureHint: string = err.failureHint || err.message || 'Request failed to complete';
+
+          results.push({
+            url: currentUrl,
+            normalizedUrl: normCurrent,
+            depth: currentDepth,
+            state: 'failed',
+            statusCode: err.statusCode || 0,
+            failureCode,
+            failureHint,
+          });
+
+          diagnostics.push({
+            url: currentUrl,
+            code: failureCode,
+            message: err.message,
+            hint: failureHint,
+            stage: err.message?.includes('SSRF') ? 'policy' : err.message?.includes('DNS') ? 'dns' : 'connect',
+            timestamp: new Date().toISOString(),
+          });
         }
-      } catch (err: any) {
-        const failureCode: FailureCode = err.failureCode || 'CONNECTION_REFUSED';
-        const failureHint: string = err.failureHint || err.message || 'Request failed to complete';
-
-        results.push({
-          url: currentUrl,
-          normalizedUrl: normCurrent,
-          depth: currentDepth,
-          state: 'failed',
-          statusCode: err.statusCode || 0,
-          failureCode,
-          failureHint,
-        });
-
-        diagnostics.push({
-          url: currentUrl,
-          code: failureCode,
-          message: err.message,
-          hint: failureHint,
-          stage: err.message?.includes('SSRF') ? 'policy' : err.message?.includes('DNS') ? 'dns' : 'connect',
-          timestamp: new Date().toISOString(),
-        });
-      }
-    }
+      })
+    );
 
     return NextResponse.json({
       success: true,

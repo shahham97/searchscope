@@ -35,5 +35,5 @@ describe('Real Live Crawl on kingshyer.com', () => {
       schemasFound: firstPage.structuredData.length,
       aiBotsAudit: result.crawlStats.aiBotsAudit?.length
     });
-  }, 30000);
+  }, 45000);
 });
