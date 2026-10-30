@@ -5,6 +5,16 @@ export function analyzeGeo(pages: ExtractedPageData[], llmsTxtPresent: boolean):
 
   // 1. llms.txt observation
   if (!llmsTxtPresent) {
+    let geoDomain = 'Domain';
+    try {
+      if (pages[0]?.url) {
+        const toParse = /^https?:\/\//i.test(pages[0].url) ? pages[0].url : `https://${pages[0].url}`;
+        geoDomain = new URL(toParse).hostname || 'Domain';
+      }
+    } catch {
+      geoDomain = 'Domain';
+    }
+
     findings.push({
       id: 'GEO-LLMS-TXT-ABSENT',
       category: 'geo',
@@ -16,7 +26,7 @@ export function analyzeGeo(pages: ExtractedPageData[], llmsTxtPresent: boolean):
         'llms.txt is an emerging proposal providing large language models and generative AI agents with a curated, concise markdown map of your website documentation and offerings. (Note: This is an emerging convention, not a mandatory search engine requirement).',
       confidence: 'high',
       recommendedFix: 'Consider adding a lightweight /llms.txt file at your domain root summarizing your core offerings, documentation URLs, and canonical entity definitions.',
-      implementationExample: `# ${pages[0] ? new URL(pages[0].url).hostname : 'Domain'}\n\n> Summary of primary services and developer resources.\n\n- [Documentation](/docs): Core architecture guide\n- [API Reference](/api): Endpoints and schemas\n- [About](/about): Company overview and mission`,
+      implementationExample: `# ${geoDomain}\n\n> Summary of primary services and developer resources.\n\n- [Documentation](/docs): Core architecture guide\n- [API Reference](/api): Endpoints and schemas\n- [About](/about): Company overview and mission`,
       effort: 'quick_win',
       validationInstructions: 'Confirm https://yourdomain.com/llms.txt returns 200 with text/markdown.',
     });

@@ -238,6 +238,17 @@ export const CyberSeoHeroVisual: React.FC = () => {
   );
 };
 
+function safeExtractHostname(rawUrl?: string): string {
+  if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return 'CONNECTING';
+  const clean = rawUrl.trim();
+  try {
+    const toParse = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+    return new URL(toParse).hostname || clean;
+  } catch {
+    return clean.replace(/^https?:\/\//i, '').split('/')[0] || 'CONNECTING';
+  }
+}
+
 /**
  * Vintage Reel-to-Reel Tape Recorder during active crawl
  */
@@ -326,7 +337,7 @@ export const LiveCrawlParallaxVisual: React.FC<{ currentUrl: string; percentage:
         <div className="border-t border-jet-800 pt-2 flex items-center justify-between text-[10px] font-mono">
           <span className="text-emerald-400">TLS // OK</span>
           <span className="text-slate-400 truncate max-w-[120px]">
-            {currentUrl ? new URL(currentUrl).hostname : 'CONNECTING'}
+            {safeExtractHostname(currentUrl)}
           </span>
           <span className="text-retro-orange font-bold">HI-FI // 200</span>
         </div>

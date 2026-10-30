@@ -58,8 +58,14 @@ export function parseHtmlContent(
   statusText: string = 'OK'
 ): ExtractedPageData {
   const $ = cheerio.load(html);
-  const baseOrigin = new URL(url).origin;
-  const baseHostname = new URL(url).hostname;
+  let baseOrigin = 'https://example.com';
+  let baseHostname = 'example.com';
+  try {
+    const toParse = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const parsed = new URL(toParse);
+    baseOrigin = parsed.origin;
+    baseHostname = parsed.hostname;
+  } catch {}
 
   // Metadata
   const title = $('title').first().text().trim() || undefined;

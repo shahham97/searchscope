@@ -121,7 +121,13 @@ export function analyzeOnPageSeo(pages: ExtractedPageData[]): Finding[] {
     }
 
     // 3. Headings checks
-    const parsedPath = new URL(page.url).pathname;
+    let parsedPath = '';
+    try {
+      const toParse = /^https?:\/\//i.test(page.url) ? page.url : `https://${page.url}`;
+      parsedPath = new URL(toParse).pathname;
+    } catch {
+      parsedPath = page.url || '';
+    }
     const isHomepage = parsedPath === '/' || parsedPath === '';
 
     if (page.h1s.length === 0) {

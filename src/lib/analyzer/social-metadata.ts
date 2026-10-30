@@ -6,7 +6,13 @@ export function analyzeSocialMetadata(pages: ExtractedPageData[]): Finding[] {
   for (const page of pages) {
     if (!page.isHtml || page.statusCode !== 200) continue;
 
-    const path = new URL(page.url).pathname.toLowerCase();
+    let path = '';
+    try {
+      const toParse = /^https?:\/\//i.test(page.url) ? page.url : `https://${page.url}`;
+      path = new URL(toParse).pathname.toLowerCase();
+    } catch {
+      path = (page.url || '').toLowerCase();
+    }
     const isProductPage = path.includes('/product/');
     const isBlogPage = path.includes('/blog/') || path.includes('/article/') || path.includes('/news/');
 

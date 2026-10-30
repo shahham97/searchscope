@@ -35,7 +35,15 @@ export async function runStageDContentGenerators(
   callLLM: LLMCallFn
 ): Promise<StageDResult> {
   const { platform } = detectPlatform(pages);
-  const domain = pages[0]?.url ? new URL(pages[0].url).hostname : 'example.com';
+  let domain = 'example.com';
+  if (pages[0]?.url) {
+    try {
+      const toParse = /^https?:\/\//i.test(pages[0].url) ? pages[0].url : `https://${pages[0].url}`;
+      domain = new URL(toParse).hostname;
+    } catch {
+      domain = pages[0].url.replace(/^https?:\/\//i, '').split('/')[0] || 'example.com';
+    }
+  }
   const brandName = siteProfile.verifiedUSPs[0] ? siteProfile.businessType : domain;
 
   // 1. Generate Site-Wide Changes

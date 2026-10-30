@@ -243,6 +243,14 @@ export async function runCompleteAudit(
     }
   }
 
+  let faviconUrl = '/favicon.ico';
+  try {
+    const toParse = /^https?:\/\//i.test(targetNormalizedUrl) ? targetNormalizedUrl : `https://${targetNormalizedUrl}`;
+    faviconUrl = `${new URL(toParse).origin}/favicon.ico`;
+  } catch {
+    faviconUrl = '/favicon.ico';
+  }
+
   const report: AuditReport = {
     id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`,
     auditDate: new Date().toISOString(),
@@ -250,7 +258,7 @@ export async function runCompleteAudit(
     targetNormalizedUrl,
     siteTitle,
     organizationName,
-    faviconUrl: `${new URL(targetNormalizedUrl).origin}/favicon.ico`,
+    faviconUrl,
     config: effectiveConfig,
     crawlerUserAgent: effectiveConfig.userAgentType === 'bot' ? BOT_USER_AGENT : BROWSER_USER_AGENT,
     overallScore,

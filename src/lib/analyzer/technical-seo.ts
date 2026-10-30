@@ -14,6 +14,16 @@ export function analyzeTechnicalSeo(
 
   // 1. Robots.txt check
   if (!robotsTxtPresent) {
+    let techOrigin = 'https://example.com';
+    try {
+      if (pages[0]?.url) {
+        const toParse = /^https?:\/\//i.test(pages[0].url) ? pages[0].url : `https://${pages[0].url}`;
+        techOrigin = new URL(toParse).origin || 'https://example.com';
+      }
+    } catch {
+      techOrigin = 'https://example.com';
+    }
+
     findings.push({
       id: 'TECH-ROBOTS-MISSING',
       category: 'technical',
@@ -26,7 +36,7 @@ export function analyzeTechnicalSeo(
       confidence: 'high',
       recommendedFix:
         'Create a robots.txt file at the root directory of your web server with standard directives and your sitemap location.',
-      implementationExample: `User-agent: *\nAllow: /\n\nSitemap: ${pages[0] ? new URL(pages[0].url).origin : 'https://example.com'}/sitemap.xml`,
+      implementationExample: `User-agent: *\nAllow: /\n\nSitemap: ${techOrigin}/sitemap.xml`,
       effort: 'quick_win',
       validationInstructions:
         'Verify that fetching https://yourdomain.com/robots.txt returns HTTP 200 with appropriate directives.',
